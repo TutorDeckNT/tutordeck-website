@@ -22,9 +22,19 @@ const Footer = () => (
                 <div>
                     <h4 className="font-semibold text-dark-heading mb-4">Follow Us</h4>
                     <div className="flex space-x-4">
-                        <a href="#" className="text-2xl hover:text-primary transition-colors"><i className="fab fa-twitter"></i></a>
-                        <a href="#" className="text-2xl hover:text-primary transition-colors"><i className="fab fa-instagram"></i></a>
-                        <a href="#" className="text-2xl hover:text-primary transition-colors"><i className="fab fa-linkedin"></i></a>
+                        <a href="#" className="text-2xl hover:text-primary transition-colors" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
+                        {/* --- THIS IS THE CHANGE --- */}
+                        <a 
+                          href="https://www.instagram.com/tutordeck___/" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-2xl hover:text-primary transition-colors"
+                          aria-label="Instagram"
+                        >
+                          <i className="fab fa-instagram"></i>
+                        </a>
+                        {/* -------------------------- */}
+                        <a href="#" className="text-2xl hover:text-primary transition-colors" aria-label="LinkedIn"><i className="fab fa-linkedin"></i></a>
                     </div>
                 </div>
             </div>
