@@ -1,15 +1,26 @@
-import { useEffect, useRef, ReactNode, ElementType } from 'react';
+import { useEffect, useRef, ReactNode, ElementType, HTMLAttributes } from 'react';
 
 // Define the props for the component
-interface RevealProps {
+// We use a generic type 'C' that defaults to 'div'
+interface RevealProps<C extends ElementType = 'div'> {
   children: ReactNode;
   className?: string;
-  // FIX: Add the 'as' prop. It can be any valid HTML element type.
-  // We use React's ElementType for strong typing.
-  as?: ElementType;
+  // The 'as' prop allows us to change the rendered HTML tag (e.g., from 'div' to 'section')
+  as?: C;
 }
 
-const Reveal = ({ children, className = '', as: Component = 'div' }: RevealProps) => {
+// Use a more advanced type that combines our props with all valid HTML attributes
+// for the given component type. This is what allows 'id', 'style', etc. to be passed.
+type Props<C extends ElementType> = RevealProps<C> &
+  Omit<HTMLAttributes<C>, keyof RevealProps<C>>;
+
+const Reveal = <C extends ElementType = 'div'>({
+  children,
+  className = '',
+  as,
+}: Props<C>) => {
+  // The component to render, defaulting to 'div' if 'as' is not provided
+  const Component = as || 'div';
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,20 +33,20 @@ const Reveal = ({ children, className = '', as: Component = 'div' }: RevealProps
       });
     }, { threshold: 0.1 });
 
-    if (ref.current) {
-      observer.observe(ref.current);
+    const currentRef = ref.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     // Cleanup function to disconnect the observer
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, []);
 
-  // FIX: Use the 'Component' variable (which defaults to 'div') to render the element.
-  // This makes the component flexible.
+  // Pass down the className and any other props (...) to the rendered component
   return (
     <Component ref={ref} className={`reveal ${className}`}>
       {children}
