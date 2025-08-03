@@ -1,11 +1,15 @@
-import { useEffect, useRef, ReactNode } from 'react';
+import { useEffect, useRef, ReactNode, ElementType } from 'react';
 
+// Define the props for the component
 interface RevealProps {
   children: ReactNode;
   className?: string;
+  // FIX: Add the 'as' prop. It can be any valid HTML element type.
+  // We use React's ElementType for strong typing.
+  as?: ElementType;
 }
 
-const Reveal = ({ children, className = '' }: RevealProps) => {
+const Reveal = ({ children, className = '', as: Component = 'div' }: RevealProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,13 +26,20 @@ const Reveal = ({ children, className = '' }: RevealProps) => {
       observer.observe(ref.current);
     }
 
-    return () => observer.disconnect();
+    // Cleanup function to disconnect the observer
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
   }, []);
 
+  // FIX: Use the 'Component' variable (which defaults to 'div') to render the element.
+  // This makes the component flexible.
   return (
-    <div ref={ref} className={`reveal ${className}`}>
+    <Component ref={ref} className={`reveal ${className}`}>
       {children}
-    </div>
+    </Component>
   );
 };
 
