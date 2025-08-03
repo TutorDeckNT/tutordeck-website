@@ -1,5 +1,14 @@
 import AnimatedStat from '../components/AnimatedStat';
 import Reveal from '../components/Reveal';
+import VolunteerCarousel from '../components/VolunteerCarousel'; // Import the new component
+
+// Define the data for the carousel
+const volunteerData = [
+    { name: 'John Doe', award: 'Gold', quote: 'Leading the charge in peer-to-peer mentorship at Prosper High.', icon: 'fa-award text-yellow-400' },
+    { name: 'Jane Smith', award: 'Silver', quote: 'Instrumental in launching our Middle School Mentorship program.', icon: 'fa-award text-gray-300' },
+    { name: 'Sam Wilson', award: 'Bronze', quote: 'A consistent and reliable tutor, always ready to help with STEM subjects.', icon: 'fa-award text-yellow-600' },
+    { name: 'Emily White', award: 'Rising Star', quote: 'Showed incredible initiative by co-founding the Richland High chapter.', icon: 'fa-star text-blue-400' },
+];
 
 const HomePage = () => {
     return (
@@ -45,6 +54,10 @@ const HomePage = () => {
                     </div>
                 </Reveal>
             </section>
+
+            {/* This is the new, restored carousel section */}
+            <VolunteerCarousel volunteers={volunteerData} />
+
         </main>
     );
 };
