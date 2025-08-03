@@ -1,0 +1,44 @@
+# Name of your workflow
+name: Deploy to GitHub Pages
+
+# Run this workflow every time a change is pushed to the `main` branch
+on:
+  push:
+    branches: [ main ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build-and-deploy"
+  build-and-deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # 1. Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Sets up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # Use a stable Long-Term Support version
+
+      # 3. Installs all project dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Runs the build script defined in package.json
+      # This creates the optimized 'dist' folder
+      - name: Build
+        run: npm run build
+
+      # 5. Deploys the content of the 'dist' folder to the 'gh-pages' branch
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
