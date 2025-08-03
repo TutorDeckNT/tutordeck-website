@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 const Footer = () => (
     <footer id="contact" className="bg-dark-card border-t border-gray-700/50 pt-16 pb-8">
         <div className="container mx-auto px-6">
-            <div className="grid md:grid-cols-3 gap-8 mb-8">
+            <div className="grid md:grid-cols-4 gap-8 mb-8">
+                {/* Column 1: Brand */}
                 <div className="md:col-span-1">
                     <Link to="/" className="flex items-center space-x-3 mb-4">
                         <img src="/tutordeck-website/mascot.jpg" alt="TutorDeck Mascot" className="h-10 w-10 rounded-full object-cover" />
@@ -11,6 +12,8 @@ const Footer = () => (
                     </Link>
                     <p className="text-sm">Based in North Texas, Serving Globally.</p>
                 </div>
+
+                {/* Column 2: Quick Links */}
                 <div>
                     <h4 className="font-semibold text-dark-heading mb-4">Quick Links</h4>
                     <ul className="space-y-2 text-sm">
@@ -19,11 +22,31 @@ const Footer = () => (
                         <li><Link to="/get-involved" className="hover:text-primary">Get Involved</Link></li>
                     </ul>
                 </div>
+
+                {/* Column 3: Contact Us (NEW) */}
+                <div>
+                    <h4 className="font-semibold text-dark-heading mb-4">Contact Us</h4>
+                    <ul className="space-y-2 text-sm">
+                        {/* --- THIS IS THE NEW EMAIL LINK --- */}
+                        <li className="flex items-start">
+                            <i className="fas fa-envelope w-6 text-primary pt-1"></i>
+                            <a href="mailto:prospertutorcorp@gmail.com" className="hover:text-primary">
+                                prospertutorcorp@gmail.com
+                            </a>
+                        </li>
+                        {/* ------------------------------------ */}
+                        <li className="flex items-start">
+                            <i className="fas fa-phone w-6 text-primary pt-1"></i>
+                            <span>(469) 850-4335</span>
+                        </li>
+                    </ul>
+                </div>
+
+                {/* Column 4: Follow Us */}
                 <div>
                     <h4 className="font-semibold text-dark-heading mb-4">Follow Us</h4>
                     <div className="flex space-x-4">
                         <a href="#" className="text-2xl hover:text-primary transition-colors" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
-                        {/* --- THIS IS THE CHANGE --- */}
                         <a 
                           href="https://www.instagram.com/tutordeck___/" 
                           target="_blank" 
@@ -33,7 +56,6 @@ const Footer = () => (
                         >
                           <i className="fab fa-instagram"></i>
                         </a>
-                        {/* -------------------------- */}
                         <a href="#" className="text-2xl hover:text-primary transition-colors" aria-label="LinkedIn"><i className="fab fa-linkedin"></i></a>
                     </div>
                 </div>
