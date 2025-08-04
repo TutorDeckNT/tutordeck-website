@@ -15,10 +15,10 @@ const chapterData = [
     // --------------------------
     { 
         name: 'Richland High School', 
-        location: 'Richland, TX', 
+        location: 'Prosper, TX', 
         advisor: 'Ms. Davis', 
         lead: 'Jane Smith', 
-        img: 'https://images.unsplash.com/photo-1613896527247-114645b3b9d7?q=80&w=1974&auto=format&fit=crop' 
+        img: '/tutordeck-website/richlandhs.avif' 
     },
     { 
         name: 'Liberty High School', 
