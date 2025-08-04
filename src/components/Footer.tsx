@@ -7,7 +7,7 @@ const Footer = () => (
                 {/* Column 1: Brand */}
                 <div className="md:col-span-1">
                     <Link to="/" className="flex items-center space-x-3 mb-4">
-                        <img src="/tutordeck-website/mascot.jpg" alt="TutorDeck Mascot" className="h-10 w-10 rounded-full object-cover" />
+                        <img src="/tutordeck-website/mascot.avif" alt="TutorDeck Mascot" className="h-10 w-10 rounded-full object-cover" />
                         <h3 className="text-2xl font-bold text-dark-heading">TutorDeck</h3>
                     </Link>
                     <p className="text-sm">Based in North Texas, Serving Globally.</p>
