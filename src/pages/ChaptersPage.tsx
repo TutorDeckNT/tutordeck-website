@@ -2,9 +2,31 @@ import { useState, useMemo } from 'react';
 import Reveal from '../components/Reveal';
 
 const chapterData = [
-    { name: 'Prosper High School', location: 'Prosper, TX', advisor: 'Mr. Anderson', lead: 'John Doe', img: 'https://images.unsplash.com/photo-1580582932707-520aed93a94d?q=80&w=1964&auto=format&fit=crop' },
-    { name: 'Richland High School', location: 'Richland, TX', advisor: 'Ms. Davis', lead: 'Jane Smith', img: 'https://images.unsplash.com/photo-1613896527247-114645b3b9d7?q=80&w=1974&auto=format&fit=crop' },
-    { name: 'Liberty High School', location: 'Frisco, TX', advisor: 'Mr. Chen', lead: 'Alex Ray', img: 'https://images.unsplash.com/photo-1592280782323-3a21c54de859?q=80&w=2070&auto=format&fit=crop' },
+    // --- THIS IS THE CHANGE ---
+    { 
+        name: 'Prosper High School', 
+        location: 'Prosper, TX', 
+        advisor: 'Mr. Anderson', 
+        lead: 'John Doe', 
+        // The path now points to the local image in the public folder.
+        // Remember to include the base path of your repository.
+        img: '/tutordeck-website/Prosper_High_School.webp' 
+    },
+    // --------------------------
+    { 
+        name: 'Richland High School', 
+        location: 'Richland, TX', 
+        advisor: 'Ms. Davis', 
+        lead: 'Jane Smith', 
+        img: 'https://images.unsplash.com/photo-1613896527247-114645b3b9d7?q=80&w=1974&auto=format&fit=crop' 
+    },
+    { 
+        name: 'Liberty High School', 
+        location: 'Frisco, TX', 
+        advisor: 'Mr. Chen', 
+        lead: 'Alex Ray', 
+        img: 'https://images.unsplash.com/photo-1592280782323-3a21c54de859?q=80&w=2070&auto=format&fit=crop' 
+    },
 ];
 
 const ChapterCard = ({ chapter }: { chapter: typeof chapterData[0] }) => (
