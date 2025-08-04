@@ -10,7 +10,7 @@ const chapterData = [
         lead: 'John Doe', 
         // The path now points to the local image in the public folder.
         // Remember to include the base path of your repository.
-        img: '/tutordeck-website/Prosper_High_School.webp' 
+        img: '/tutordeck-website/Prosper_High_School.avif' 
     },
     // --------------------------
     { 
