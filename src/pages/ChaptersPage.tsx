@@ -20,13 +20,6 @@ const chapterData = [
         lead: 'Jane Smith', 
         img: '/tutordeck-website/richlandhs.avif' 
     },
-    { 
-        name: 'Liberty High School', 
-        location: 'Frisco, TX', 
-        advisor: 'Mr. Chen', 
-        lead: 'Alex Ray', 
-        img: 'https://images.unsplash.com/photo-1592280782323-3a21c54de859?q=80&w=2070&auto=format&fit=crop' 
-    },
 ];
 
 const ChapterCard = ({ chapter }: { chapter: typeof chapterData[0] }) => (
