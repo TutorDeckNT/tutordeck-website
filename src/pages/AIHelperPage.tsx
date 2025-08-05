@@ -110,25 +110,19 @@ const AIHelperPage = () => {
 
     const systemInstruction = {
         parts: [{ text: isAnswersOnlyMode ? 
-            `You are a high-speed, direct-answer engine...` // Truncated for brevity
+            `You are a high-speed, direct-answer engine...` // Truncated
             : 
-            `You are a helpful and friendly study assistant...` // Truncated for brevity
+            `You are a helpful and friendly study assistant...` // Truncated
         }]
     };
 
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-    
-    // --- THIS IS THE FIX ---
-    // Create a new array for the API call, stripping out any custom properties like 'modelName'.
-    // The API only accepts 'role' and 'parts'.
     const apiContents = updatedMessages.map(({ role, parts }) => ({ role, parts }));
-    // -----------------------
 
     try {
         const response = await fetch(`${API_URL}?key=${API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            // Use the cleaned 'apiContents' in the body of the request.
             body: JSON.stringify({ contents: apiContents, systemInstruction })
         });
 
@@ -158,8 +152,36 @@ const AIHelperPage = () => {
   const createNewChat = (initialChats: ChatHistories = chatHistories) => {
     const newId = `chat-${Date.now()}`;
     const newChat: Chat = { title: "New Chat", messages: [{ role: 'model', parts: [{ text: 'New chat started. Ask me anything!' }], modelName: 'System' }] };
-    setChatHistories({ ...initialChats, [newId]: newChat });
+    const newHistories = { ...initialChats, [newId]: newChat };
+    setChatHistories(newHistories);
     setCurrentChatId(newId);
+  };
+
+  // --- NEW FUNCTION: handleRenameChat ---
+  const handleRenameChat = () => {
+    if (!currentChatId) return;
+    const currentTitle = chatHistories[currentChatId].title;
+    const newTitle = prompt("Enter a new title for the chat:", currentTitle);
+    if (newTitle && newTitle.trim() && newTitle.trim() !== currentTitle) {
+        const updatedChat = { ...chatHistories[currentChatId], title: newTitle.trim() };
+        setChatHistories({ ...chatHistories, [currentChatId]: updatedChat });
+    }
+  };
+
+  // --- NEW FUNCTION: handleDeleteChat ---
+  const handleDeleteChat = () => {
+    if (!currentChatId || Object.keys(chatHistories).length <= 1) {
+        alert("Cannot delete the last chat.");
+        return;
+    }
+    if (confirm(`Are you sure you want to delete "${chatHistories[currentChatId].title}"?`)) {
+        const newHistories = { ...chatHistories };
+        delete newHistories[currentChatId];
+        setChatHistories(newHistories);
+        // Switch to the most recent remaining chat
+        const lastChatId = Object.keys(newHistories).sort().pop()!;
+        setCurrentChatId(lastChatId);
+    }
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -213,9 +235,14 @@ const AIHelperPage = () => {
             </aside>
 
             <div className="flex-grow flex flex-col bg-dark-card border border-gray-700 rounded-xl overflow-hidden">
+                {/* --- UPDATED HEADER WITH BUTTONS --- */}
                 <header className="p-4 border-b border-gray-700 flex justify-between items-center flex-shrink-0">
                     <h3 className="text-lg font-bold text-dark-heading truncate">{currentChat?.title || 'Loading...'}</h3>
-                    {isThinking && <span className="font-bold text-secondary animate-pulse">Thinking...</span>}
+                    <div className="flex items-center gap-2">
+                        {isThinking && <span className="font-bold text-secondary animate-pulse mr-4">Thinking...</span>}
+                        <button onClick={handleRenameChat} className="bg-dark-bg text-dark-text text-sm font-semibold px-3 py-1.5 rounded-md hover:bg-gray-600 transition-colors">Rename</button>
+                        <button onClick={handleDeleteChat} className="bg-dark-bg text-dark-text text-sm font-semibold px-3 py-1.5 rounded-md hover:bg-red-500 hover:text-white transition-colors">Delete</button>
+                    </div>
                 </header>
                 
                 <div ref={chatBoxRef} className="flex-grow p-6 overflow-y-auto flex flex-col gap-8">
