@@ -1,7 +1,7 @@
 import AnimatedStat from '../components/AnimatedStat';
 import Reveal from '../components/Reveal';
 import VolunteerCarousel from '../components/VolunteerCarousel';
-import { Link } from 'react-router-dom'; // Import Link for the new button
+import { Link } from 'react-router-dom';
 
 const volunteerData = [
     { name: 'John Doe', award: 'Gold', quote: 'Leading the charge in peer-to-peer mentorship at Prosper High.', icon: 'fa-award text-yellow-400' },
@@ -17,20 +17,20 @@ const HomePage = () => {
                 <video autoPlay loop muted playsInline className="hero-video-bg"><source src="https://assets.mixkit.co/videos/preview/mixkit-students-in-a-classroom-2322-large.mp4" type="video/mp4" /></video>
                 <div className="absolute inset-0 bg-dark-bg opacity-80"></div>
                 <Reveal className="container mx-auto px-6 relative z-10">
-                    <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-primary mb-4">Empowering Students, Together.</h1>
+                    {/* THIS IS THE CORRECTED LINE */}
+                    <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-primary mb-4 py-2">
+                        Empowering Students, Together.
+                    </h1>
                     <p className="text-lg md:text-xl max-w-3xl mx-auto text-dark-text mb-8">A student-led initiative dedicated to providing free, accessible, and high-quality tutoring for all.</p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Link to="/get-involved" className="cta-button bg-primary text-dark-bg font-semibold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors w-full sm:w-auto">Get Involved</Link>
-                        {/* --- THIS IS THE NEW BUTTON --- */}
                         <Link to="/ai-helper" className="cta-button bg-dark-card text-secondary-light font-semibold px-8 py-3 rounded-lg border-2 border-secondary hover:bg-secondary hover:text-dark-bg transition-colors w-full sm:w-auto">
                             Empower your study with AI
                         </Link>
-                        {/* ----------------------------- */}
                     </div>
                 </Reveal>
             </section>
 
-            {/* ... rest of the HomePage component remains the same ... */}
             <section id="about-summary" className="py-24 bg-dark-card alternating-layout">
                 <Reveal className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
                     <div className="alternating-layout-content">
