@@ -43,37 +43,4 @@ function App() {
   );
 }
 
-export default App;```
-
-**Step 8: Upgrade the Header**
-
-*   **File:** Create a new folder `hooks` inside `src`. Inside this new `hooks` folder, create a new file named `useClickOutside.ts`.
-*   **Action:** Add the following code. This is a small helper for the profile dropdown menu.
-
-```typescript
-import { useEffect, RefObject } from 'react';
-
-type Event = MouseEvent | TouchEvent;
-
-export const useClickOutside = <T extends HTMLElement = HTMLElement>(
-  ref: RefObject<T>,
-  handler: (event: Event) => void
-) => {
-  useEffect(() => {
-    const listener = (event: Event) => {
-      const el = ref?.current;
-      if (!el || el.contains((event?.target as Node) || null)) {
-        return;
-      }
-      handler(event);
-    };
-
-    document.addEventListener('mousedown', listener);
-    document.addEventListener('touchstart', listener);
-
-    return () => {
-      document.removeEventListener('mousedown', listener);
-      document.removeEventListener('touchstart', listener);
-    };
-  }, [ref, handler]);
-};
+export default App;
