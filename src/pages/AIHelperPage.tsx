@@ -110,16 +110,24 @@ const AIHelperPage = () => {
 
     const systemInstruction = {
         parts: [{ text: isAnswersOnlyMode ? 
-            `You are a high-speed, direct-answer engine...` // Truncated for brevity
+            `You are a high-speed, direct-answer engine. Your ONLY function is to provide the final, concise answer to the user's query. You MUST follow these rules without deviation:
+            1. DO NOT provide any explanations, introductory text, or concluding remarks.
+            2. DO NOT use conversational language.
+            3. If the answer is a number, provide only the number.
+            4. If the answer is a short phrase, provide only the phrase.
+            5. If the user asks for a calculation, provide only the final result.` 
             : 
-            `You are a helpful and friendly study assistant...` // Truncated for brevity
+            `You are a helpful and friendly study assistant integrated into the TutorDeck platform. Your goal is to provide clear, accurate, and in-depth explanations to help students understand complex topics. 
+            - When asked to solve problems, show your work step-by-step.
+            - ALWAYS format mathematical equations and expressions using inline LaTeX (e.g., \`$ax^2 + bx + c = 0$\`) or block-level LaTeX (e.g., \`$$...$$\`).`
         }]
     };
 
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
     
     // --- THIS IS THE FIX ---
-    // Create a new array containing only the 'role' and 'parts' properties for the API call.
+    // Create a new array for the API call, stripping out any custom properties like 'modelName'.
+    // The API only accepts 'role' and 'parts'.
     const apiContents = updatedMessages.map(({ role, parts }) => ({ role, parts }));
     // -----------------------
 
@@ -127,7 +135,7 @@ const AIHelperPage = () => {
         const response = await fetch(`${API_URL}?key=${API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            // Use the cleaned 'apiContents' instead of 'updatedMessages'
+            // Use the cleaned 'apiContents' in the body of the request.
             body: JSON.stringify({ contents: apiContents, systemInstruction })
         });
 
