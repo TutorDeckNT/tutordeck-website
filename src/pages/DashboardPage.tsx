@@ -41,7 +41,7 @@ const DashboardPage = () => {
                         );
                         setActivities(userActivities);
                     },
-                    error: (err) => {
+                    error: (err: Papa.ParseError) => { // <-- THIS IS THE FIX
                         throw new Error(`Parsing error: ${err.message}`);
                     }
                 });
