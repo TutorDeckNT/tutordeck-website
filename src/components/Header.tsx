@@ -10,6 +10,8 @@ const Header = () => (
             <nav className="hidden md:flex items-center space-x-8">
                 <NavLink to="/about" className={({isActive}) => `transition-colors ${isActive ? "text-primary" : "hover:text-primary"}`}>About</NavLink>
                 <NavLink to="/chapters" className={({isActive}) => `transition-colors ${isActive ? "text-primary" : "hover:text-primary"}`}>Chapters</NavLink>
+                {/* Add the new AI Helper link */}
+                <NavLink to="/ai-helper" className={({isActive}) => `font-semibold transition-colors ${isActive ? "text-secondary" : "text-secondary-light hover:text-secondary"}`}>AI Helper</NavLink>
             </nav>
             <NavLink to="/get-involved" className="cta-button bg-gradient-to-r from-primary to-secondary-light text-dark-bg font-semibold px-5 py-2 rounded-lg hover:opacity-90">
                 Get Involved
@@ -17,5 +19,3 @@ const Header = () => (
         </div>
     </header>
 );
-
-export default Header;
