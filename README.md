@@ -1,16 +1,16 @@
-# TutorDeck Website & AI Study Helper
+# TutorDeck Website: Technical Architecture & Component Guide
 
-This repository contains the full source code for the official TutorDeck website and the integrated "AI Study Helper" application. The project is built using a modern, professional tech stack designed for performance, scalability, and maintainability.
-
-This document explains the project structure, the technologies used, and the reasoning behind the architectural decisions, enabling developers (and AI assistants) to understand and contribute to the project effectively.
+This document provides a comprehensive technical breakdown of the TutorDeck web application. It is designed for developers and AI assistants to understand the project's structure, data flow, and component architecture.
 
 ## Table of Contents
 1.  [Live Site](#live-site)
 2.  [Tech Stack](#tech-stack)
 3.  [Project Structure](#project-structure)
 4.  [Key Architectural Decisions](#key-architectural-decisions)
-5.  [How to Update Content](#how-to-update-content)
-6.  [Deployment](#deployment)
+5.  [Key Data Flows](#key-data-flows)
+6.  [How to Update Content](#how-to-update-content)
+7.  [Environment Variables & Security](#environment-variables--security)
+8.  [Deployment & CI/CD Workflow](#deployment--cicd-workflow)
 
 ## Live Site
 
@@ -26,72 +26,127 @@ The website is automatically built and deployed to GitHub Pages.
 | **TypeScript** | Language | Adds static typing to JavaScript, preventing common bugs and improving code quality and maintainability. |
 | **Vite** | Build Tool | Provides an extremely fast development experience and bundles the code into highly optimized, production-ready static files. |
 | **Tailwind CSS** | CSS Framework | A utility-first framework that allows for rapid, consistent styling directly in the component files without writing custom CSS. |
-| **React Router** | Routing | Manages client-side navigation between different pages (`/`, `/about`, `/ai-helper`) in this single-page application (SPA). |
+| **React Router** | Routing | Manages client-side navigation between different pages (`/`, `/about`, `/dashboard`) in this single-page application (SPA). |
+| **Firebase Auth**| Authentication | Provides a secure and easy-to-implement Google Sign-In service for user authentication. |
+| **Papa Parse** | CSV Parser | A reliable, pure-JavaScript library to parse volunteer data from a Google Sheet. |
 | **GitHub Actions** | CI/CD | Automates the entire build and deployment process, ensuring that any push to the `main` branch results in a fresh, optimized build on GitHub Pages. |
 | **Gemini API** | AI Model | Powers the "AI Study Helper" page, providing chat and image analysis capabilities. |
 | **Marked & KaTeX** | Content Rendering | Used in the AI Helper to parse Markdown for text formatting and render LaTeX for mathematical equations. |
 
 ## Project Structure
 
-The repository is organized as a standard Vite + React project.
+The codebase is organized in a standard Vite + React + TypeScript structure.
 
 ```
-tutordeck-website/
+/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml      # GitHub Action: Automates build & deployment to GitHub Pages.
-├── public/
-│   └── mascot.avif         # Static assets (images, favicons) that are copied directly to the build output.
+│       └── deploy.yml      # Defines the automated build & deployment process.
+├── public/                 # Static assets (images, favicons).
 ├── src/
-│   ├── components/         # Reusable React components (Header, Footer, etc.).
-│   │   ├── Header.tsx
-│   │   └── ...
+│   ├── components/         # Reusable UI components used across multiple pages.
+│   ├── contexts/           # React Context providers (e.g., AuthContext).
+│   ├── hooks/              # Custom React hooks (e.g., useClickOutside).
 │   ├── pages/              # Top-level components, each representing a full page.
-│   │   ├── HomePage.tsx
-│   │   ├── AboutPage.tsx
-│   │   └── ...
-│   ├── App.tsx             # Main application component, handles routing.
-│   ├── main.tsx            # The entry point of the React application.
-│   ├── index.css           # Global styles and Tailwind CSS directives.
-│   └── vite-env.d.ts       # TypeScript definitions for Vite's environment variables.
-├── .gitignore              # Specifies files for Git to ignore (e.g., node_modules).
-├── index.html              # The main HTML shell for the application.
-├── package.json            # Defines project dependencies and scripts.
-├── tailwind.config.js      # Configuration file for Tailwind CSS.
-└── tsconfig.json           # Configuration file for the TypeScript compiler.
+│   ├── App.tsx             # Main component that defines all application routes.
+│   ├── firebaseConfig.ts   # Initializes and configures the Firebase connection.
+│   ├── main.tsx            # The entry point of the application.
+│   └── index.css           # Global styles and Tailwind directives.
+├── .gitignore
+├── index.html              # The HTML shell of the application.
+├── package.json            # Project dependencies and scripts.
+├── tailwind.config.js      # Tailwind CSS configuration.
+└── tsconfig.json           # TypeScript compiler configuration.
 ```
 
 ## Key Architectural Decisions
 
-1.  **Component-Based Architecture:** The UI is broken down into small, reusable components (`src/components/`). This makes the code easier to manage, test, and update. For example, the `Header.tsx` and `Footer.tsx` components are used on every page, ensuring consistency.
+1.  **Component-Based Architecture:** The UI is broken down into small, reusable components. This makes the code easier to manage, test, and update.
 
-2.  **Separation of Data and Presentation:** For content that changes frequently (like the list of chapters or volunteers), the data is stored in a simple array at the top of the relevant page component (e.g., `chapterData` in `ChaptersPage.tsx`). The component then maps over this array to render the UI. This allows non-developers to easily update content without touching complex JSX code.
+2.  **Centralized Authentication State:** A React Context (`src/contexts/AuthContext.tsx`) provides the user's authentication status throughout the application. This avoids prop-drilling and allows any component to easily access the current user's state.
 
-3.  **Automated CI/CD with GitHub Actions:** The project uses a Git-based workflow. All development happens on the `main` branch. The `.github/workflows/deploy.yml` file defines a process that automatically:
-    *   Installs dependencies (`npm install`).
-    *   Builds the optimized, production-ready static files (`npm run build`).
-    *   Pushes the built files to a separate `gh-pages` branch.
-    This ensures the live site is always a reflection of the latest stable code, with no manual deployment steps required.
+3.  **Protected Routes:** The user dashboard is a protected route. A wrapper component (`src/components/ProtectedRoute.tsx`) checks for an active user session before rendering the page, redirecting to the login page if the user is not authenticated.
 
-4.  **Performance Optimization:**
-    *   **Code Splitting:** Vite automatically splits the code for each page. Users only download the JavaScript needed for the page they are currently viewing.
-    *   **CSS Purging:** Tailwind CSS is configured to scan all `.tsx` files and generate a CSS file containing *only* the utility classes that are actually used, resulting in a very small file size.
-    *   **CDN for KaTeX:** To keep the main application bundle small, the KaTeX library (for math rendering) is loaded from a fast, external CDN instead of being bundled with the project's JavaScript. This is defined in `index.html`.
+4.  **Data Decoupling:** The volunteer data is fetched from a public Google Sheet CSV. This is a powerful pattern that allows non-developers to update the data source (by adding rows to the Google Sheet) without needing to touch the codebase. The application simply re-fetches the data on the next visit.
 
-5.  **API Key Security:** The Google Gemini API key is **not** stored in the code. It is stored as a **Repository Secret** in GitHub (`VITE_GEMINI_API_KEY`). The GitHub Actions workflow securely injects this secret as an environment variable during the build process, making it available to the application without exposing it publicly.
+## Key Data Flows
+
+### Authentication Flow
+
+1.  **User Action:** Clicks "Sign In" button on `Header` -> Navigates to `LoginPage`.
+2.  **Login:** Clicks "Sign in with Google" button on `LoginPage`.
+3.  **Firebase:** `AuthContext`'s `signInWithGoogle` function is called, which opens the Firebase Google sign-in popup.
+4.  **State Update:** Upon successful login, Firebase's `onAuthStateChanged` listener in `AuthContext` fires. The `user` state in the context is updated with the user's information.
+5.  **Re-render:** All components subscribed to `AuthContext` (like `Header` and `ProtectedRoute`) re-render. The `Header` now shows the profile picture, and the user can access the dashboard.
+
+### Dashboard Data Flow
+
+1.  **Navigation:** A logged-in user navigates to the `/dashboard` URL.
+2.  **Guard:** `ProtectedRoute` checks `AuthContext`, sees a valid user, and allows `DashboardPage` to render.
+3.  **Fetch:** `DashboardPage`'s `useEffect` hook runs. It calls `fetch()` on the Google Sheet CSV URL.
+4.  **Parse:** The response text is passed to `Papa.parse()`.
+5.  **Filter:** The parsed data array is filtered to keep only the rows where the "Email Address" column matches the `user.email` from `AuthContext`.
+6.  **State Update:** The filtered array is stored in the `activities` state using `useState`.
+7.  **Render:** The component re-renders, using the `activities` state to calculate and display the total hours and the detailed transcript table.
 
 ## How to Update Content
 
-### To Add a New Chapter:
-1.  Edit the file `src/pages/ChaptersPage.tsx`.
-2.  Add a new object to the `chapterData` array at the top of the file.
-3.  Commit the change. The website will update automatically.
+### To Add a New Chapter or Volunteer:
+*   Edit the data arrays in `src/pages/ChaptersPage.tsx` or `src/pages/HomePage.tsx`.
+*   Commit the change. The website will update automatically.
 
-### To Add a New Volunteer to the Carousel:
-1.  Edit the file `src/pages/HomePage.tsx`.
-2.  Add a new object to the `volunteerData` array at the top of the file.
-3.  Commit the change. The website will update automatically.
+### To Add Volunteer Hours for a User:
+*   Simply add a new row to the Google Sheet that is linked in `src/pages/DashboardPage.tsx`.
+*   Ensure the email in the "Email Address" column matches the user's Google account email.
+*   The user's dashboard will automatically reflect the new data the next time they visit.
 
-## Deployment
+## Environment Variables & Security
 
-The site is deployed automatically to GitHub Pages. Any commit pushed to the `main` branch will trigger the deployment workflow defined in `.github/workflows/deploy.yml`. The live site is served from the `gh-pages` branch.
+The application requires several secret keys to function, which are managed via environment variables.
+
+**Required Variables:**
+*   `VITE_GEMINI_API_KEY`: For the AI Helper page.
+*   `VITE_FIREBASE_API_KEY`: Your Firebase project's API Key.
+*   `VITE_FIREBASE_AUTH_DOMAIN`: Your Firebase project's Auth Domain.
+*   `VITE_FIREBASE_PROJECT_ID`: Your Firebase project's ID.
+*   `VITE_FIREBASE_STORAGE_BUCKET`: Your Firebase project's Storage Bucket.
+*   `VITE_FIREBASE_MESSAGING_SENDER_ID`: Your Firebase project's Messaging Sender ID.
+*   `VITE_FIREBASE_APP_ID`: Your Firebase project's App ID.
+
+These keys are **not** stored in the code. They must be stored as **Repository Secrets** in your GitHub project settings. The GitHub Actions workflow securely injects these secrets during the build process.
+
+## Deployment & CI/CD Workflow
+
+The site is deployed automatically to GitHub Pages via the workflow defined in `.github/workflows/deploy.yml`. This process is broken down into several key stages:
+
+### 1. Workflow Triggers (`on`)
+The deployment process is automatically triggered by two events:
+*   `push: branches: [ main ]`: Any time new code is pushed to the `main` branch.
+*   `workflow_dispatch`: Allows for manual triggering of the workflow from the GitHub Actions tab.
+
+### 2. Job Configuration (`jobs`)
+The workflow runs a single job called `build-and-deploy` on a virtual machine specified by `runs-on: ubuntu-latest`.
+
+### 3. Step-by-Step Execution (`steps`)
+The job executes the following steps in sequence:
+
+*   **`name: Checkout`**
+    *   **Action:** `uses: actions/checkout@v4`
+    *   **Purpose:** This step securely checks out the repository's code onto the virtual machine, so the subsequent steps have access to the files.
+
+*   **`name: Set up Node.js`**
+    *   **Action:** `uses: actions/setup-node@v4`
+    *   **Purpose:** Installs the specified version of Node.js (version 18) on the virtual machine, which is required to run the build commands.
+
+*   **`name: Install dependencies`**
+    *   **Action:** `run: npm install`
+    *   **Purpose:** Reads the `package.json` and `package-lock.json` files and downloads all the necessary libraries and tools (React, Vite, Tailwind, etc.) required to build the project.
+
+*   **`name: Build`**
+    *   **Action:** `run: npm run build`
+    *   **Purpose:** Executes the `build` script defined in `package.json` (`tsc && vite build`). This command first runs the TypeScript compiler (`tsc`) to check for type errors and then uses Vite (`vite build`) to bundle all the code into highly optimized, static HTML, CSS, and JavaScript files.
+    *   **`env:` Block:** This is the critical security step. It maps the GitHub Repository Secrets (e.g., `secrets.VITE_FIREBASE_API_KEY`) to environment variables that are available *only* during the build process. Vite is configured to find variables prefixed with `VITE_` and embed them securely into the final built files.
+
+*   **`name: Deploy`**
+    *   **Action:** `uses: peaceiris/actions-gh-pages@v4`
+    *   **Purpose:** This specialized action handles the deployment to GitHub Pages. It takes the output of the `Build` step (located in the `./dist` directory), commits it to a special branch named `gh-pages`, and pushes it to the repository. GitHub Pages is configured to serve the live website directly from this `gh-pages` branch.
