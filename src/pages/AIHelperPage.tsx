@@ -193,16 +193,16 @@ const ChatBubble = ({ message }: { message: Message }) => {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlContent;
         
-        // Render LaTeX
         tempDiv.querySelectorAll('p, li, span, div').forEach(el => {
             Array.from(el.childNodes).forEach(child => {
                 if (child.nodeType === 3) { // Text node
                     const text = child.textContent || '';
                     if (text.includes('$')) {
                         const span = document.createElement('span');
-                        span.innerHTML = text.replace(/\$\$([\s\S]*?)\$\$/g, (match, p1) => {
+                        // FIX: Removed unused 'match' variable
+                        span.innerHTML = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, p1) => {
                             return katex.renderToString(p1, { displayMode: true, throwOnError: false });
-                        }).replace(/\$([\s\S]*?)\$/g, (match, p1) => {
+                        }).replace(/\$([\s\S]*?)\$/g, (_, p1) => {
                             return katex.renderToString(p1, { displayMode: false, throwOnError: false });
                         });
                         el.replaceChild(span, child);
@@ -211,7 +211,6 @@ const ChatBubble = ({ message }: { message: Message }) => {
             });
         });
 
-        // Style code blocks
         tempDiv.querySelectorAll('pre').forEach(pre => {
             pre.className = 'bg-dark-bg p-4 rounded-lg overflow-x-auto my-2 border border-gray-700';
         });
