@@ -1,8 +1,8 @@
 import AnimatedStat from '../components/AnimatedStat';
 import Reveal from '../components/Reveal';
-import VolunteerCarousel from '../components/VolunteerCarousel'; // Import the new component
+import VolunteerCarousel from '../components/VolunteerCarousel';
+import { Link } from 'react-router-dom'; // Import Link for the new button
 
-// Define the data for the carousel
 const volunteerData = [
     { name: 'John Doe', award: 'Gold', quote: 'Leading the charge in peer-to-peer mentorship at Prosper High.', icon: 'fa-award text-yellow-400' },
     { name: 'Jane Smith', award: 'Silver', quote: 'Instrumental in launching our Middle School Mentorship program.', icon: 'fa-award text-gray-300' },
@@ -19,16 +19,24 @@ const HomePage = () => {
                 <Reveal className="container mx-auto px-6 relative z-10">
                     <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-primary mb-4">Empowering Students, Together.</h1>
                     <p className="text-lg md:text-xl max-w-3xl mx-auto text-dark-text mb-8">A student-led initiative dedicated to providing free, accessible, and high-quality tutoring for all.</p>
-                    <a href="#/get-involved" className="cta-button bg-primary text-dark-bg font-semibold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors">Get Involved</a>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <Link to="/get-involved" className="cta-button bg-primary text-dark-bg font-semibold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors w-full sm:w-auto">Get Involved</Link>
+                        {/* --- THIS IS THE NEW BUTTON --- */}
+                        <Link to="/ai-helper" className="cta-button bg-dark-card text-secondary-light font-semibold px-8 py-3 rounded-lg border-2 border-secondary hover:bg-secondary hover:text-dark-bg transition-colors w-full sm:w-auto">
+                            Empower your study with AI
+                        </Link>
+                        {/* ----------------------------- */}
+                    </div>
                 </Reveal>
             </section>
 
+            {/* ... rest of the HomePage component remains the same ... */}
             <section id="about-summary" className="py-24 bg-dark-card alternating-layout">
                 <Reveal className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
                     <div className="alternating-layout-content">
                         <h2 className="text-4xl font-bold text-dark-heading mb-4">A Movement by Students, for Students.</h2>
                         <p className="mb-6 text-dark-text">TutorDeck began with a simple idea: to make quality educational support accessible to everyone by empowering students to teach and lead. We are a growing nonprofit initiative building a global community of learners and mentors.</p>
-                        <a href="#/about" className="font-semibold text-primary hover:text-primary-dark transition-colors">Discover Our Story <i className="fas fa-arrow-right ml-2"></i></a>
+                        <Link to="/about" className="font-semibold text-primary hover:text-primary-dark transition-colors">Discover Our Story <i className="fas fa-arrow-right ml-2"></i></Link>
                     </div>
                     <div><img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop" alt="Students collaborating" className="rounded-lg shadow-2xl"/></div>
                 </Reveal>
@@ -55,9 +63,7 @@ const HomePage = () => {
                 </Reveal>
             </section>
 
-            {/* This is the new, restored carousel section */}
             <VolunteerCarousel volunteers={volunteerData} />
-
         </main>
     );
 };
