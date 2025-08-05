@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Papa from 'papaparse';
 import Reveal from '../components/Reveal';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface VolunteerActivity {
     Timestamp: string;
@@ -18,6 +20,7 @@ const DashboardPage = () => {
     const [activities, setActivities] = useState<VolunteerActivity[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
     useEffect(() => {
         if (!user?.email) return;
@@ -41,7 +44,7 @@ const DashboardPage = () => {
                         );
                         setActivities(userActivities);
                     },
-                    error: (err: Error) => { // <-- THIS IS THE FIX
+                    error: (err: Error) => {
                         throw new Error(`Parsing error: ${err.message}`);
                     }
                 });
@@ -63,6 +66,63 @@ const DashboardPage = () => {
     }, 0);
 
     const totalSessions = activities.length;
+
+    const handleGeneratePDF = () => {
+        setIsGeneratingPDF(true);
+        
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+
+        // 1. Add Header
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(22);
+        pdf.text('Your TutorDeck Transcript', pdfWidth / 2, 20, { align: 'center' });
+
+        // 2. Add User Info
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Volunteer: ${user?.displayName || 'N/A'}`, 15, 35);
+        pdf.text(`Email: ${user?.email || 'N/A'}`, 15, 42);
+
+        // 3. Add Summary
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Summary of Contributions', 15, 55);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Total Hours Volunteered: ${totalHours.toFixed(1)}`, 15, 62);
+        pdf.text(`Total Sessions Completed: ${totalSessions}`, 15, 69);
+
+        // 4. Prepare Table Data
+        const tableHead = [['Date', 'Activity', 'Hours']];
+        const tableBody = activities.map(act => [
+            new Date(act.Timestamp).toLocaleDateString(),
+            act['What type of volunteering did you accomplish?'],
+            parseFloat(act['How many hours did you tutor your peer/mentor for?']).toFixed(1)
+        ]);
+
+        // 5. Add Table using autoTable
+        autoTable(pdf, {
+            head: tableHead,
+            body: tableBody,
+            startY: 75, // Position table below the summary
+            theme: 'grid', // Use a standard grid theme
+            headStyles: {
+                fillColor: [22, 163, 74], // A green color for the header
+                textColor: [255, 255, 255] // White text
+            },
+            styles: {
+                font: 'helvetica',
+                fontSize: 10,
+                cellPadding: 2,
+            },
+            columnStyles: {
+                2: { halign: 'right' } // Align the 'Hours' column to the right
+            }
+        });
+
+        // 6. Save the PDF
+        pdf.save('TutorDeck-Transcript.pdf');
+        setIsGeneratingPDF(false);
+    };
 
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center bg-dark-bg"><p className="text-primary text-xl">Loading your dashboard...</p></div>;
@@ -94,7 +154,17 @@ const DashboardPage = () => {
             </Reveal>
 
             <Reveal as="section" id="transcript">
-                <h2 className="text-3xl font-bold text-dark-heading mb-8 text-center">Volunteer Transcript</h2>
+                <div className="flex justify-between items-center max-w-4xl mx-auto mb-8">
+                    <h2 className="text-3xl font-bold text-dark-heading">Volunteer Transcript</h2>
+                    <button
+                        onClick={handleGeneratePDF}
+                        disabled={isGeneratingPDF || activities.length === 0}
+                        className="bg-secondary text-white font-semibold px-5 py-2 rounded-lg hover:bg-secondary-dark transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                        <i className="fas fa-download"></i>
+                        {isGeneratingPDF ? 'Generating...' : 'Download PDF'}
+                    </button>
+                </div>
                 <div className="bg-dark-card rounded-lg shadow-lg border border-gray-700 max-w-4xl mx-auto overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
@@ -108,7 +178,7 @@ const DashboardPage = () => {
                             <tbody>
                                 {activities.length > 0 ? (
                                     activities.map((activity, index) => (
-                                        <tr key={index} className="border-t border-gray-700 hover:bg-gray-800/50">
+                                        <tr key={index} className="border-t border-gray-700">
                                             <td className="p-4 text-dark-text whitespace-nowrap">{new Date(activity.Timestamp).toLocaleDateString()}</td>
                                             <td className="p-4 text-dark-text">{activity['What type of volunteering did you accomplish?']}</td>
                                             <td className="p-4 text-dark-heading font-bold text-right">{parseFloat(activity['How many hours did you tutor your peer/mentor for?']).toFixed(1)}</td>
