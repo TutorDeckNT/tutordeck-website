@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -6,7 +5,6 @@ const ProtectedRoute = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    // You can add a loading spinner here
     return <div className="h-screen w-full flex items-center justify-center text-primary">Loading...</div>;
   }
 
