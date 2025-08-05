@@ -27,8 +27,6 @@ interface UploadedFile {
     previewUrl: string | null;
 }
 
-// This tells TypeScript that the 'katex' object will exist on the global 'window' object
-// because we loaded it from the CDN.
 declare global {
     interface Window {
         katex: any;
@@ -48,11 +46,9 @@ const AIHelperPage = () => {
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load chats from local storage on initial render
   useEffect(() => {
     const savedChats = localStorage.getItem('aiChatHistories');
     const loadedChats = savedChats ? JSON.parse(savedChats) : {};
-    
     if (Object.keys(loadedChats).length === 0) {
       createNewChat(loadedChats);
     } else {
@@ -62,14 +58,12 @@ const AIHelperPage = () => {
     }
   }, []);
 
-  // Save chats whenever they change
   useEffect(() => {
     if (Object.keys(chatHistories).length > 0) {
       localStorage.setItem('aiChatHistories', JSON.stringify(chatHistories));
     }
   }, [chatHistories]);
 
-  // Auto-scroll chat box
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
@@ -78,12 +72,16 @@ const AIHelperPage = () => {
 
   const handleSendMessage = async () => {
     const hasText = userInput.trim();
-    const hasFile = uploadedFile.data;
+    const hasFile = uploadedFile.data !== null;
     if ((!hasText && !hasFile) || isThinking || !currentChatId) return;
 
     const userParts: Part[] = [];
-    if (hasFile) userParts.push(uploadedFile.data);
-    if (hasText) userParts.push({ text: userInput });
+    if (hasFile && uploadedFile.data) {
+        userParts.push(uploadedFile.data);
+    }
+    if (hasText) {
+        userParts.push({ text: userInput });
+    }
 
     const userMessage: Message = { role: 'user', parts: userParts };
     const updatedMessages = [...chatHistories[currentChatId].messages, userMessage];
@@ -107,7 +105,11 @@ const AIHelperPage = () => {
         return;
     }
 
-    const model = isAnswersOnlyMode ? 'gemini-1.5-flash-latest' : 'gemini-1.5-flash-latest';
+    // --- THIS IS THE FIX ---
+    const model = isAnswersOnlyMode ? 'gemini-2.5-flash-lite' : 'gemini-2.5-flash';
+    const modelDisplayName = isAnswersOnlyMode ? '2.5 Flash-Lite' : '2.5 Flash';
+    // -----------------------
+
     const systemInstruction = {
         parts: [{ text: isAnswersOnlyMode ? 
             `You are a high-speed, direct-answer engine. Your ONLY function is to provide the final, concise answer to the user's query. You MUST follow these rules without deviation:
@@ -142,7 +144,7 @@ const AIHelperPage = () => {
             throw new Error(`API returned no candidates. Reason: ${data.promptFeedback?.blockReason || 'Unknown'}`);
         }
         const aiResponse = data.candidates[0].content;
-        const aiMessage: Message = { ...aiResponse, modelName: isAnswersOnlyMode ? '1.5 Flash-Lite' : '1.5 Flash' };
+        const aiMessage: Message = { ...aiResponse, modelName: modelDisplayName };
 
         setChatHistories(prev => ({ ...prev, [currentChatId]: { ...prev[currentChatId], messages: [...updatedMessages, aiMessage] } }));
 
@@ -295,7 +297,7 @@ const ChatBubble = ({ message }: { message: Message }) => {
                         if (text.includes('$')) {
                             const span = document.createElement('span');
                             span.innerHTML = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, p1) => window.katex.renderToString(p1, { displayMode: true, throwOnError: false }))
-                                               .replace(/\$([\s\S]*?)\$/g, (_, p1) => window.katex.renderToString(p1, { displayMode: false, throwOnError: false }));
+                                               .replace(/\$([\s\S]*?)\$\$/g, (_, p1) => window.katex.renderToString(p1, { displayMode: false, throwOnError: false }));
                             el.replaceChild(span, child);
                         }
                     }
