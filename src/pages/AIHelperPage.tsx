@@ -27,6 +27,14 @@ interface UploadedFile {
     previewUrl: string | null;
 }
 
+// This tells TypeScript that the 'katex' object will exist on the global 'window' object
+// because we loaded it from the CDN.
+declare global {
+    interface Window {
+        katex: any;
+    }
+}
+
 // --- Main Component ---
 const AIHelperPage = () => {
   const [chatHistories, setChatHistories] = useState<ChatHistories>({});
@@ -269,45 +277,35 @@ const AIHelperPage = () => {
   );
 };
 
-// --- ChatBubble Component (Optimized with Dynamic Imports) ---
+// --- ChatBubble Component (Simplified for CDN) ---
 const ChatBubble = ({ message }: { message: Message }) => {
     const contentRef = useRef<HTMLDivElement>(null);
     const isUser = message.role === 'user';
-    const content = message.parts.map(p => {
-        if (p.text) return p.text;
-        if (p.inlineData) return `\n\n*Attached Image*`;
-        return '';
-    }).join('');
+    const content = message.parts.map(p => p.text || (p.inlineData ? '\n\n*Attached Image*' : '')).join('');
 
     useEffect(() => {
-        const renderMath = async () => {
-            if (contentRef.current && content.includes('$')) {
-                const katex = (await import('katex')).default;
-                await import('katex/dist/katex.min.css');
-                
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = marked.parse(content) as string;
+        if (contentRef.current && content.includes('$') && window.katex) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = marked.parse(content) as string;
 
-                tempDiv.querySelectorAll('p, li, span, div').forEach(el => {
-                    Array.from(el.childNodes).forEach(child => {
-                        if (child.nodeType === 3) {
-                            const text = child.textContent || '';
-                            if (text.includes('$')) {
-                                const span = document.createElement('span');
-                                span.innerHTML = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, p1) => katex.renderToString(p1, { displayMode: true, throwOnError: false }))
-                                                   .replace(/\$([\s\S]*?)\$/g, (_, p1) => katex.renderToString(p1, { displayMode: false, throwOnError: false }));
-                                el.replaceChild(span, child);
-                            }
+            tempDiv.querySelectorAll('p, li, span, div').forEach(el => {
+                Array.from(el.childNodes).forEach(child => {
+                    if (child.nodeType === 3) { // Text node
+                        const text = child.textContent || '';
+                        if (text.includes('$')) {
+                            const span = document.createElement('span');
+                            span.innerHTML = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, p1) => window.katex.renderToString(p1, { displayMode: true, throwOnError: false }))
+                                               .replace(/\$([\s\S]*?)\$/g, (_, p1) => window.katex.renderToString(p1, { displayMode: false, throwOnError: false }));
+                            el.replaceChild(span, child);
                         }
-                    });
+                    }
                 });
+            });
 
-                if (contentRef.current) {
-                    contentRef.current.innerHTML = tempDiv.innerHTML;
-                }
+            if (contentRef.current) {
+                contentRef.current.innerHTML = tempDiv.innerHTML;
             }
-        };
-        renderMath();
+        }
     }, [content]);
 
     const initialHtml = marked.parse(content) as string;
