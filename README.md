@@ -70,7 +70,8 @@ The codebase is organized in a standard Vite + React + TypeScript structure.
 ├── index.html              # The HTML shell of the application.
 ├── package.json            # Project dependencies and scripts.
 ├── tailwind.config.js      # Tailwind CSS configuration.
-└── tsconfig.json           # TypeScript compiler configuration.```
+└── tsconfig.json           # TypeScript compiler configuration.
+```
 
 ## Key Architectural Decisions
 
