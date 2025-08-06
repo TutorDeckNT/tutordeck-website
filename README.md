@@ -36,7 +36,7 @@ The website is automatically built and deployed to GitHub Pages.
 ## Project Structure
 
 The codebase is organized in a standard Vite + React + TypeScript structure.
-
+```
 /
 ├── .github/
 │   └── workflows/
