@@ -52,7 +52,7 @@ const Footer = () => (
                     </div>
                 </div>
             </div>
-            <div className="text-center text-xs text-gray-500 border-t border-gray-700 pt-6">&copy; 2024 TutorDeck. All Rights Reserved.</div>
+            <div className="text-center text-xs text-gray-500 border-t border-gray-700 pt-6">&copy; 2025 TutorDeck. All Rights Reserved.</div>
         </div>
     </footer>
 );
