@@ -37,7 +37,6 @@ The website is automatically built and deployed to GitHub Pages.
 
 The codebase is organized in a standard Vite + React + TypeScript structure.
 
-```
 /
 ├── .github/
 │   └── workflows/
@@ -45,9 +44,24 @@ The codebase is organized in a standard Vite + React + TypeScript structure.
 ├── public/                 # Static assets (images, favicons).
 ├── src/
 │   ├── components/         # Reusable UI components used across multiple pages.
-│   ├── contexts/           # React Context providers (e.g., AuthContext).
-│   ├── hooks/              # Custom React hooks (e.g., useClickOutside).
+│   │   ├── AnimatedStat.tsx
+│   │   ├── Footer.tsx
+│   │   ├── Header.tsx
+│   │   ├── ProtectedRoute.tsx
+│   │   ├── Reveal.tsx
+│   │   └── VolunteerCarousel.tsx
+│   ├── contexts/
+│   │   └── AuthContext.tsx   # Global state provider for authentication.
+│   ├── hooks/
+│   │   └── useClickOutside.ts# Custom hook for UI interaction (closing dropdowns).
 │   ├── pages/              # Top-level components, each representing a full page.
+│   │   ├── AboutPage.tsx
+│   │   ├── AIHelperPage.tsx
+│   │   ├── ChaptersPage.tsx
+│   │   ├── DashboardPage.tsx
+│   │   ├── GetInvolvedPage.tsx
+│   │   ├── HomePage.tsx
+│   │   └── LoginPage.tsx
 │   ├── App.tsx             # Main component that defines all application routes.
 │   ├── firebaseConfig.ts   # Initializes and configures the Firebase connection.
 │   ├── main.tsx            # The entry point of the application.
@@ -56,8 +70,7 @@ The codebase is organized in a standard Vite + React + TypeScript structure.
 ├── index.html              # The HTML shell of the application.
 ├── package.json            # Project dependencies and scripts.
 ├── tailwind.config.js      # Tailwind CSS configuration.
-└── tsconfig.json           # TypeScript compiler configuration.
-```
+└── tsconfig.json           # TypeScript compiler configuration.```
 
 ## Key Architectural Decisions
 
