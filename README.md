@@ -1,12 +1,12 @@
 # TutorDeck Website: Technical Architecture & Component Guide
 
-This document provides a comprehensive technical breakdown of the TutorDeck web application. It is designed for developers and AI assistants to understand the project's structure, data flow, and component architecture.
+This document provides a comprehensive technical breakdown of the TutorDeck web application and its associated backend services. It is designed for developers and AI assistants to understand the project's structure, data flow, and architecture.
 
 ## Table of Contents
 1.  [Live Site](#live-site)
-2.  [Tech Stack](#tech-stack)
-3.  [Project Structure](#project-structure)
-4.  [Key Architectural Decisions](#key-architectural-decisions)
+2.  [High-Level Architecture](#high-level-architecture)
+3.  [Tech Stack](#tech-stack)
+4.  [Project Structure](#project-structure)
 5.  [Key Data Flows](#key-data-flows)
 6.  [How to Update Content](#how-to-update-content)
 7.  [Environment Variables & Security](#environment-variables--security)
@@ -14,28 +14,50 @@ This document provides a comprehensive technical breakdown of the TutorDeck web 
 
 ## Live Site
 
-The website is automatically built and deployed to GitHub Pages.
+The frontend website is automatically built and deployed to GitHub Pages.
 
 **URL:** [https://tutordecknt.github.io/tutordeck-website/](https://tutordecknt.github.io/tutordeck-website/)
 
+## High-Level Architecture
+
+TutorDeck operates on a modern, decoupled architecture consisting of two main parts:
+
+1.  **Frontend (This Repository):** A static Single-Page Application (SPA) built with React and Vite. It is responsible for all user interface elements and interactions. It is hosted for free on **GitHub Pages**.
+2.  **Backend (Separate Repository):** A lightweight Node.js API server. It is responsible for all secure logic, such as generating official documents and sending emails. It is hosted for free on **Render**.
+
+This separation ensures security (no secret keys are ever exposed to the user's browser) and scalability.
+
 ## Tech Stack
+
+### Frontend (tutordeck-website)
 
 | Technology | Role | Reasoning |
 | :--- | :--- | :--- |
 | **React** | UI Library | Enables building a complex, interactive UI with reusable components and efficient state management. |
-| **TypeScript** | Language | Adds static typing to JavaScript, preventing common bugs and improving code quality and maintainability. |
-| **Vite** | Build Tool | Provides an extremely fast development experience and bundles the code into highly optimized, production-ready static files. |
-| **Tailwind CSS** | CSS Framework | A utility-first framework that allows for rapid, consistent styling directly in the component files without writing custom CSS. |
-| **React Router** | Routing | Manages client-side navigation between different pages (`/`, `/about`, `/dashboard`) in this single-page application (SPA). |
-| **Firebase Auth**| Authentication | Provides a secure and easy-to-implement Google Sign-In service for user authentication. |
-| **Papa Parse** | CSV Parser | A reliable, pure-JavaScript library to parse volunteer data from a Google Sheet. |
-| **GitHub Actions** | CI/CD | Automates the entire build and deployment process, ensuring that any push to the `main` branch results in a fresh, optimized build on GitHub Pages. |
-| **Gemini API** | AI Model | Powers the "AI Study Helper" page, providing chat and image analysis capabilities. |
-| **Marked & KaTeX** | Content Rendering | Used in the AI Helper to parse Markdown for text formatting and render LaTeX for mathematical equations. |
+| **TypeScript** | Language | Adds static typing to JavaScript, preventing common bugs and improving code quality. |
+| **Vite** | Build Tool | Provides an extremely fast development experience and bundles the code into highly optimized static files for production. |
+| **Tailwind CSS** | CSS Framework | A utility-first framework that allows for rapid, consistent styling directly within component files. |
+| **React Router** | Routing | Manages client-side navigation between pages (`/`, `/about`, `/dashboard`) in the SPA using `HashRouter` for GitHub Pages compatibility. |
+| **Firebase Auth**| Authentication | Provides a secure and easy-to-implement Google Sign-In service for user authentication on the client side. |
+| **Papa Parse** | CSV Parser | A reliable, pure-JavaScript library to parse volunteer data from a public Google Sheet for display on the dashboard. |
+| **GitHub Actions** | CI/CD | Automates the build and deployment process to GitHub Pages. |
+
+### Backend (tutordeck-backend)
+
+| Technology | Role | Reasoning |
+| :--- | :--- | :--- |
+| **Node.js** | Runtime | A fast and efficient JavaScript runtime for building the server-side API. |
+| **Express.js** | API Framework | A minimal and flexible framework for defining the API endpoints (`/generate-transcript`, `/verify`). |
+| **Firebase Admin SDK** | Backend Auth | Allows the server to securely verify user identity and interact with Firestore on behalf of the user. |
+| **Cloud Firestore** | Database | A NoSQL database used to store metadata ("receipts") for each generated transcript, enabling public verification. |
+| **PDFKit** | PDF Generation | A mature and reliable pure-JavaScript library for creating complex PDF documents on the server. |
+| **Resend** | Email Service | A transactional email API used to send the generated PDF transcripts directly to users. |
+| **Render** | Hosting | A cloud platform that provides a free tier for hosting the Node.js web service. |
 
 ## Project Structure
 
-The codebase is organized in a standard Vite + React + TypeScript structure.
+This repository (`tutordeck-website`) contains the frontend application.
+
 ```
 /
 ├── .github/
@@ -43,124 +65,101 @@ The codebase is organized in a standard Vite + React + TypeScript structure.
 │       └── deploy.yml      # Defines the automated build & deployment process.
 ├── public/                 # Static assets (images, favicons).
 ├── src/
-│   ├── components/         # Reusable UI components used across multiple pages.
-│   │   ├── AnimatedStat.tsx
-│   │   ├── Footer.tsx
-│   │   ├── Header.tsx
-│   │   ├── ProtectedRoute.tsx
-│   │   ├── Reveal.tsx
-│   │   └── VolunteerCarousel.tsx
+│   ├── components/         # Reusable UI components (Header, Footer, Modals, etc.).
 │   ├── contexts/
 │   │   └── AuthContext.tsx   # Global state provider for authentication.
 │   ├── hooks/
-│   │   └── useClickOutside.ts# Custom hook for UI interaction (closing dropdowns).
+│   │   └── useClickOutside.ts# Custom hook for UI interaction.
 │   ├── pages/              # Top-level components, each representing a full page.
-│   │   ├── AboutPage.tsx
-│   │   ├── AIHelperPage.tsx
-│   │   ├── ChaptersPage.tsx
-│   │   ├── DashboardPage.tsx
-│   │   ├── GetInvolvedPage.tsx
-│   │   ├── HomePage.tsx
-│   │   └── LoginPage.tsx
+│   │   ├── DashboardPage.tsx # User's private dashboard.
+│   │   ├── VerificationPage.tsx# Public page to verify a transcript's authenticity.
+│   │   └── ... (other pages)
 │   ├── App.tsx             # Main component that defines all application routes.
-│   ├── firebaseConfig.ts   # Initializes and configures the Firebase connection.
+│   ├── firebaseConfig.ts   # Initializes the client-side Firebase connection.
 │   ├── main.tsx            # The entry point of the application.
 │   └── index.css           # Global styles and Tailwind directives.
 ├── .gitignore
 ├── index.html              # The HTML shell of the application.
-├── package.json            # Project dependencies and scripts.
-├── tailwind.config.js      # Tailwind CSS configuration.
-└── tsconfig.json           # TypeScript compiler configuration.
+├── package.json            # Frontend dependencies and scripts.
+└── ... (config files)
 ```
-
-## Key Architectural Decisions
-
-1.  **Component-Based Architecture:** The UI is broken down into small, reusable components. This makes the code easier to manage, test, and update.
-
-2.  **Centralized Authentication State:** A React Context (`src/contexts/AuthContext.tsx`) provides the user's authentication status throughout the application. This avoids prop-drilling and allows any component to easily access the current user's state.
-
-3.  **Protected Routes:** The user dashboard is a protected route. A wrapper component (`src/components/ProtectedRoute.tsx`) checks for an active user session before rendering the page, redirecting to the login page if the user is not authenticated.
-
-4.  **Data Decoupling:** The volunteer data is fetched from a public Google Sheet CSV. This is a powerful pattern that allows non-developers to update the data source (by adding rows to the Google Sheet) without needing to touch the codebase. The application simply re-fetches the data on the next visit.
 
 ## Key Data Flows
 
-### Authentication Flow
+### Authentication Flow (Unchanged)
 
-1.  **User Action:** Clicks "Sign In" button on `Header` -> Navigates to `LoginPage`.
-2.  **Login:** Clicks "Sign in with Google" button on `LoginPage`.
-3.  **Firebase:** `AuthContext`'s `signInWithGoogle` function is called, which opens the Firebase Google sign-in popup.
-4.  **State Update:** Upon successful login, Firebase's `onAuthStateChanged` listener in `AuthContext` fires. The `user` state in the context is updated with the user's information.
-5.  **Re-render:** All components subscribed to `AuthContext` (like `Header` and `ProtectedRoute`) re-render. The `Header` now shows the profile picture, and the user can access the dashboard.
+1.  **User Action:** Clicks "Sign In" -> Navigates to `LoginPage`.
+2.  **Firebase:** `AuthContext`'s `signInWithGoogle` function is called, opening the Google sign-in popup.
+3.  **State Update:** Upon success, Firebase's `onAuthStateChanged` listener in `AuthContext` updates the global `user` state.
+4.  **Re-render:** Components like `Header` and `ProtectedRoute` re-render to reflect the logged-in state.
 
-### Dashboard Data Flow
+### Verifiable Transcript Generation Flow (New)
 
-1.  **Navigation:** A logged-in user navigates to the `/dashboard` URL.
-2.  **Guard:** `ProtectedRoute` checks `AuthContext`, sees a valid user, and allows `DashboardPage` to render.
-3.  **Fetch:** `DashboardPage`'s `useEffect` hook runs. It calls `fetch()` on the Google Sheet CSV URL.
-4.  **Parse:** The response text is passed to `Papa.parse()`.
-5.  **Filter:** The parsed data array is filtered to keep only the rows where the "Email Address" column matches the `user.email` from `AuthContext`.
-6.  **State Update:** The filtered array is stored in the `activities` state using `useState`.
-7.  **Render:** The component re-renders, using the `activities` state to calculate and display the total hours and the detailed transcript table.
+1.  **User Action:** A logged-in user on `DashboardPage` clicks "Generate & Email Transcript" and enters a destination email in the `EmailModal`.
+2.  **Frontend Request:** The frontend gets the user's Firebase Auth ID Token (a temporary password) and sends it along with the destination email to the backend server's `/generate-transcript` endpoint.
+3.  **Backend Verification:** The backend server receives the request. It uses the Firebase Admin SDK to verify the ID Token, confirming the user's identity securely.
+4.  **Backend Logic:**
+    *   Checks Firestore to ensure the user hasn't generated a transcript in the last 24 hours.
+    *   Fetches the user's volunteer data from the public Google Sheet CSV.
+    *   Generates a unique ID for the new transcript.
+    *   Creates a "receipt" of the transcript (containing user info, date, and all volunteer activities) and saves it to the **Cloud Firestore** `transcripts` collection.
+    *   Uses **PDFKit** to generate a PDF document in memory from this data. The PDF includes a QR code that links to the public verification URL (`.../#/verify/{uniqueId}`).
+5.  **Email Delivery:** The server uses the **Resend** API to send an email to the user's chosen address, with the newly generated PDF attached directly.
+6.  **Frontend Response:** The server sends a success message back to the frontend, which is displayed to the user.
+
+### Public Verification Flow (New)
+
+1.  **User Action:** A third party (e.g., a college admissions officer) scans the QR code in the PDF or clicks a link, navigating to `.../#/verify/{transcriptId}`.
+2.  **Frontend Request:** The `VerificationPage` component loads, extracts the `transcriptId` from the URL, and sends a request to the backend server's `/verify/{transcriptId}` endpoint.
+3.  **Backend Logic:** The server queries Firestore for a document with the matching `uniqueId`.
+4.  **Backend Response:**
+    *   If found, it returns the transcript's metadata (Volunteer Name, Date Issued).
+    *   If not found, it returns a 404 error.
+5.  **Frontend Display:** The `VerificationPage` displays a "Verified" or "Failed" message. If verified, it also presents a "Download Official Document" button, which links to the backend's `/download-transcript/{transcriptId}` endpoint, allowing the third party to download a freshly generated, identical copy of the official document.
 
 ## How to Update Content
 
-### To Add a New Chapter or Volunteer:
-*   Edit the data arrays in `src/pages/ChaptersPage.tsx` or `src/pages/HomePage.tsx`.
+### To Add a New Chapter or Volunteer Award:
+*   Edit the data arrays directly in the relevant component files (e.g., `src/pages/ChaptersPage.tsx`).
 *   Commit the change. The website will update automatically.
 
 ### To Add Volunteer Hours for a User:
-*   Simply add a new row to the Google Sheet that is linked in `src/pages/DashboardPage.tsx`.
-*   Ensure the email in the "Email Address" column matches the user's Google account email.
-*   The user's dashboard will automatically reflect the new data the next time they visit.
+*   **No code changes are needed.**
+*   Simply add a new row to the public **Google Sheet**.
+*   Ensure the email in the "Email Address" column exactly matches the user's Google account email.
+*   The user's dashboard and any future transcripts will automatically include the new data.
 
 ## Environment Variables & Security
 
-The application requires several secret keys to function, which are managed via environment variables.
+This project uses two sets of environment variables for its two parts.
 
-**Required Variables:**
-*   `VITE_GEMINI_API_KEY`: For the AI Helper page.
-*   `VITE_FIREBASE_API_KEY`: Your Firebase project's API Key.
+### Frontend Secrets (`tutordeck-website` Repository)
+
+These keys are stored as **Repository Secrets** in the `tutordeck-website` GitHub repository settings.
+
+*   `VITE_FIREBASE_API_KEY`: Your Firebase project's public API Key.
 *   `VITE_FIREBASE_AUTH_DOMAIN`: Your Firebase project's Auth Domain.
 *   `VITE_FIREBASE_PROJECT_ID`: Your Firebase project's ID.
 *   `VITE_FIREBASE_STORAGE_BUCKET`: Your Firebase project's Storage Bucket.
 *   `VITE_FIREBASE_MESSAGING_SENDER_ID`: Your Firebase project's Messaging Sender ID.
 *   `VITE_FIREBASE_APP_ID`: Your Firebase project's App ID.
+*   `VITE_RENDER_API_URL`: The public URL of your deployed backend service on Render.
 
-These keys are **not** stored in the code. They must be stored as **Repository Secrets** in your GitHub project settings. The GitHub Actions workflow securely injects these secrets during the build process.
+### Backend Secrets (`tutordeck-backend` on Render)
+
+These keys are stored as **Environment Variables** in the Render service settings. **They are never stored in code.**
+
+*   `GOOGLE_APPLICATION_CREDENTIALS_BASE64`: The Base64-encoded version of your Firebase service account's private key JSON file.
+*   `RESEND_API_KEY`: Your secret API key from your Resend account.
 
 ## Deployment & CI/CD Workflow
 
-The site is deployed automatically to GitHub Pages via the workflow defined in `.github/workflows/deploy.yml`. This process is broken down into several key stages:
+The frontend is deployed automatically to GitHub Pages via the workflow defined in `.github/workflows/deploy.yml`.
 
-### 1. Workflow Triggers (`on`)
-The deployment process is automatically triggered by two events:
-*   `push: branches: [ main ]`: Any time new code is pushed to the `main` branch.
-*   `workflow_dispatch`: Allows for manual triggering of the workflow from the GitHub Actions tab.
-
-### 2. Job Configuration (`jobs`)
-The workflow runs a single job called `build-and-deploy` on a virtual machine specified by `runs-on: ubuntu-latest`.
-
-### 3. Step-by-Step Execution (`steps`)
-The job executes the following steps in sequence:
-
-*   **`name: Checkout`**
-    *   **Action:** `uses: actions/checkout@v4`
-    *   **Purpose:** This step securely checks out the repository's code onto the virtual machine, so the subsequent steps have access to the files.
-
-*   **`name: Set up Node.js`**
-    *   **Action:** `uses: actions/setup-node@v4`
-    *   **Purpose:** Installs the specified version of Node.js (version 18) on the virtual machine, which is required to run the build commands.
-
-*   **`name: Install dependencies`**
-    *   **Action:** `run: npm install`
-    *   **Purpose:** Reads the `package.json` and `package-lock.json` files and downloads all the necessary libraries and tools (React, Vite, Tailwind, etc.) required to build the project.
-
-*   **`name: Build`**
-    *   **Action:** `run: npm run build`
-    *   **Purpose:** Executes the `build` script defined in `package.json` (`tsc && vite build`). This command first runs the TypeScript compiler (`tsc`) to check for type errors and then uses Vite (`vite build`) to bundle all the code into highly optimized, static HTML, CSS, and JavaScript files.
-    *   **`env:` Block:** This is the critical security step. It maps the GitHub Repository Secrets (e.g., `secrets.VITE_FIREBASE_API_KEY`) to environment variables that are available *only* during the build process. Vite is configured to find variables prefixed with `VITE_` and embed them securely into the final built files.
-
-*   **`name: Deploy`**
-    *   **Action:** `uses: peaceiris/actions-gh-pages@v4`
-    *   **Purpose:** This specialized action handles the deployment to GitHub Pages. It takes the output of the `Build` step (located in the `./dist` directory), commits it to a special branch named `gh-pages`, and pushes it to the repository. GitHub Pages is configured to serve the live website directly from this `gh-pages` branch.
+*   **Trigger:** The workflow runs on any push to the `main` branch.
+*   **Process:**
+    1.  **Checkout:** Checks out the repository code.
+    2.  **Setup Node.js:** Prepares the build environment.
+    3.  **Install Dependencies:** Runs `npm install`.
+    4.  **Build:** Runs `npm run build`. During this step, the GitHub Actions workflow securely injects the `VITE_` secrets into the build process.
+    5.  **Deploy:** Uses a specialized action to push the final static files from the `dist/` folder to the `gh-pages` branch, making the site live.
