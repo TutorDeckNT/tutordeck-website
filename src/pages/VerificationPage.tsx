@@ -10,19 +10,44 @@ const VerificationPage = () => {
     const [data, setData] = useState<TranscriptData | null>(null);
 
     useEffect(() => {
-        if (!transcriptId) { setStatus('invalid'); return; }
+        if (!transcriptId) {
+            setStatus('invalid');
+            return;
+        }
+
+        // --- CHANGE #1: Add a timeout controller for robustness ---
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15-second timeout
+
         const verify = async () => {
             try {
-                const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/verify/${transcriptId}`);
-                if (!response.ok) throw new Error('Verification failed');
+                const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/verify/${transcriptId}`, {
+                    signal: controller.signal // Link the timeout to the fetch request
+                });
+
+                // This is the key: if the server returns 404, it's not "ok"
+                if (!response.ok) {
+                    throw new Error('Verification failed: Document not found.');
+                }
+
                 const result: TranscriptData = await response.json();
                 setData(result);
                 setStatus('verified');
             } catch (error) {
+                console.error(error); // Log the actual error for debugging
                 setStatus('invalid');
+            } finally {
+                // --- CHANGE #2: Always clear the timeout ---
+                clearTimeout(timeoutId);
             }
         };
+
         verify();
+
+        // Cleanup function to cancel the timeout if the user navigates away
+        return () => {
+            clearTimeout(timeoutId);
+        };
     }, [transcriptId]);
 
     const downloadUrl = `${import.meta.env.VITE_RENDER_API_URL}/download-transcript/${transcriptId}`;
@@ -32,11 +57,14 @@ const VerificationPage = () => {
             <i className="fas fa-spinner fa-spin text-5xl text-secondary mb-6"></i>
             <h1 className="text-4xl font-extrabold">Verifying...</h1>
         </>;
+        
+        // --- CHANGE #3: Update the invalid/expired message ---
         if (status === 'invalid') return <>
-            <i className="fas fa-times-circle text-6xl text-red-500 mb-6"></i>
-            <h1 className="text-4xl font-extrabold">Verification Failed</h1>
-            <p className="mt-2">The transcript ID is invalid or could not be found.</p>
+            <i className="fas fa-exclamation-circle text-6xl text-yellow-400 mb-6"></i>
+            <h1 className="text-4xl font-extrabold">Document Not Found</h1>
+            <p className="mt-2 text-dark-text max-w-md mx-auto">This verification link may be invalid, or the document may have expired and been removed from our system.</p>
         </>;
+        
         return <>
             <i className="fas fa-check-circle text-6xl text-primary mb-6"></i>
             <h1 className="text-4xl font-extrabold">Transcript Verified</h1>
