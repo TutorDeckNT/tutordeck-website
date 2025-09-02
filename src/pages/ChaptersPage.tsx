@@ -8,8 +8,6 @@ const chapterData = [
         location: 'Prosper, TX', 
         advisor: 'Mr. Anderson', 
         lead: 'John Doe', 
-        // The path now points to the local image in the public folder.
-        // Remember to include the base path of your repository.
         img: '/Prosper_High_School.avif' 
     },
     // --------------------------
