@@ -21,7 +21,7 @@ const Header = () => {
         <header className="fixed top-0 left-0 right-0 z-30 bg-dark-bg/70 backdrop-blur-lg border-b border-gray-700/50">
             <div className="container mx-auto px-6 py-3 flex justify-between items-center">
                 <NavLink to="/" className="flex items-center space-x-3">
-                    <img src="/tutordeck-website/mascot.avif" alt="TutorDeck Mascot" className="h-10 w-10 rounded-full object-cover" />
+                    <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-10 w-10 rounded-full object-cover" />
                     <span className="text-2xl font-bold text-dark-heading">TutorDeck</span>
                 </NavLink>
                 <nav className="hidden md:flex items-center space-x-8">
