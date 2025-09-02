@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import Reveal from '../components/Reveal';
 
 const chapterData = [
-    // --- THIS IS THE CHANGE ---
     { 
         name: 'Prosper High School', 
         location: 'Prosper, TX', 
