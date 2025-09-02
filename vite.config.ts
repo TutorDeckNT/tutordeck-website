@@ -5,6 +5,6 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   // This 'base' property is critical for GitHub Pages deployment.
   // It must match your repository name.
-  base: '/tutordeck-website/', 
+  base: '/', 
   plugins: [react()],
 })
