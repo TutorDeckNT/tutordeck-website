@@ -10,7 +10,7 @@ const chapterData = [
         lead: 'John Doe', 
         // The path now points to the local image in the public folder.
         // Remember to include the base path of your repository.
-        img: '/tutordeck-website/Prosper_High_School.avif' 
+        img: '/Prosper_High_School.avif' 
     },
     // --------------------------
     { 
@@ -18,7 +18,7 @@ const chapterData = [
         location: 'Prosper, TX', 
         advisor: 'Ms. Davis', 
         lead: 'Jane Smith', 
-        img: '/tutordeck-website/richlandhs.avif' 
+        img: '/richlandhs.avif' 
     },
 ];
 
