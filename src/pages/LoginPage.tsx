@@ -26,7 +26,7 @@ const LoginPage = () => {
     <main className="min-h-screen flex items-center justify-center bg-dark-bg bg-dot-pattern">
       <Reveal className="container mx-auto px-6 text-center">
         <div className="bg-dark-card max-w-md mx-auto p-8 md:p-12 rounded-2xl shadow-2xl border border-gray-700">
-          <img src="/tutordeck-website/mascot.avif" alt="TutorDeck Mascot" className="h-24 w-24 rounded-full object-cover mx-auto mb-6" />
+          <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-24 w-24 rounded-full object-cover mx-auto mb-6" />
           <h1 className="text-4xl font-extrabold text-dark-heading mb-2">Welcome Back</h1>
           <p className="text-dark-text mb-8">Sign in to access your volunteer dashboard.</p>
           <button 
