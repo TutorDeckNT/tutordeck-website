@@ -35,6 +35,8 @@ const DashboardNavItem = ({ to, children }: { to: string; children: React.ReactN
     </NavLink>
 );
 
+// Helper component for the vertical divider
+const VerticalDivider = () => <div className="h-6 w-px bg-white/20" />;
 
 const Header = () => {
     const { user, logout } = useAuth();
@@ -55,12 +57,27 @@ const Header = () => {
             <div className="w-auto max-w-fit bg-gray-900/40 backdrop-blur-xl rounded-full border border-white/20 shadow-xl transition-all duration-300">
                 <div className="flex items-center justify-center gap-2 sm:gap-4 px-4 py-2">
                     {/* Logo */}
-                    <NavLink to="/" className="flex items-center space-x-2 flex-shrink-0 pr-2">
+                    <NavLink to="/" className="flex items-center space-x-2 flex-shrink-0">
                         <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-9 w-9 rounded-full object-cover border-2 border-white/30" />
                         <span className="text-xl font-bold text-white hidden sm:block">TutorDeck</span>
                     </NavLink>
 
-                    {/* Navigation */}
+                    <VerticalDivider />
+
+                    {/* Dashboard (if logged in) */}
+                    {user && (
+                        <>
+                            <DashboardNavItem to="/dashboard">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                                </svg>
+                                <span className="hidden sm:inline">Dashboard</span>
+                            </DashboardNavItem>
+                            <VerticalDivider />
+                        </>
+                    )}
+
+                    {/* Main Navigation */}
                     <nav className="flex items-center gap-1 sm:gap-2">
                         <NavItem to="/about">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
@@ -78,18 +95,13 @@ const Header = () => {
                             </svg>
                             <span className="hidden sm:inline">Get Involved</span>
                         </NavItem>
-                        {user && (
-                            <DashboardNavItem to="/dashboard">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
-                                </svg>
-                                <span className="hidden sm:inline">Dashboard</span>
-                            </DashboardNavItem>
-                        )}
                     </nav>
 
+                    {/* Divider before actions (for logged-out state) */}
+                    {!user && <VerticalDivider />}
+
                     {/* User Actions */}
-                    <div className="flex items-center pl-2">
+                    <div className="flex items-center">
                         {user ? (
                             <div className="relative" ref={dropdownRef}>
                                 <button type="button" onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex text-sm bg-gray-800 rounded-full ring-2 ring-white/30 focus:ring-primary-light transition-all" aria-expanded={isDropdownOpen}>
