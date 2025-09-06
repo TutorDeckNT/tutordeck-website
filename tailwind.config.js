@@ -17,6 +17,16 @@ export default {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
       },
+      // ADD THIS ANIMATION SECTION
+      animation: {
+        marquee: 'marquee 25s linear infinite',
+      },
+      keyframes: {
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-100%)' },
+        }
+      }
     },
   },
   plugins: [],
