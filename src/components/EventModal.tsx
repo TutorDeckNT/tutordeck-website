@@ -38,7 +38,7 @@ const EventModal = ({ isOpen, onClose }: EventModalProps) => {
           className={`bg-dark-card/70 backdrop-blur-xl w-full max-w-3xl rounded-2xl border border-white/20 flex flex-col transition-all duration-300 ease-out max-h-[80vh] overflow-y-auto ${show ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
         >
           <div className="w-full bg-gray-500/20 flex-shrink-0">
-            <img src="/invite.png" alt="TutorDeck Introductory Meeting Invitation" className="w-full h-auto object-cover" />
+            <img src="/invite.avif" alt="TutorDeck Introductory Meeting Invitation" className="w-full h-auto object-cover" />
           </div>
           <div className="p-8 text-left">
             <div className="flex flex-wrap gap-3 mb-6">
