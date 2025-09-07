@@ -5,16 +5,16 @@ const chapterData = [
     { 
         name: 'Prosper High School', 
         location: 'Prosper, TX', 
-        advisor: 'Mr. Anderson', 
-        lead: 'John Doe', 
+        advisor: 'Mr. Graham and Mrs. Ballard', 
+        lead: 'Manav A, Shaurya J, and Aakanksh R', 
         img: '/Prosper_High_School.avif' 
     },
     // --------------------------
     { 
         name: 'Richland High School', 
         location: 'Prosper, TX', 
-        advisor: 'Ms. Davis', 
-        lead: 'Jane Smith', 
+        advisor: 'Mrs. Bedell', 
+        lead: 'Alwin John SV', 
         img: '/richlandhs.avif' 
     },
 ];
