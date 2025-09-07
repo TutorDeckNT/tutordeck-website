@@ -6,10 +6,10 @@ import { Link } from 'react-router-dom';
 import EventModal from '../components/EventModal';
 
 const volunteerData = [
-  { name: 'John Doe', award: 'Gold', quote: 'Leading the charge in peer-to-peer mentorship at Prosper High.', icon: 'fa-award text-yellow-400' },
-  { name: 'Jane Smith', award: 'Silver', quote: 'Instrumental in launching our Middle School Mentorship program.', icon: 'fa-award text-gray-300' },
-  { name: 'Sam Wilson', award: 'Bronze', quote: 'A consistent and reliable tutor, always ready to help with STEM subjects.', icon: 'fa-award text-yellow-600' },
-  { name: 'Emily White', award: 'Rising Star', quote: 'Showed incredible initiative by co-founding the Richland High chapter.', icon: 'fa-star text-blue-400' },
+//  { name: 'John Doe', award: 'Gold', quote: 'Leading the charge in peer-to-peer mentorship at Prosper High.', icon: 'fa-award text-yellow-400' },
+//  { name: 'Jane Smith', award: 'Silver', quote: 'Instrumental in launching our Middle School Mentorship program.', icon: 'fa-award text-gray-300' },
+//  { name: 'Sam Wilson', award: 'Bronze', quote: 'A consistent and reliable tutor, always ready to help with STEM subjects.', icon: 'fa-award text-yellow-600' },
+//  { name: 'Emily White', award: 'Rising Star', quote: 'Showed incredible initiative by co-founding the Richland High chapter.', icon: 'fa-star text-blue-400' },
 ];
 
 const HomePage = () => {
