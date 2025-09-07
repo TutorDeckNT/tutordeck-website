@@ -73,18 +73,23 @@ const Header = () => {
                         md:max-w-none md:rounded-full md:border md:border-white/20 md:shadow-xl 
                         md:h-14
                         transition-[width] duration-300 ease-in-out
-                        ${user ? 'md:w-[880px]' : 'md:w-[780px]'}
+                        ${user ? 'md:w-[820px]' : 'md:w-[720px]'}
                     `}
                 >
                     {/* --- DESKTOP VIEW (The "Single Frame") --- */}
-                    <div className="hidden h-full md:flex items-center px-4">
+                    <div className="hidden h-full md:flex items-center justify-between px-4">
                         
-                        <div className="flex items-center gap-4 flex-shrink-0">
-                            <NavLink to="/" className="flex items-center space-x-2">
+                        {/* Left Zone */}
+                        <div className="flex items-center gap-4">
+                            <NavLink to="/" className="flex items-center space-x-2 flex-shrink-0">
                                 <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-9 w-9 rounded-full object-cover border-2 border-white/30" />
                                 <span className="text-xl font-bold text-white">TutorDeck</span>
                             </NavLink>
                             <VerticalDivider />
+                        </div>
+
+                        {/* Center Zone */}
+                        <nav className="flex items-center gap-2">
                             {user && (
                                 <>
                                     <DashboardNavItem to="/dashboard">
@@ -94,26 +99,22 @@ const Header = () => {
                                     <VerticalDivider />
                                 </>
                             )}
-                            <nav className="flex items-center gap-2">
-                                <NavItem to="/about">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
-                                    <span>About</span>
-                                </NavItem>
-                                <NavItem to="/chapters">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" /></svg>
-                                    <span>Chapters</span>
-                                </NavItem>
-                                <NavItem to="/get-involved">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" /></svg>
-                                    <span>Get Involved</span>
-                                </NavItem>
-                            </nav>
-                        </div>
+                            <NavItem to="/about">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
+                                <span>About</span>
+                            </NavItem>
+                            <NavItem to="/chapters">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" /></svg>
+                                <span>Chapters</span>
+                            </NavItem>
+                            <NavItem to="/get-involved">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" /></svg>
+                                <span>Get Involved</span>
+                            </NavItem>
+                        </nav>
 
-                        {/* This spacer div takes up all the remaining space */}
-                        <div className="flex-grow" />
-
-                        <div className="flex items-center gap-4 flex-shrink-0">
+                        {/* Right Zone */}
+                        <div className="flex items-center gap-4">
                             <VerticalDivider />
                             {user ? (
                                 <div className="relative" ref={dropdownRef}>
