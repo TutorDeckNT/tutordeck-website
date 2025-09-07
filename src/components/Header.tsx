@@ -73,22 +73,23 @@ const Header = () => {
                         md:max-w-none md:rounded-full md:border md:border-white/20 md:shadow-xl 
                         md:h-14
                         transition-[width] duration-300 ease-in-out
-                        ${user ? 'md:w-[780px]' : 'md:w-[600px]'}
+                        ${user ? 'md:w-[840px]' : 'md:w-[650px]'}
                     `}
                 >
                     {/* --- DESKTOP VIEW (The "Single Frame") --- */}
                     <div className="hidden h-full md:flex items-center justify-between px-6">
                         
-                        {/* Left Zone */}
-                        <div className="flex items-center gap-4">
-                            <NavLink to="/" className="flex items-center space-x-2 flex-shrink-0">
+                        {/* Left Zone: Logo */}
+                        <div className="flex-shrink-0">
+                            <NavLink to="/" className="flex items-center space-x-2">
                                 <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-9 w-9 rounded-full object-cover border-2 border-white/30" />
                                 <span className="text-xl font-bold text-white">TutorDeck</span>
                             </NavLink>
-                            <VerticalDivider />
                         </div>
 
-                        {/* Center Zone */}
+                        <VerticalDivider />
+
+                        {/* Center Zone: All Navigation Links */}
                         <nav className="flex items-center gap-2">
                             {user && (
                                 <DashboardNavItem to="/dashboard">
@@ -110,9 +111,10 @@ const Header = () => {
                             </NavItem>
                         </nav>
 
-                        {/* Right Zone */}
-                        <div className="flex items-center gap-4">
-                            <VerticalDivider />
+                        <VerticalDivider />
+
+                        {/* Right Zone: User Actions */}
+                        <div className="flex-shrink-0">
                             {user ? (
                                 <div className="relative" ref={dropdownRef}>
                                     <button type="button" onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex text-sm bg-gray-800 rounded-full ring-2 ring-white/30 focus:ring-primary-light transition-all" aria-expanded={isDropdownOpen}>
