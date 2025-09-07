@@ -77,33 +77,34 @@ const Header = () => {
                     `}
                 >
                     {/* --- DESKTOP VIEW (The "Single Frame") --- */}
-                    <div className="hidden h-full md:flex items-center justify-between px-4">
-                        {/* Left Zone: Logo & Conditional Dashboard */}
-                        <div className="flex items-center gap-4">
-                            <NavLink to="/" className="flex items-center space-x-2 flex-shrink-0">
+                    <div className="hidden h-full md:flex items-center justify-between px-6">
+                        
+                        {/* Left Zone: Logo */}
+                        <div className="flex-shrink-0">
+                            <NavLink to="/" className="flex items-center space-x-2">
                                 <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-9 w-9 rounded-full object-cover border-2 border-white/30" />
                                 <span className="text-xl font-bold text-white">TutorDeck</span>
                             </NavLink>
+                        </div>
+
+                        {/* Center Zone: All Navigation Links */}
+                        <nav className="flex items-center gap-2">
                             {user && (
                                 <>
-                                    <VerticalDivider />
                                     <DashboardNavItem to="/dashboard">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" /></svg>
                                         <span>Dashboard</span>
                                     </DashboardNavItem>
+                                    <VerticalDivider />
                                 </>
                             )}
-                        </div>
-
-                        {/* Center Zone: Main Navigation */}
-                        <nav className="flex items-center gap-2">
                             <NavItem to="/about"><span>About</span></NavItem>
                             <NavItem to="/chapters"><span>Chapters</span></NavItem>
                             <NavItem to="/get-involved"><span>Get Involved</span></NavItem>
                         </nav>
 
                         {/* Right Zone: User Actions */}
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 flex-shrink-0">
                             {user ? (
                                 <div className="relative" ref={dropdownRef}>
                                     <button type="button" onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex text-sm bg-gray-800 rounded-full ring-2 ring-white/30 focus:ring-primary-light transition-all" aria-expanded={isDropdownOpen}>
