@@ -63,8 +63,8 @@ const HomePage = () => {
             <h2 className="text-4xl font-bold text-dark-heading mb-12">Our Impact in Numbers</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
               <div className="bg-dark-card p-8 rounded-lg"><AnimatedStat to="2" /><p className="text-lg font-semibold uppercase tracking-wider text-dark-text">Chapters</p></div>
-              <div className="bg-dark-card p-8 rounded-lg"><AnimatedStat to="50" /><p className="text-lg font-semibold uppercase tracking-wider text-dark-text">Tutors</p></div>
-              <div className="bg-dark-card p-8 rounded-lg"><AnimatedStat to="100" /><p className="text-lg font-semibold uppercase tracking-wider text-dark-text">Students Helped</p></div>
+              <div className="bg-dark-card p-8 rounded-lg"><AnimatedStat to="250" /><p className="text-lg font-semibold uppercase tracking-wider text-dark-text">Tutors</p></div>
+              <div className="bg-dark-card p-8 rounded-lg"><AnimatedStat to="500" /><p className="text-lg font-semibold uppercase tracking-wider text-dark-text">Students Helped</p></div>
             </div>
           </Reveal>
         </section>
