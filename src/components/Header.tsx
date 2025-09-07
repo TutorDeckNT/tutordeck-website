@@ -77,15 +77,23 @@ const Header = () => {
                     `}
                 >
                     {/* --- DESKTOP VIEW (The "Single Frame") --- */}
-                    <div className="hidden h-full md:flex items-center justify-between px-6">
+                    <div className="hidden h-full md:flex items-center px-4">
                         
-                        {/* Left Group: Logo & Main Navigation */}
-                        <div className="flex items-center gap-4">
-                            <NavLink to="/" className="flex items-center space-x-2 flex-shrink-0">
+                        <div className="flex items-center gap-4 flex-shrink-0">
+                            <NavLink to="/" className="flex items-center space-x-2">
                                 <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-9 w-9 rounded-full object-cover border-2 border-white/30" />
                                 <span className="text-xl font-bold text-white">TutorDeck</span>
                             </NavLink>
                             <VerticalDivider />
+                            {user && (
+                                <>
+                                    <DashboardNavItem to="/dashboard">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" /></svg>
+                                        <span>Dashboard</span>
+                                    </DashboardNavItem>
+                                    <VerticalDivider />
+                                </>
+                            )}
                             <nav className="flex items-center gap-2">
                                 <NavItem to="/about">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
@@ -102,27 +110,23 @@ const Header = () => {
                             </nav>
                         </div>
 
-                        {/* Right Group: User Actions */}
-                        <div className="flex items-center gap-4">
+                        {/* This spacer div takes up all the remaining space */}
+                        <div className="flex-grow" />
+
+                        <div className="flex items-center gap-4 flex-shrink-0">
+                            <VerticalDivider />
                             {user ? (
-                                <>
-                                    <DashboardNavItem to="/dashboard">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" /></svg>
-                                        <span>Dashboard</span>
-                                    </DashboardNavItem>
-                                    <VerticalDivider />
-                                    <div className="relative" ref={dropdownRef}>
-                                        <button type="button" onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex text-sm bg-gray-800 rounded-full ring-2 ring-white/30 focus:ring-primary-light transition-all" aria-expanded={isDropdownOpen}>
-                                            <img className="w-9 h-9 rounded-full" src={user.photoURL || '/mascot.avif'} alt="user photo" />
-                                        </button>
-                                        {isDropdownOpen && (
-                                            <div className="absolute right-0 mt-4 z-50 w-64 origin-top-right bg-gray-200/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-xl">
-                                                <div className="px-4 py-3 border-b border-white/10"><span className="block text-sm text-white font-semibold">{user.displayName}</span><span className="block text-sm text-gray-400 truncate">{user.email}</span></div>
-                                                <ul className="py-2"><li><a href="#" onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-200 hover:bg-white/10"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" /></svg><span>Sign out</span></a></li></ul>
-                                            </div>
-                                        )}
-                                    </div>
-                                </>
+                                <div className="relative" ref={dropdownRef}>
+                                    <button type="button" onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex text-sm bg-gray-800 rounded-full ring-2 ring-white/30 focus:ring-primary-light transition-all" aria-expanded={isDropdownOpen}>
+                                        <img className="w-9 h-9 rounded-full" src={user.photoURL || '/mascot.avif'} alt="user photo" />
+                                    </button>
+                                    {isDropdownOpen && (
+                                        <div className="absolute right-0 mt-4 z-50 w-64 origin-top-right bg-gray-200/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-xl">
+                                            <div className="px-4 py-3 border-b border-white/10"><span className="block text-sm text-white font-semibold">{user.displayName}</span><span className="block text-sm text-gray-400 truncate">{user.email}</span></div>
+                                            <ul className="py-2"><li><a href="#" onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-200 hover:bg-white/10"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" /></svg><span>Sign out</span></a></li></ul>
+                                        </div>
+                                    )}
+                                </div>
                             ) : (
                                 <Link to="/login" className="flex items-center gap-2 bg-gradient-to-r from-primary to-secondary-light text-dark-bg font-semibold px-4 py-2 rounded-full hover:opacity-90 transition-opacity cta-button">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>
