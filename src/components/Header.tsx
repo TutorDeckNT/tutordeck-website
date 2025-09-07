@@ -73,7 +73,7 @@ const Header = () => {
                         md:max-w-none md:rounded-full md:border md:border-white/20 md:shadow-xl 
                         md:h-14
                         transition-[width] duration-300 ease-in-out
-                        ${user ? 'md:w-[840px]' : 'md:w-[650px]'}
+                        ${user ? 'md:w-[860px]' : 'md:w-[780px]'}
                     `}
                 >
                     {/* --- DESKTOP VIEW (The "Single Frame") --- */}
