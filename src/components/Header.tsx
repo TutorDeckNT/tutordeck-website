@@ -70,11 +70,12 @@ const Header = () => {
                 <div className={`
                     w-full bg-gray-900/40 backdrop-blur-xl border-b border-white/10
                     md:max-w-fit md:rounded-full md:border md:border-white/20 md:shadow-xl 
-                    transition-[min-width] duration-300 ease-in-out
-                    ${user ? 'md:min-w-[700px]' : 'md:min-w-[620px]'}
+                    md:h-14
+                    transition-[min-width] duration-500 ease-in-out
+                    ${user ? 'md:min-w-[780px]' : 'md:min-w-[600px]'}
                 `}>
                     {/* --- DESKTOP VIEW (Floating Pill) --- */}
-                    <div className="hidden md:flex items-center justify-center gap-2 sm:gap-4 px-4 py-2">
+                    <div className="hidden h-full md:flex items-center justify-center gap-2 sm:gap-4 px-4">
                         <NavLink to="/" className="flex items-center space-x-2 flex-shrink-0">
                             <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-9 w-9 rounded-full object-cover border-2 border-white/30" />
                             <span className="text-xl font-bold text-white">TutorDeck</span>
@@ -167,4 +168,4 @@ const Header = () => {
     );
 };
 
-export default Header;
+export default Header;```
