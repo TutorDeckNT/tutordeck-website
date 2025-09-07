@@ -73,8 +73,8 @@ const HomePage = () => {
           <Reveal className="container mx-auto px-6">
             <div className="testimonial-card max-w-3xl mx-auto p-8 rounded-lg shadow-2xl">
               <i className="fas fa-quote-left text-5xl text-primary/50 absolute -top-4 -left-4"></i>
-              <p className="text-2xl italic text-dark-heading mb-6">"Getting help from a peer tutor through TutorDeck didn't just improve my grades in calculus, it gave me the confidence to ask questions. It made me realize I wasn't alone."</p>
-              <p className="font-bold text-right text-primary">— Sarah L., 11th Grade Student</p>
+              <p className="text-2xl italic text-dark-heading mb-6">"Getting help from a peer tutor through TutorDeck didn't just improve my grades in English, it gave me the confidence to ask questions. It made me realize I wasn't alone."</p>
+              <p className="font-bold text-right text-primary">— Ricky B., 11th Grade Student</p>
             </div>
           </Reveal>
         </section>
