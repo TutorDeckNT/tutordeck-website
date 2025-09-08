@@ -14,7 +14,11 @@ const Header = () => {
     const mobileMenuRef = useRef<HTMLDivElement>(null);
 
     useClickOutside(dropdownRef, () => setIsDropdownOpen(false));
-    useClickOutside(mobileMenuRef, () => setIsMobileMenuOpen(false));
+    useClickOutside(mobileMenuRef, () => {
+        if (isMobileMenuOpen) {
+            setIsMobileMenuOpen(false);
+        }
+    });
 
     const handleLogout = async () => {
         await logout();
@@ -39,6 +43,9 @@ const Header = () => {
 
     return (
         <>
+            {/* Fading Blur Effect for the top of the page */}
+            <div className="fixed top-0 left-0 right-0 h-24 z-30 pointer-events-none backdrop-blur-md [mask-image:linear-gradient(to_bottom,white_80%,transparent_100%)]"></div>
+
             {/* ================================== */}
             {/* HEADER COMPONENT START             */}
             {/* ================================== */}
@@ -82,8 +89,9 @@ const Header = () => {
                         <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-10 w-10 rounded-full object-cover border-2 border-white/30" />
                         <span className="text-2xl font-bold text-white">TutorDeck</span>
                     </Link>
-                    <button onClick={toggleMobileMenu} className="p-2 text-white" aria-label="Open menu">
-                        <i className="fas fa-bars text-2xl"></i>
+                    <button onClick={toggleMobileMenu} className="p-2 text-white relative w-8 h-8" aria-label="Open menu">
+                        <i className={`fas fa-bars text-2xl transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-90 opacity-0' : 'rotate-0 opacity-100'}`}></i>
+                        <i className={`fas fa-times text-2xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0'}`}></i>
                     </button>
                 </div>
             </header>
@@ -91,6 +99,7 @@ const Header = () => {
             {/* --- Center Desktop Navigation --- */}
             <div className="hidden lg:block fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-dark-card/60 backdrop-blur-lg border border-white/20 rounded-full shadow-xl hover:shadow-[0_0_20px_rgba(52,211,153,0.4)] transition-shadow duration-300">
                 <nav className="flex items-center gap-1 p-1.5">
+                    <NavLink to="/" className={({isActive}) => `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-dark-text hover:bg-white/10 hover:text-white transition-colors ${isActive && 'bg-white/10 !text-white'}`}><i className="fas fa-home"></i><span>Home</span></NavLink>
                     <NavLink to="/about" className={({isActive}) => `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-dark-text hover:bg-white/10 hover:text-white transition-colors ${isActive && 'bg-white/10 !text-white'}`}><i className="fas fa-info-circle"></i><span>About</span></NavLink>
                     <NavLink to="/chapters" className={({isActive}) => `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-dark-text hover:bg-white/10 hover:text-white transition-colors ${isActive && 'bg-white/10 !text-white'}`}><i className="fas fa-building"></i><span>Chapters</span></NavLink>
                     <NavLink to="/get-involved" className={({isActive}) => `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-dark-text hover:bg-white/10 hover:text-white transition-colors ${isActive && 'bg-white/10 !text-white'}`}><i className="fas fa-user-plus"></i><span>Get Involved</span></NavLink>
@@ -101,6 +110,7 @@ const Header = () => {
             <div ref={mobileMenuRef} className={`fixed inset-0 bg-dark-bg/80 backdrop-blur-lg z-30 lg:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 <div className="p-8 pt-24 text-center">
                     <nav className="flex flex-col items-center gap-6">
+                        <NavLink to="/" onClick={closeMobileMenu} className="flex flex-col items-center gap-2 text-dark-text text-lg"><i className="fas fa-home text-2xl"></i><span>Home</span></NavLink>
                         <NavLink to="/about" onClick={closeMobileMenu} className="flex flex-col items-center gap-2 text-dark-text text-lg"><i className="fas fa-info-circle text-2xl"></i><span>About</span></NavLink>
                         <NavLink to="/chapters" onClick={closeMobileMenu} className="flex flex-col items-center gap-2 text-dark-text text-lg"><i className="fas fa-building text-2xl"></i><span>Chapters</span></NavLink>
                         <NavLink to="/get-involved" onClick={closeMobileMenu} className="flex flex-col items-center gap-2 text-dark-text text-lg"><i className="fas fa-user-plus text-2xl"></i><span>Get Involved</span></NavLink>
