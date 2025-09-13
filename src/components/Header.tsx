@@ -28,8 +28,8 @@ const Header = () => {
     };
 
     const toggleDropdown = (e: MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault(); // Stop the parent Link from navigating
-        e.stopPropagation(); // Stop the event from bubbling up
+        e.preventDefault();
+        e.stopPropagation();
         setIsDropdownOpen(prev => !prev);
     };
 
@@ -47,10 +47,9 @@ const Header = () => {
             <div className="fixed top-0 left-0 right-0 h-24 z-30 pointer-events-none backdrop-blur-md [mask-image:linear-gradient(to_bottom,white_80%,transparent_100%)]"></div>
 
             {/* ================================== */}
-            {/* HEADER COMPONENT START             */}
+            {/* DESKTOP HEADER & NAVIGATION      */}
             {/* ================================== */}
             <header className="fixed top-0 left-0 right-0 z-40 p-4">
-                {/* --- Desktop Header (hidden on small screens) --- */}
                 <div className="hidden lg:flex justify-between items-center">
                     <Link to="/" className="flex items-center gap-3">
                         <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-10 w-10 rounded-full object-cover border-2 border-white/30" />
@@ -82,21 +81,8 @@ const Header = () => {
                         )}
                     </div>
                 </div>
-
-                {/* --- Mobile Header (visible on small screens) --- */}
-                <div className="flex lg:hidden justify-between items-center w-full">
-                    <Link to="/" className="flex items-center gap-3">
-                        <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-10 w-10 rounded-full object-cover border-2 border-white/30" />
-                        <span className="text-2xl font-bold text-white">TutorDeck</span>
-                    </Link>
-                    <button onClick={toggleMobileMenu} className="p-2 text-white relative w-8 h-8" aria-label="Open menu">
-                        <i className={`fas fa-bars text-2xl transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-90 opacity-0' : 'rotate-0 opacity-100'}`}></i>
-                        <i className={`fas fa-times text-2xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0'}`}></i>
-                    </button>
-                </div>
             </header>
 
-            {/* --- Center Desktop Navigation --- */}
             <div className="hidden lg:block fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-dark-card/60 backdrop-blur-lg border border-white/20 rounded-full shadow-xl hover:shadow-[0_0_20px_rgba(52,211,153,0.4)] transition-shadow duration-300">
                 <nav className="flex items-center gap-1 p-1.5">
                     <NavLink to="/" className={({isActive}) => `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-dark-text hover:bg-white/10 hover:text-white transition-colors ${isActive && 'bg-white/10 !text-white'}`}><i className="fas fa-home"></i><span>Home</span></NavLink>
@@ -106,24 +92,68 @@ const Header = () => {
                 </nav>
             </div>
 
-            {/* --- Mobile Menu Overlay --- */}
-            <div ref={mobileMenuRef} className={`fixed inset-0 bg-dark-bg/80 backdrop-blur-lg z-30 lg:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <div className="p-8 pt-24 text-center">
-                    <nav className="flex flex-col items-center gap-6">
-                        <NavLink to="/" onClick={closeMobileMenu} className="flex flex-col items-center gap-2 text-dark-text text-lg"><i className="fas fa-home text-2xl"></i><span>Home</span></NavLink>
-                        <NavLink to="/about" onClick={closeMobileMenu} className="flex flex-col items-center gap-2 text-dark-text text-lg"><i className="fas fa-info-circle text-2xl"></i><span>About</span></NavLink>
-                        <NavLink to="/chapters" onClick={closeMobileMenu} className="flex flex-col items-center gap-2 text-dark-text text-lg"><i className="fas fa-building text-2xl"></i><span>Chapters</span></NavLink>
-                        <NavLink to="/get-involved" onClick={closeMobileMenu} className="flex flex-col items-center gap-2 text-dark-text text-lg"><i className="fas fa-user-plus text-2xl"></i><span>Get Involved</span></NavLink>
-                        <div className="w-3/4 h-px bg-white/20 my-4"></div>
-                        {user ? (
-                            <NavLink to="/dashboard" onClick={closeMobileMenu} className="flex flex-col items-center gap-2 text-dark-text text-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-7 h-7"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" /></svg>
-                                <span>Dashboard</span>
-                            </NavLink>
-                        ) : (
-                            <Link to="/login" onClick={closeMobileMenu} className="flex flex-col items-center gap-2 text-dark-text text-lg"><i className="fas fa-sign-in-alt text-2xl"></i><span>Sign In</span></Link>
-                        )}
+            {/* ================================== */}
+            {/* NEW MOBILE NAVIGATION SYSTEM       */}
+            {/* ================================== */}
+            <div className="lg:hidden">
+                {/* --- Mobile: Top Left Floating Logo --- */}
+                <div className="fixed top-4 left-4 z-40">
+                    <Link to="/" className="flex items-center gap-2 bg-dark-card/60 backdrop-blur-lg border border-white/20 rounded-full shadow-xl p-2 pr-4">
+                        <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-8 w-8 rounded-full object-cover" />
+                        <span className="font-bold text-white text-lg">TutorDeck</span>
+                    </Link>
+                </div>
+
+                {/* --- Mobile: Bottom Floating Nav Bar --- */}
+                <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-sm">
+                    <nav className="flex items-center justify-between p-1.5 bg-dark-card/60 backdrop-blur-lg border border-white/20 rounded-full shadow-xl">
+                        <NavLink to="/" className={({isActive}) => `flex-1 h-12 flex items-center justify-center rounded-full text-xl text-dark-text hover:bg-white/10 hover:text-white transition-colors ${isActive && 'bg-primary/20 !text-primary'}`}><i className="fas fa-home"></i></NavLink>
+                        <NavLink to="/about" className={({isActive}) => `flex-1 h-12 flex items-center justify-center rounded-full text-xl text-dark-text hover:bg-white/10 hover:text-white transition-colors ${isActive && 'bg-primary/20 !text-primary'}`}><i className="fas fa-info-circle"></i></NavLink>
+                        <NavLink to="/chapters" className={({isActive}) => `flex-1 h-12 flex items-center justify-center rounded-full text-xl text-dark-text hover:bg-white/10 hover:text-white transition-colors ${isActive && 'bg-primary/20 !text-primary'}`}><i className="fas fa-building"></i></NavLink>
+                        <NavLink to="/get-involved" className={({isActive}) => `flex-1 h-12 flex items-center justify-center rounded-full text-xl text-dark-text hover:bg-white/10 hover:text-white transition-colors ${isActive && 'bg-primary/20 !text-primary'}`}><i className="fas fa-user-plus"></i></NavLink>
+                        <div className="w-px h-6 bg-white/20 mx-1"></div>
+                        <button onClick={toggleMobileMenu} className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+                            {user ? (
+                                <img src={user.photoURL || '/mascot.avif'} alt="User Profile" className="w-9 h-9 rounded-full object-cover" />
+                            ) : (
+                                <i className="fas fa-user text-xl text-dark-text"></i>
+                            )}
+                        </button>
                     </nav>
+                </div>
+
+                {/* --- Mobile: Menu Panel Backdrop --- */}
+                <div 
+                    className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-30 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                    onClick={closeMobileMenu}
+                ></div>
+
+                {/* --- Mobile: Menu Panel (Slide-up) --- */}
+                <div 
+                    ref={mobileMenuRef}
+                    className={`fixed bottom-0 left-0 right-0 z-40 bg-dark-card/80 backdrop-blur-xl border-t border-white/20 rounded-t-3xl p-5 pb-8 transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-y-0' : 'translate-y-full'}`}
+                >
+                    <div className="w-12 h-1.5 bg-white/30 rounded-full mx-auto mb-6"></div>
+                    {user ? (
+                        <div className="flex flex-col items-center text-center">
+                            <img src={user.photoURL || '/mascot.avif'} alt="User Profile" className="w-16 h-16 rounded-full mb-3 border-2 border-primary" />
+                            <p className="font-bold text-dark-heading text-lg">{user.displayName}</p>
+                            <p className="text-sm text-dark-text truncate w-full max-w-xs mb-6">{user.email}</p>
+                            <nav className="w-full flex flex-col gap-3">
+                                <Link to="/dashboard" onClick={closeMobileMenu} className="w-full text-center py-3 px-4 bg-white/10 rounded-lg text-dark-heading font-semibold hover:bg-white/20 transition-colors">Dashboard</Link>
+                                <button onClick={handleLogout} className="w-full text-center py-3 px-4 bg-red-500/20 rounded-lg text-red-300 font-semibold hover:bg-red-500/30 transition-colors">Sign Out</button>
+                            </nav>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-16 h-16 rounded-full mb-4 bg-white/10 flex items-center justify-center">
+                                <i className="fas fa-user text-3xl text-white/50"></i>
+                            </div>
+                            <p className="text-dark-heading text-lg font-semibold mb-2">Welcome to TutorDeck</p>
+                            <p className="text-dark-text mb-6">Sign in to access your dashboard.</p>
+                            <Link to="/login" onClick={closeMobileMenu} className="w-full text-center py-3 px-4 bg-primary rounded-lg text-dark-bg font-bold hover:bg-primary-dark transition-colors">Sign In with Google</Link>
+                        </div>
+                    )}
                 </div>
             </div>
         </>
