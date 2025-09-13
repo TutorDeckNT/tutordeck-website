@@ -45,7 +45,7 @@ const EventModal = ({ isOpen, onClose }: EventModalProps) => {
               <div className="bg-white/10 rounded-full px-4 py-1 text-sm font-semibold">Sep 19: Prosper High</div>
               <div className="bg-white/10 rounded-full px-4 py-1 text-sm font-semibold">TBA: Richland High</div>
               <div className="bg-white/10 rounded-full px-4 py-1 text-sm font-semibold">4:30 - 5:45 PM</div>
-              <div className="bg-white/10 rounded-full px-4 py-1 text-sm font-semibold">Location: TBA</div>
+              <div className="bg-white/10 rounded-full px-4 py-1 text-sm font-semibold">Location: LGI</div>
             </div>
             <p className="text-lg text-dark-text leading-relaxed mb-6">
               <strong className="text-dark-heading">Made for the tutors.</strong> We've redesigned everything to provide an unparalleled tutoring experience. Maximize your impact, earn significant <strong className="text-red-400 font-semibold">volunteer hours</strong>, and build <strong className="text-red-400 font-semibold">leadership</strong> skills while earning leadership months—no formal role required. This experience looks great on volunteering apps, and you're invited to join our all-new platform.
