@@ -2,16 +2,25 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Reveal from '../components/Reveal';
 import EmailModal from '../components/EmailModal';
-import LogActivityForm from '../components/LogActivityForm'; // New component
+import LogActivityForm from '../components/LogActivityForm';
 
-// Updated interface to match Firestore data structure
+// Interface for Firestore data
 interface VolunteerActivity {
     id: string;
     activityType: string;
-    activityDate: { seconds: number; nanoseconds: number; }; // Firestore Timestamp format
+    activityDate: { seconds: number; nanoseconds: number; };
     hours: number;
     proofLink: string;
 }
+
+// Interface for our client-side cache structure
+interface CachedData {
+    timestamp: number;
+    activities: VolunteerActivity[];
+}
+
+const CACHE_KEY = 'cachedActivities';
+const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 hour
 
 const DashboardPage = () => {
     const { user } = useAuth();
@@ -24,9 +33,32 @@ const DashboardPage = () => {
 
     const fetchActivities = useCallback(async () => {
         if (!user) return;
+        
+        setLoading(true);
+        setError(null);
+
+        // 1. Check the client-side cache first
         try {
-            setLoading(true);
-            setError(null);
+            const cachedItem = localStorage.getItem(CACHE_KEY);
+            if (cachedItem) {
+                const cachedData: CachedData = JSON.parse(cachedItem);
+                const isCacheValid = (new Date().getTime() - cachedData.timestamp) < CACHE_DURATION_MS;
+
+                if (isCacheValid) {
+                    // CACHE HIT: Use local data and stop.
+                    setActivities(cachedData.activities);
+                    setLoading(false);
+                    return; // <-- Critical step to prevent API call
+                }
+            }
+        } catch (e) {
+            console.error("Failed to read from local cache:", e);
+            // If cache is corrupt, clear it.
+            localStorage.removeItem(CACHE_KEY);
+        }
+
+        // 2. CACHE MISS or STALE: Fetch from the API
+        try {
             const token = await user.getIdToken();
             const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -37,6 +69,14 @@ const DashboardPage = () => {
             }
             const data: VolunteerActivity[] = await response.json();
             setActivities(data);
+
+            // 3. Update the client-side cache with fresh data
+            const newCachedData: CachedData = {
+                timestamp: new Date().getTime(),
+                activities: data
+            };
+            localStorage.setItem(CACHE_KEY, JSON.stringify(newCachedData));
+
         } catch (e) {
             setError(e instanceof Error ? e.message : 'An unknown error occurred.');
         } finally {
@@ -47,6 +87,14 @@ const DashboardPage = () => {
     useEffect(() => {
         fetchActivities();
     }, [fetchActivities]);
+
+    // This function is passed to the form. It invalidates the cache and refetches.
+    const handleActivityAdded = () => {
+        // Invalidate client cache to force a fresh fetch
+        localStorage.removeItem(CACHE_KEY);
+        // Refetch the data from the API
+        fetchActivities();
+    };
 
     const handleGenerateTranscript = async (email: string) => {
         if (!user) return;
@@ -89,8 +137,7 @@ const DashboardPage = () => {
                     </Reveal>
                 )}
 
-                {/* New Activity Logging Form */}
-                <LogActivityForm onActivityAdded={fetchActivities} />
+                <LogActivityForm onActivityAdded={handleActivityAdded} />
 
                 <Reveal as="section" className="mb-16 mt-16">
                     <h2 className="text-3xl font-bold text-dark-heading mb-8 text-center">Your Impact Summary</h2>
