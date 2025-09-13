@@ -42,9 +42,9 @@ const EventModal = ({ isOpen, onClose }: EventModalProps) => {
           </div>
           <div className="p-8 text-left">
             <div className="flex flex-wrap gap-3 mb-6">
-              <div className="bg-white/10 rounded-full px-4 py-1 text-sm font-semibold">Sep 12: Prosper High</div>
-              <div className="bg-white/10 rounded-full px-4 py-1 text-sm font-semibold">Sep 19: Richland High</div>
-              <div className="bg-white/10 rounded-full px-4 py-1 text-sm font-semibold">4:30 - 5:15 PM</div>
+              <div className="bg-white/10 rounded-full px-4 py-1 text-sm font-semibold">Sep 19: Prosper High</div>
+              <div className="bg-white/10 rounded-full px-4 py-1 text-sm font-semibold">TBA: Richland High</div>
+              <div className="bg-white/10 rounded-full px-4 py-1 text-sm font-semibold">4:30 - 5:45 PM</div>
               <div className="bg-white/10 rounded-full px-4 py-1 text-sm font-semibold">Location: TBA</div>
             </div>
             <p className="text-lg text-dark-text leading-relaxed mb-6">
