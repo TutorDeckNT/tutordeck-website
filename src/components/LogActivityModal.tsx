@@ -1,9 +1,5 @@
-import { useState, FormEvent, useEffect, useRef } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-
-// Since we are loading Flowbite from a CDN, we need to tell TypeScript
-// that the 'Datepicker' global variable will exist.
-declare const Datepicker: any;
 
 interface LogActivityModalProps {
     isOpen: boolean;
@@ -20,40 +16,6 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    // Create a ref for the datepicker input element
-    const datepickerInputRef = useRef<HTMLInputElement>(null);
-
-    // This effect initializes and destroys the datepicker instance
-    useEffect(() => {
-        if (isOpen && datepickerInputRef.current) {
-            const datepicker = new Datepicker(datepickerInputRef.current, {
-                autohide: true,
-                format: 'yyyy-mm-dd',
-                todayHighlight: true,
-            });
-
-            // Function to handle date changes from the datepicker
-            const handleChangeDate = (e: any) => {
-                const newDate = e.detail.date;
-                if (newDate) {
-                    // Format the date to YYYY-MM-DD string to store in state
-                    const year = newDate.getFullYear();
-                    const month = (newDate.getMonth() + 1).toString().padStart(2, '0');
-                    const day = newDate.getDate().toString().padStart(2, '0');
-                    setActivityDate(`${year}-${month}-${day}`);
-                }
-            };
-
-            datepickerInputRef.current.addEventListener('changeDate', handleChangeDate);
-
-            // Cleanup function to destroy the datepicker when the modal closes
-            return () => {
-                datepicker.destroy();
-                datepickerInputRef.current?.removeEventListener('changeDate', handleChangeDate);
-            };
-        }
-    }, [isOpen]); // Re-run the effect when the modal opens
 
     // Reset form state when modal is closed
     useEffect(() => {
@@ -144,24 +106,15 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
 
                     <div>
                         <label htmlFor="activityDate" className="block text-sm font-medium text-dark-text mb-2">Date of Activity</label>
-                        {/* Flowbite Datepicker HTML Structure */}
-                        <div className="relative">
-                            <div className="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
-                                <svg className="w-4 h-4 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4Z M0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
-                                </svg>
-                            </div>
-                            <input 
-                                ref={datepickerInputRef}
-                                type="text" 
-                                id="activityDate"
-                                value={activityDate}
-                                onInput={(e) => setActivityDate((e.target as HTMLInputElement).value)} // Keep state in sync
-                                required 
-                                className="bg-dark-bg border border-gray-600 text-dark-text text-sm rounded-lg focus:ring-primary focus:border-primary block w-full ps-10 p-2.5" 
-                                placeholder="Select date"
-                            />
-                        </div>
+                        {/* THE FIX: Replaced Flowbite with a native HTML5 date input, styled with Tailwind */}
+                        <input 
+                            type="date" 
+                            id="activityDate"
+                            value={activityDate}
+                            onChange={(e) => setActivityDate(e.target.value)}
+                            required 
+                            className="[color-scheme:dark] w-full bg-dark-bg border border-gray-600 rounded-lg py-2.5 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
                     </div>
 
                     <div>
