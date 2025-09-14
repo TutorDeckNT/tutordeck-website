@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Reveal from '../components/Reveal';
 import EmailModal from '../components/EmailModal';
-import LogActivityModal from '../components/LogActivityModal'; // Updated import
+import LogActivityModal from '../components/LogActivityModal';
 
-// Interface for Firestore data
+// CORRECTED: The interface now expects a string for the date, which is what the API sends.
 interface VolunteerActivity {
     id: string;
     activityType: string;
-    activityDate: { seconds: number; nanoseconds: number; }; // Firestore Timestamp format
+    activityDate: string; // Was previously { seconds: number; nanoseconds: number; }
     hours: number;
     proofLink: string;
 }
@@ -28,7 +28,6 @@ const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
-    // State for the two modals
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
@@ -152,7 +151,6 @@ const DashboardPage = () => {
                 <Reveal as="section">
                     <div className="flex flex-col md:flex-row justify-between items-center max-w-4xl mx-auto mb-8 gap-4">
                         <h2 className="text-3xl font-bold text-dark-heading">Volunteer Transcript</h2>
-                        {/* NEW BUTTON LAYOUT */}
                         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                             <button onClick={() => setIsLogModalOpen(true)} className="w-full sm:w-auto bg-primary text-dark-bg font-semibold px-5 py-2 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2">
                                 <i className="fas fa-plus-circle"></i>
@@ -183,8 +181,8 @@ const DashboardPage = () => {
                                         {activities.length > 0 ? (
                                             activities.map((activity) => (
                                                 <tr key={activity.id} className="border-t border-gray-700">
-                                                    {/* VERIFIED DATE FORMATTING */}
-                                                    <td className="p-4 whitespace-nowrap">{new Date(activity.activityDate.seconds * 1000).toLocaleDateString()}</td>
+                                                    {/* VERIFIED DATE FIX: new Date() can parse the ISO string directly. */}
+                                                    <td className="p-4 whitespace-nowrap">{new Date(activity.activityDate).toLocaleDateString()}</td>
                                                     <td className="p-4">{activity.activityType}</td>
                                                     <td className="p-4 font-bold text-right">{activity.hours.toFixed(1)}</td>
                                                 </tr>
