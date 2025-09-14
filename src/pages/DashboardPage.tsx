@@ -45,18 +45,20 @@ const DashboardPage = () => {
     const [filter, setFilter] = useState('All');
     const [sort, setSort] = useState<{ key: 'date' | 'hours', order: 'asc' | 'desc' }>({ key: 'date', order: 'desc' });
 
-    const fetchActivities = useCallback(async () => {
+    const fetchActivities = useCallback(async (forceRefresh = false) => {
         if (!user) return;
         setLoading(true);
         setError(null);
         try {
-            const cachedItem = localStorage.getItem(CACHE_KEY);
-            if (cachedItem) {
-                const cachedData: CachedData = JSON.parse(cachedItem);
-                if ((new Date().getTime() - cachedData.timestamp) < CACHE_DURATION_MS) {
-                    setActivities(cachedData.activities);
-                    setLoading(false);
-                    return;
+            if (!forceRefresh) {
+                const cachedItem = localStorage.getItem(CACHE_KEY);
+                if (cachedItem) {
+                    const cachedData: CachedData = JSON.parse(cachedItem);
+                    if ((new Date().getTime() - cachedData.timestamp) < CACHE_DURATION_MS) {
+                        setActivities(cachedData.activities);
+                        setLoading(false);
+                        return;
+                    }
                 }
             }
         } catch (e) { console.error("Cache read failed:", e); }
@@ -79,9 +81,11 @@ const DashboardPage = () => {
 
     useEffect(() => { fetchActivities(); }, [fetchActivities]);
 
-    const handleActivityAdded = () => {
-        localStorage.removeItem(CACHE_KEY);
-        fetchActivities();
+    // OPTIMIZED: Update state and cache locally without a full refetch
+    const handleActivityAdded = (newActivity: VolunteerActivity) => {
+        const updatedActivities = [newActivity, ...activities];
+        setActivities(updatedActivities);
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: new Date().getTime(), activities: updatedActivities }));
     };
 
     const handleGenerateTranscript = async (email: string) => {
@@ -142,8 +146,8 @@ const DashboardPage = () => {
                 <div className="h-24 bg-dark-card rounded-lg animate-pulse"></div>
             </div>
             <div className="grid lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 h-64 bg-dark-card rounded-lg animate-pulse"></div>
-                <div className="lg:col-span-1 h-64 bg-dark-card rounded-lg animate-pulse"></div>
+                <div className="lg:col-span-1 h-80 bg-dark-card rounded-lg animate-pulse"></div>
+                <div className="lg:col-span-2 h-80 bg-dark-card rounded-lg animate-pulse"></div>
             </div>
         </div>
     );
@@ -155,7 +159,7 @@ const DashboardPage = () => {
 
             <main className="container mx-auto px-6 py-20 mt-16">
                 {/* --- HEADER --- */}
-                <Reveal className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10">
+                <Reveal className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
                     <div>
                         <h1 className="text-4xl md:text-5xl font-extrabold text-dark-heading">Mission Control</h1>
                         <p className="text-lg mt-2 text-dark-text">Welcome back, {user?.displayName?.split(' ')[0] || 'Volunteer'}!</p>
@@ -176,7 +180,7 @@ const DashboardPage = () => {
                 )}
 
                 {loading ? <SkeletonLoader /> : error ? <p className="text-center p-8 text-red-400">Error: {error}</p> : (
-                    <div className="space-y-8">
+                    <div className="space-y-12">
                         {/* --- MAIN GRID --- */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             {/* Left Column */}
@@ -205,15 +209,15 @@ const DashboardPage = () => {
                                             <table className="w-full text-left">
                                                 <thead className="bg-dark-bg">
                                                     <tr>
-                                                        <th className="p-4 font-semibold text-primary cursor-pointer hover:bg-gray-700" onClick={() => handleSort('date')}>Date <SortIcon column="date" /></th>
+                                                        <th className="p-4 font-semibold text-primary cursor-pointer hover:bg-gray-700 transition-colors" onClick={() => handleSort('date')}>Date <SortIcon column="date" /></th>
                                                         <th className="p-4 font-semibold text-primary">Activity</th>
-                                                        <th className="p-4 font-semibold text-primary text-right cursor-pointer hover:bg-gray-700" onClick={() => handleSort('hours')}>Hours <SortIcon column="hours" /></th>
+                                                        <th className="p-4 font-semibold text-primary text-right cursor-pointer hover:bg-gray-700 transition-colors" onClick={() => handleSort('hours')}>Hours <SortIcon column="hours" /></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {filteredAndSortedActivities.length > 0 ? (
                                                         filteredAndSortedActivities.map((activity) => (
-                                                            <tr key={activity.id} className="border-t border-gray-700">
+                                                            <tr key={activity.id} className="border-t border-gray-700 hover:bg-dark-bg transition-colors">
                                                                 <td className="p-4 whitespace-nowrap">{new Date(activity.activityDate._seconds * 1000).toLocaleDateString()}</td>
                                                                 <td className="p-4">{activity.activityType}</td>
                                                                 <td className="p-4 font-bold text-right">{activity.hours.toFixed(1)}</td>
