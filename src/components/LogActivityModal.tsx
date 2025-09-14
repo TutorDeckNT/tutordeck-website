@@ -27,7 +27,6 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     // This effect initializes and destroys the datepicker instance
     useEffect(() => {
         if (isOpen && datepickerInputRef.current) {
-            // THE TYPO IS FIXED HERE
             const datepicker = new Datepicker(datepickerInputRef.current, {
                 autohide: true,
                 format: 'yyyy-mm-dd',
