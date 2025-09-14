@@ -106,14 +106,13 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
 
                     <div>
                         <label htmlFor="activityDate" className="block text-sm font-medium text-dark-text mb-2">Date of Activity</label>
-                        {/* THE FIX: Replaced Flowbite with a native HTML5 date input, styled with Tailwind */}
                         <input 
                             type="date" 
                             id="activityDate"
                             value={activityDate}
                             onChange={(e) => setActivityDate(e.target.value)}
                             required 
-                            className="[color-scheme:dark] w-full bg-dark-bg border border-gray-600 rounded-lg py-2.5 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="w-full bg-dark-bg border border-gray-600 rounded-lg py-2.5 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                     </div>
 
