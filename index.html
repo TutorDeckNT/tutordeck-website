@@ -14,13 +14,14 @@
     <!-- Flowbite CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
 
+    <!-- THE FIX: Flowbite JS is moved to the HEAD to ensure it loads before the React app -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/datepicker.min.js"></script>
+
   </head>
   <body class="bg-dark-bg text-dark-text font-sans antialiased">
     <div id="root"></div>
+    <!-- The main app script now runs after the libraries in the head are loaded -->
     <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- Flowbite JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/datepicker.min.js"></script>
   </body>
 </html>
