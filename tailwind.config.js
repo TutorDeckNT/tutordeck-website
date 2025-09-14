@@ -2,8 +2,7 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    // This line is still useful to help Tailwind's language server
-    // understand Flowbite classes if you have the VS Code extension.
+    // This line is crucial for the plugin to find and process Flowbite components.
     "./node_modules/flowbite/**/*.js" 
   ],
   darkMode: 'class',
@@ -31,6 +30,8 @@ export default {
       }
     },
   },
-  // The plugin is removed from here
-  plugins: [],
+  // THE FIX: Add the Flowbite plugin back.
+  plugins: [
+    require('flowbite/plugin')
+  ],
 }
