@@ -5,7 +5,6 @@ import Reveal from '../components/Reveal';
 import EmailModal from '../components/EmailModal';
 import LogActivityModal from '../components/LogActivityModal';
 
-// Import the new dashboard components
 import ImpactCard from '../components/dashboard/ImpactCard';
 import ProgressTracker from '../components/dashboard/ProgressTracker';
 import ActivityChart from '../components/dashboard/ActivityChart';
