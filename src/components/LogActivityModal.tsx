@@ -1,4 +1,3 @@
-typescript
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
