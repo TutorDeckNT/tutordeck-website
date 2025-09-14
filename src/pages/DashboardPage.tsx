@@ -4,11 +4,15 @@ import Reveal from '../components/Reveal';
 import EmailModal from '../components/EmailModal';
 import LogActivityModal from '../components/LogActivityModal';
 
-// CORRECTED: The interface now expects a string for the date, which is what the API sends.
+// CORRECTED INTERFACE: This now perfectly matches the plain object
+// that the frontend receives after JSON serialization from the server.
 interface VolunteerActivity {
     id: string;
     activityType: string;
-    activityDate: string; // Was previously { seconds: number; nanoseconds: number; }
+    activityDate: { 
+        _seconds: number; 
+        _nanoseconds: number; 
+    };
     hours: number;
     proofLink: string;
 }
@@ -181,8 +185,8 @@ const DashboardPage = () => {
                                         {activities.length > 0 ? (
                                             activities.map((activity) => (
                                                 <tr key={activity.id} className="border-t border-gray-700">
-                                                    {/* VERIFIED DATE FIX: new Date() can parse the ISO string directly. */}
-                                                    <td className="p-4 whitespace-nowrap">{new Date(activity.activityDate).toLocaleDateString()}</td>
+                                                    {/* THE DEFINITIVE FIX: Use the '_seconds' property */}
+                                                    <td className="p-4 whitespace-nowrap">{new Date(activity.activityDate._seconds * 1000).toLocaleDateString()}</td>
                                                     <td className="p-4">{activity.activityType}</td>
                                                     <td className="p-4 font-bold text-right">{activity.hours.toFixed(1)}</td>
                                                 </tr>
