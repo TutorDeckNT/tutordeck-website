@@ -15,8 +15,8 @@ interface AchievementsListProps {
 }
 
 const AchievementItem = ({ ach, earned }: { ach: Achievement, earned: boolean }) => (
-    <div className={`flex items-center gap-4 p-4 rounded-lg transition-all duration-300 ${earned ? 'bg-dark-bg' : 'bg-transparent opacity-40'}`}>
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${earned ? 'bg-primary text-dark-bg' : 'bg-gray-700 text-gray-400'}`}>
+    <div className={`flex items-center gap-4 p-4 rounded-lg transition-all duration-300 transform ${earned ? 'bg-dark-bg hover:scale-105 hover:bg-gray-800' : 'bg-transparent opacity-40'}`}>
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl flex-shrink-0 ${earned ? 'bg-primary text-dark-bg' : 'bg-gray-700 text-gray-400'}`}>
             <i className={`fas ${ach.icon}`}></i>
         </div>
         <div>
