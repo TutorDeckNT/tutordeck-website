@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Reveal from '../components/Reveal';
 import EmailModal from '../components/EmailModal';
-import LogActivityForm from '../components/LogActivityForm';
+import LogActivityModal from '../components/LogActivityModal'; // Updated import
 
 // Interface for Firestore data
 interface VolunteerActivity {
     id: string;
     activityType: string;
-    activityDate: { seconds: number; nanoseconds: number; };
+    activityDate: { seconds: number; nanoseconds: number; }; // Firestore Timestamp format
     hours: number;
     proofLink: string;
 }
@@ -27,7 +27,11 @@ const DashboardPage = () => {
     const [activities, setActivities] = useState<VolunteerActivity[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // State for the two modals
+    const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+    const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+
     const [isGenerating, setIsGenerating] = useState(false);
     const [serverMessage, setServerMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -37,7 +41,6 @@ const DashboardPage = () => {
         setLoading(true);
         setError(null);
 
-        // 1. Check the client-side cache first
         try {
             const cachedItem = localStorage.getItem(CACHE_KEY);
             if (cachedItem) {
@@ -45,19 +48,16 @@ const DashboardPage = () => {
                 const isCacheValid = (new Date().getTime() - cachedData.timestamp) < CACHE_DURATION_MS;
 
                 if (isCacheValid) {
-                    // CACHE HIT: Use local data and stop.
                     setActivities(cachedData.activities);
                     setLoading(false);
-                    return; // <-- Critical step to prevent API call
+                    return;
                 }
             }
         } catch (e) {
             console.error("Failed to read from local cache:", e);
-            // If cache is corrupt, clear it.
             localStorage.removeItem(CACHE_KEY);
         }
 
-        // 2. CACHE MISS or STALE: Fetch from the API
         try {
             const token = await user.getIdToken();
             const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, {
@@ -70,7 +70,6 @@ const DashboardPage = () => {
             const data: VolunteerActivity[] = await response.json();
             setActivities(data);
 
-            // 3. Update the client-side cache with fresh data
             const newCachedData: CachedData = {
                 timestamp: new Date().getTime(),
                 activities: data
@@ -88,11 +87,8 @@ const DashboardPage = () => {
         fetchActivities();
     }, [fetchActivities]);
 
-    // This function is passed to the form. It invalidates the cache and refetches.
     const handleActivityAdded = () => {
-        // Invalidate client cache to force a fresh fetch
         localStorage.removeItem(CACHE_KEY);
-        // Refetch the data from the API
         fetchActivities();
     };
 
@@ -114,7 +110,7 @@ const DashboardPage = () => {
             setServerMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to generate transcript.' });
         } finally {
             setIsGenerating(false);
-            setIsModalOpen(false);
+            setIsEmailModalOpen(false);
         }
     };
 
@@ -122,7 +118,9 @@ const DashboardPage = () => {
 
     return (
         <>
-            <EmailModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleGenerateTranscript} isLoading={isGenerating} defaultEmail={user?.email || ''} />
+            <EmailModal isOpen={isEmailModalOpen} onClose={() => setIsEmailModalOpen(false)} onSubmit={handleGenerateTranscript} isLoading={isGenerating} defaultEmail={user?.email || ''} />
+            <LogActivityModal isOpen={isLogModalOpen} onClose={() => setIsLogModalOpen(false)} onActivityAdded={handleActivityAdded} />
+
             <main className="container mx-auto px-6 py-20 mt-16">
                 <Reveal className="text-center mb-12">
                     <h1 className="text-5xl font-extrabold text-dark-heading">Your Dashboard</h1>
@@ -137,9 +135,7 @@ const DashboardPage = () => {
                     </Reveal>
                 )}
 
-                <LogActivityForm onActivityAdded={handleActivityAdded} />
-
-                <Reveal as="section" className="mb-16 mt-16">
+                <Reveal as="section" className="mb-16">
                     <h2 className="text-3xl font-bold text-dark-heading mb-8 text-center">Your Impact Summary</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
                         <div className="bg-dark-card p-8 rounded-lg text-center border border-primary/50">
@@ -156,10 +152,17 @@ const DashboardPage = () => {
                 <Reveal as="section">
                     <div className="flex flex-col md:flex-row justify-between items-center max-w-4xl mx-auto mb-8 gap-4">
                         <h2 className="text-3xl font-bold text-dark-heading">Volunteer Transcript</h2>
-                        <button onClick={() => { setServerMessage(null); setIsModalOpen(true); }} disabled={activities.length === 0} className="w-full md:w-auto bg-secondary text-white font-semibold px-5 py-2 rounded-lg hover:bg-secondary-dark transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                            <i className="fas fa-envelope"></i>
-                            Generate & Email Transcript
-                        </button>
+                        {/* NEW BUTTON LAYOUT */}
+                        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                            <button onClick={() => setIsLogModalOpen(true)} className="w-full sm:w-auto bg-primary text-dark-bg font-semibold px-5 py-2 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2">
+                                <i className="fas fa-plus-circle"></i>
+                                Log New Activity
+                            </button>
+                            <button onClick={() => { setServerMessage(null); setIsEmailModalOpen(true); }} disabled={activities.length === 0} className="w-full sm:w-auto bg-secondary text-white font-semibold px-5 py-2 rounded-lg hover:bg-secondary-dark transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                <i className="fas fa-envelope"></i>
+                                Generate & Email Transcript
+                            </button>
+                        </div>
                     </div>
                     <div className="bg-dark-card rounded-lg shadow-lg border border-gray-700 max-w-4xl mx-auto overflow-hidden">
                         <div className="overflow-x-auto">
@@ -180,6 +183,7 @@ const DashboardPage = () => {
                                         {activities.length > 0 ? (
                                             activities.map((activity) => (
                                                 <tr key={activity.id} className="border-t border-gray-700">
+                                                    {/* VERIFIED DATE FORMATTING */}
                                                     <td className="p-4 whitespace-nowrap">{new Date(activity.activityDate.seconds * 1000).toLocaleDateString()}</td>
                                                     <td className="p-4">{activity.activityType}</td>
                                                     <td className="p-4 font-bold text-right">{activity.hours.toFixed(1)}</td>
