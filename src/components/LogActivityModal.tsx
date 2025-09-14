@@ -1,13 +1,25 @@
+// TypeScript
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 // Tell TypeScript that the 'flatpickr' function will exist on the window
 declare const flatpickr: any;
 
+interface VolunteerActivity {
+    id: string;
+    activityType: string;
+    activityDate: { 
+        _seconds: number; 
+        _nanoseconds: number; 
+    };
+    hours: number;
+    proofLink: string;
+}
+
 interface LogActivityModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onActivityAdded: () => void;
+    onActivityAdded: (newActivity: VolunteerActivity) => void;
 }
 
 const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModalProps) => {
@@ -20,31 +32,23 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Create a ref for the date input element to attach flatpickr to
     const dateInputRef = useRef<HTMLInputElement>(null);
 
-    // This effect initializes and destroys the flatpickr instance
     useEffect(() => {
         if (isOpen && dateInputRef.current) {
             const instance = flatpickr(dateInputRef.current, {
                 dateFormat: "Y-m-d",
-                defaultDate: activityDate,
-                // This is crucial to keep React state in sync with the calendar
+                defaultDate: new Date().toISOString().split('T')[0],
                 onChange: (selectedDates: Date[]) => {
                     if (selectedDates[0]) {
                         setActivityDate(selectedDates[0].toISOString().split('T')[0]);
                     }
                 },
             });
-
-            // Cleanup function to destroy the instance when the modal closes
-            return () => {
-                instance.destroy();
-            };
+            return () => { instance.destroy(); };
         }
-    }, [isOpen]); // Re-run the effect when the modal opens or closes
+    }, [isOpen]);
 
-    // Reset form state when modal is closed
     useEffect(() => {
         if (!isOpen) {
             setActivityType('');
@@ -60,6 +64,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
         e.preventDefault();
         setError(null);
         if (!user) { setError("You must be logged in to submit an activity."); return; }
+        if (parseFloat(hours) <= 0) { setError("Hours must be a positive number."); return; }
         if (parseFloat(hours) > 8) { setError("You cannot log more than 8 hours for a single activity."); return; }
         setSubmitting(true);
         try {
@@ -71,7 +76,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             });
             const data = await response.json();
             if (!response.ok) { throw new Error(data.message || "An unknown error occurred."); }
-            onActivityAdded();
+            onActivityAdded(data); // Pass the new activity back to the parent
             onClose();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to submit activity.");
@@ -98,7 +103,6 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                     </div>
                     <div>
                         <label htmlFor="activityDate" className="block text-sm font-medium text-dark-text mb-2">Date of Activity</label>
-                        {/* This input will be enhanced by flatpickr */}
                         <input ref={dateInputRef} type="text" id="activityDate" required placeholder="Select date" className="w-full bg-dark-bg border border-gray-600 rounded-lg py-2.5 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary custom-calendar-icon" />
                     </div>
                     <div>
