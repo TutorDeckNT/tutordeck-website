@@ -79,23 +79,58 @@
     border-left: 4px solid #34d399;
 }
 
-/* --- FINALIZED: Custom styles for the native date picker --- */
-/* This hints to the browser to use a dark theme for the calendar pop-up */
-input[type="date"] {
-  color-scheme: dark;
+/* --- NEW: Custom PURE WHITE calendar icon --- */
+.custom-calendar-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25em;
 }
 
-/* Style the calendar icon for WebKit browsers (Chrome, Safari, Edge) */
-input[type="date"]::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  border-radius: 4px;
-  /* Use a filter to make the default black icon white/light gray */
-  filter: invert(0.8);
-  transition: filter 0.2s, background-color 0.2s;
+/* --- FINALIZED: Custom Flatpickr Calendar Theme --- */
+.flatpickr-calendar {
+  background: #1f2937; /* dark-card */
+  border: 1px solid #374151; /* gray-700 */
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
-
-/* A subtle hover effect for the icon */
-input[type="date"]::-webkit-calendar-picker-indicator:hover {
-  background-color: #34d399; /* Use the primary theme color on hover */
-  filter: invert(0); /* Make the icon dark on the light green background */
+.flatpickr-calendar .flatpickr-month {
+  color: #f9fafb; /* dark-heading */
+}
+.flatpickr-calendar .flatpickr-weekday {
+  color: #34d399; /* primary */
+  font-weight: 600;
+}
+.flatpickr-calendar .flatpickr-day {
+  color: #d1d5db; /* dark-text */
+}
+.flatpickr-calendar .flatpickr-day:hover {
+  background: #374151; /* gray-700 */
+  border-color: transparent;
+}
+.flatpickr-calendar .flatpickr-day.today {
+  border-color: #3b82f6; /* secondary */
+}
+.flatpickr-calendar .flatpickr-day.selected,
+.flatpickr-calendar .flatpickr-day.startRange,
+.flatpickr-calendar .flatpickr-day.endRange {
+  background: #34d399; /* primary */
+  color: #111827; /* dark-bg */
+  border-color: #34d399; /* primary */
+}
+.flatpickr-calendar .flatpickr-day.disabled,
+.flatpickr-calendar .flatpickr-day.prevMonthDay,
+.flatpickr-calendar .flatpickr-day.nextMonthDay {
+  color: #4b5563; /* gray-600 */
+}
+.flatpickr-calendar .flatpickr-prev-month svg,
+.flatpickr-calendar .flatpickr-next-month svg {
+  fill: #d1d5db; /* dark-text */
+}
+.flatpickr-calendar .flatpickr-prev-month:hover svg,
+.flatpickr-calendar .flatpickr-next-month:hover svg {
+  fill: #34d399; /* primary */
+}
+.flatpickr-time input, .flatpickr-time .flatpickr-am-pm {
+  color: #d1d5db; /* dark-text */
 }
