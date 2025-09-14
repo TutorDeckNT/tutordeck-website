@@ -78,3 +78,24 @@
     background: linear-gradient(135deg, #1f2937, #111827);
     border-left: 4px solid #34d399;
 }
+
+/* --- FINALIZED: Custom styles for the native date picker --- */
+/* This hints to the browser to use a dark theme for the calendar pop-up */
+input[type="date"] {
+  color-scheme: dark;
+}
+
+/* Style the calendar icon for WebKit browsers (Chrome, Safari, Edge) */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  border-radius: 4px;
+  /* Use a filter to make the default black icon white/light gray */
+  filter: invert(0.8);
+  transition: filter 0.2s, background-color 0.2s;
+}
+
+/* A subtle hover effect for the icon */
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  background-color: #34d399; /* Use the primary theme color on hover */
+  filter: invert(0); /* Make the icon dark on the light green background */
+}
