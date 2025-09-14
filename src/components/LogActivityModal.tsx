@@ -1,5 +1,9 @@
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+
+// Since we are loading Flowbite from a CDN, we need to tell TypeScript
+// that the 'Datepicker' global variable will exist.
+declare const Datepicker: any;
 
 interface LogActivityModalProps {
     isOpen: boolean;
@@ -9,13 +13,47 @@ interface LogActivityModalProps {
 
 const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModalProps) => {
     const { user } = useAuth();
-    const [activityType, setActivityType] = useState(''); // Start with blank
+    const [activityType, setActivityType] = useState('');
     const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
     const [hours, setHours] = useState('');
     const [proofLink, setProofLink] = useState('');
     
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Create a ref for the datepicker input element
+    const datepickerInputRef = useRef<HTMLInputElement>(null);
+
+    // This effect initializes and destroys the datepicker instance
+    useEffect(() => {
+        if (isOpen && datepickerInputRef.current) {
+            const datepicker = new Datepicker(datepickerInputgRef.current, {
+                autohide: true,
+                format: 'yyyy-mm-dd',
+                todayHighlight: true,
+            });
+
+            // Function to handle date changes from the datepicker
+            const handleChangeDate = (e: any) => {
+                const newDate = e.detail.date;
+                if (newDate) {
+                    // Format the date to YYYY-MM-DD string to store in state
+                    const year = newDate.getFullYear();
+                    const month = (newDate.getMonth() + 1).toString().padStart(2, '0');
+                    const day = newDate.getDate().toString().padStart(2, '0');
+                    setActivityDate(`${year}-${month}-${day}`);
+                }
+            };
+
+            datepickerInputRef.current.addEventListener('changeDate', handleChangeDate);
+
+            // Cleanup function to destroy the datepicker when the modal closes
+            return () => {
+                datepicker.destroy();
+                datepickerInputRef.current?.removeEventListener('changeDate', handleChangeDate);
+            };
+        }
+    }, [isOpen]); // Re-run the effect when the modal opens
 
     // Reset form state when modal is closed
     useEffect(() => {
@@ -38,7 +76,6 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             return;
         }
 
-        // NEW: Front-end validation for max hours
         if (parseFloat(hours) > 8) {
             setError("You cannot log more than 8 hours for a single activity.");
             return;
@@ -67,8 +104,8 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                 throw new Error(data.message || "An unknown error occurred.");
             }
 
-            onActivityAdded(); // Trigger refresh on dashboard
-            onClose(); // Close the modal on success
+            onActivityAdded();
+            onClose();
 
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to submit activity.");
@@ -98,7 +135,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
                         <label htmlFor="activityType" className="block text-sm font-medium text-dark-text mb-2">Activity Type</label>
-                        <select id="activityType" value={activityType} onChange={e => setActivityType(e.target.value)} required className="w-full bg-dark-bg border border-gray-600 rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary">
+                        <select id="activityType" value={activityType} onChange={e => setActivityType(e.target.value)} required className="w-full bg-dark-bg border border-gray-600 rounded-lg py-2.5 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary">
                             <option value="" disabled>Select an activity type...</option>
                             <option>Peer Tutoring</option>
                             <option>Mentorship</option>
@@ -107,28 +144,34 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
 
                     <div>
                         <label htmlFor="activityDate" className="block text-sm font-medium text-dark-text mb-2">Date of Activity</label>
-                        <input type="date" id="activityDate" value={activityDate} onChange={e => setActivityDate(e.target.value)} required className="w-full bg-dark-bg border border-gray-600 rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" />
+                        {/* Flowbite Datepicker HTML Structure */}
+                        <div className="relative">
+                            <div className="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
+                                <svg className="w-4 h-4 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4Z M0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
+                                </svg>
+                            </div>
+                            <input 
+                                ref={datepickerInputRef}
+                                type="text" 
+                                id="activityDate"
+                                value={activityDate}
+                                onInput={(e) => setActivityDate((e.target as HTMLInputElement).value)} // Keep state in sync
+                                required 
+                                className="bg-dark-bg border border-gray-600 text-dark-text text-sm rounded-lg focus:ring-primary focus:border-primary block w-full ps-10 p-2.5" 
+                                placeholder="Select date"
+                            />
+                        </div>
                     </div>
 
                     <div>
                         <label htmlFor="hours" className="block text-sm font-medium text-dark-text mb-2">Hours (Max 8)</label>
-                        <input type="number" id="hours" value={hours} onChange={e => setHours(e.target.value)} required min="0.1" max="8" step="0.1" placeholder="e.g., 1.5" className="w-full bg-dark-bg border border-gray-600 rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <input type="number" id="hours" value={hours} onChange={e => setHours(e.target.value)} required min="0.1" max="8" step="0.1" placeholder="e.g., 1.5" className="w-full bg-dark-bg border border-gray-600 rounded-lg py-2.5 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
 
                     <div className="md:col-span-2">
-                        <label htmlFor="proofLink" className="block text-sm font-medium text-dark-text mb-2">
-                            Proof of Activity (Dropbox Link)
-                            <span className="group relative ml-2">
-                                <i className="fas fa-info-circle text-gray-400 cursor-pointer"></i>
-                                <span className="absolute bottom-full mb-2 w-72 bg-dark-bg border border-gray-600 text-dark-text text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none left-1/2 -translate-x-1/2 z-10">
-                                    1. Upload your audio/video proof to your Dropbox account.
-                                    <br />2. Click 'Share' then 'Copy link'.
-                                    <br />3. Ensure link settings are 'Anyone with the link can view'.
-                                    <br />4. Paste the link here.
-                                </span>
-                            </span>
-                        </label>
-                        <input type="url" id="proofLink" value={proofLink} onChange={e => setProofLink(e.target.value)} required placeholder="https://www.dropbox.com/..." className="w-full bg-dark-bg border border-gray-600 rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <label htmlFor="proofLink" className="block text-sm font-medium text-dark-text mb-2">Proof of Activity (Dropbox Link)</label>
+                        <input type="url" id="proofLink" value={proofLink} onChange={e => setProofLink(e.target.value)} required placeholder="https://www.dropbox.com/..." className="w-full bg-dark-bg border border-gray-600 rounded-lg py-2.5 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
 
                     {error && <p className="md:col-span-2 text-red-400 text-sm text-center -my-2">{error}</p>}
