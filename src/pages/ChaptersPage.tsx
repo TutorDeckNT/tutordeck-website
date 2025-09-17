@@ -5,7 +5,7 @@ const chapterData = [
     { 
         name: 'Prosper High School', 
         location: 'Prosper, TX', 
-        advisor: 'Mr. Graham and Mrs. Ballard', 
+        advisor: 'Mrs. Ballard', 
         lead: 'Manav A, Shaurya J, and Aakanksh R', 
         img: '/Prosper_High_School.avif' 
     },
