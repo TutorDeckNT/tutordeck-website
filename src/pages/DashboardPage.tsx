@@ -21,25 +21,17 @@ interface VolunteerActivity {
     proofLink: string;
 }
 
-interface DashboardSummary {
-    totalHours: number;
-    totalSessions: number;
-}
-
-interface CachedDashboardData {
+interface CachedData {
     timestamp: number;
-    summary: DashboardSummary;
     activities: VolunteerActivity[];
 }
 
-const CACHE_KEY = 'cachedDashboardData';
+const CACHE_KEY = 'cachedActivities';
 const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 hour
 
 const DashboardPage = () => {
     const { user } = useAuth();
     const [activities, setActivities] = useState<VolunteerActivity[]>([]);
-    const [totalHours, setTotalHours] = useState(0);
-    const [totalSessions, setTotalSessions] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
@@ -52,7 +44,7 @@ const DashboardPage = () => {
     const [filter, setFilter] = useState('All');
     const [sort, setSort] = useState<{ key: 'date' | 'hours', order: 'asc' | 'desc' }>({ key: 'date', order: 'desc' });
 
-    const fetchDashboardData = useCallback(async () => {
+    const fetchActivities = useCallback(async () => {
         if (!user) return;
         setLoading(true);
         setError(null);
@@ -61,11 +53,9 @@ const DashboardPage = () => {
         try {
             const cachedItem = localStorage.getItem(CACHE_KEY);
             if (cachedItem) {
-                const cachedData: CachedDashboardData = JSON.parse(cachedItem);
+                const cachedData: CachedData = JSON.parse(cachedItem);
                 if ((new Date().getTime() - cachedData.timestamp) < CACHE_DURATION_MS) {
                     setActivities(cachedData.activities);
-                    setTotalHours(cachedData.summary.totalHours);
-                    setTotalSessions(cachedData.summary.totalSessions);
                     setLoading(false);
                     return; // Cache is valid, no need to fetch
                 }
@@ -77,26 +67,15 @@ const DashboardPage = () => {
         // 2. If cache is invalid or missing, fetch from network
         try {
             const token = await user.getIdToken();
-            const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/dashboard`, {
+            const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch dashboard data.');
+            if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch activities.');
+            const data: VolunteerActivity[] = await response.json();
+            setActivities(data);
             
-            const data: { summary: DashboardSummary, activities: VolunteerActivity[] } = await response.json();
-            
-            // Update state
-            setActivities(data.activities || []);
-            setTotalHours(data.summary.totalHours || 0);
-            setTotalSessions(data.summary.totalSessions || 0);
-
             // Update cache
-            const cacheData: CachedDashboardData = {
-                timestamp: new Date().getTime(),
-                summary: data.summary,
-                activities: data.activities
-            };
-            localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: new Date().getTime(), activities: data }));
         } catch (e) {
             setError(e instanceof Error ? e.message : 'An unknown error occurred.');
         } finally {
@@ -105,29 +84,14 @@ const DashboardPage = () => {
     }, [user]);
 
     useEffect(() => {
-        fetchDashboardData();
-    }, [fetchDashboardData]);
+        fetchActivities();
+    }, [fetchActivities]);
 
     // OPTIMIZED: Update state and cache locally without a full refetch
     const handleActivityAdded = (newActivity: VolunteerActivity) => {
-        // Optimistically update state
         const updatedActivities = [newActivity, ...activities];
-        const updatedSummary = {
-            totalHours: totalHours + newActivity.hours,
-            totalSessions: totalSessions + 1
-        };
-
         setActivities(updatedActivities);
-        setTotalHours(updatedSummary.totalHours);
-        setTotalSessions(updatedSummary.totalSessions);
-
-        // Optimistically update local storage
-        const updatedCache: CachedDashboardData = {
-            timestamp: new Date().getTime(),
-            summary: updatedSummary,
-            activities: updatedActivities
-        };
-        localStorage.setItem(CACHE_KEY, JSON.stringify(updatedCache));
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: new Date().getTime(), activities: updatedActivities }));
     };
 
     const handleGenerateTranscript = async (email: string) => {
@@ -151,6 +115,10 @@ const DashboardPage = () => {
             setIsEmailModalOpen(false);
         }
     };
+
+    // CLIENT-SIDE DATA DERIVATION
+    const totalHours = useMemo(() => activities.reduce((sum, act) => sum + (act.hours || 0), 0), [activities]);
+    const totalSessions = activities.length;
 
     const filteredAndSortedActivities = useMemo(() => {
         return activities
