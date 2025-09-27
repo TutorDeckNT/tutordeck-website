@@ -21,17 +21,11 @@ interface VolunteerActivity {
     proofLink: string;
 }
 
-interface CachedData {
-    timestamp: number;
-    activities: VolunteerActivity[];
-}
-
-const CACHE_KEY = 'cachedActivities';
-const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 hour
-
 const DashboardPage = () => {
     const { user } = useAuth();
     const [activities, setActivities] = useState<VolunteerActivity[]>([]);
+    const [totalHours, setTotalHours] = useState(0);
+    const [totalSessions, setTotalSessions] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
@@ -44,33 +38,22 @@ const DashboardPage = () => {
     const [filter, setFilter] = useState('All');
     const [sort, setSort] = useState<{ key: 'date' | 'hours', order: 'asc' | 'desc' }>({ key: 'date', order: 'desc' });
 
-    const fetchActivities = useCallback(async (forceRefresh = false) => {
+    const fetchDashboardData = useCallback(async () => {
         if (!user) return;
         setLoading(true);
         setError(null);
         try {
-            if (!forceRefresh) {
-                const cachedItem = localStorage.getItem(CACHE_KEY);
-                if (cachedItem) {
-                    const cachedData: CachedData = JSON.parse(cachedItem);
-                    if ((new Date().getTime() - cachedData.timestamp) < CACHE_DURATION_MS) {
-                        setActivities(cachedData.activities);
-                        setLoading(false);
-                        return;
-                    }
-                }
-            }
-        } catch (e) { console.error("Cache read failed:", e); }
-
-        try {
             const token = await user.getIdToken();
-            const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, {
+            const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/dashboard`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch activities.');
-            const data: VolunteerActivity[] = await response.json();
-            setActivities(data);
-            localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: new Date().getTime(), activities: data }));
+            if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch dashboard data.');
+            
+            const data = await response.json();
+            setActivities(data.activities || []);
+            setTotalHours(data.summary.totalHours || 0);
+            setTotalSessions(data.summary.totalSessions || 0);
+
         } catch (e) {
             setError(e instanceof Error ? e.message : 'An unknown error occurred.');
         } finally {
@@ -78,13 +61,12 @@ const DashboardPage = () => {
         }
     }, [user]);
 
-    useEffect(() => { fetchActivities(); }, [fetchActivities]);
+    useEffect(() => {
+        fetchDashboardData();
+    }, [fetchDashboardData]);
 
-    // OPTIMIZED: Update state and cache locally without a full refetch
-    const handleActivityAdded = (newActivity: VolunteerActivity) => {
-        const updatedActivities = [newActivity, ...activities];
-        setActivities(updatedActivities);
-        localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: new Date().getTime(), activities: updatedActivities }));
+    const handleActivityAdded = () => {
+        fetchDashboardData(); // Refetch all data to ensure UI is in sync
     };
 
     const handleGenerateTranscript = async (email: string) => {
@@ -108,10 +90,6 @@ const DashboardPage = () => {
             setIsEmailModalOpen(false);
         }
     };
-
-    // CLIENT-SIDE DATA DERIVATION
-    const totalHours = useMemo(() => activities.reduce((sum, act) => sum + (act.hours || 0), 0), [activities]);
-    const totalSessions = activities.length;
 
     const filteredAndSortedActivities = useMemo(() => {
         return activities
