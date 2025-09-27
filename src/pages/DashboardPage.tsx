@@ -115,9 +115,19 @@ const DashboardPage = () => {
         // We don't know the new server timestamp, so we mark our cache as potentially stale
         // by setting the timestamp to null. The next background sync will fix it.
         const cachedItem = localStorage.getItem(CACHE_KEY);
-        const cachedData: CachedData | null = cachedItem ? JSON.parse(cachedItem) : { lastModified: null, activities: [] };
+        
+        // --- FIX STARTS HERE ---
+        // Initialize with a default structure if nothing is in the cache.
+        // This guarantees cachedData is an object and satisfies TypeScript.
+        const cachedData: CachedData = cachedItem 
+            ? JSON.parse(cachedItem) 
+            : { lastModified: null, activities: [] };
+
+        // Now we can safely modify the properties.
         cachedData.activities = updatedActivities;
         cachedData.lastModified = null; // Invalidate timestamp to force a sync on next load
+        // --- FIX ENDS HERE ---
+
         localStorage.setItem(CACHE_KEY, JSON.stringify(cachedData));
     };
 
