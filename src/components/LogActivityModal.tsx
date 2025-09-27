@@ -5,13 +5,12 @@ import { useAuth } from '../contexts/AuthContext';
 // Tell TypeScript that the 'flatpickr' function will exist on the window
 declare const flatpickr: any;
 
-interface VolunteerActivity {
+// This interface represents the raw response from the POST /api/activities endpoint
+// where the date is a string.
+interface NewActivityResponse {
     id: string;
     activityType: string;
-    activityDate: { 
-        _seconds: number; 
-        _nanoseconds: number; 
-    };
+    activityDate: string; // The key difference is here
     hours: number;
     proofLink: string;
 }
@@ -19,7 +18,9 @@ interface VolunteerActivity {
 interface LogActivityModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onActivityAdded: (newActivity: VolunteerActivity) => void;
+    // FIX: This prop now correctly expects the NewActivityResponse type,
+    // which is what the server actually returns.
+    onActivityAdded: (newActivity: NewActivityResponse) => void;
 }
 
 const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModalProps) => {
@@ -76,7 +77,8 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             });
             const data = await response.json();
             if (!response.ok) { throw new Error(data.message || "An unknown error occurred."); }
-            onActivityAdded(data); // Pass the new activity back to the parent
+            // The 'data' object is of type NewActivityResponse, and now the types match.
+            onActivityAdded(data);
             onClose();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to submit activity.");
