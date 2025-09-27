@@ -21,18 +21,19 @@ interface VolunteerActivity {
     proofLink: string;
 }
 
+// The cache now also stores the timestamp from the server's metadata
 interface CachedData {
-    timestamp: number;
+    lastModified: { _seconds: number, _nanoseconds: number } | null;
     activities: VolunteerActivity[];
 }
 
 const CACHE_KEY = 'cachedActivities';
-const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 hour
 
 const DashboardPage = () => {
     const { user } = useAuth();
     const [activities, setActivities] = useState<VolunteerActivity[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [initialLoading, setInitialLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
@@ -40,58 +41,84 @@ const DashboardPage = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [serverMessage, setServerMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    // State for interactive table
     const [filter, setFilter] = useState('All');
     const [sort, setSort] = useState<{ key: 'date' | 'hours', order: 'asc' | 'desc' }>({ key: 'date', order: 'desc' });
 
-    const fetchActivities = useCallback(async () => {
+    const smartSync = useCallback(async (forceRefresh = false) => {
         if (!user) return;
-        setLoading(true);
+        setIsRefreshing(true);
         setError(null);
 
-        // 1. Try to load from local cache first
-        try {
-            const cachedItem = localStorage.getItem(CACHE_KEY);
-            if (cachedItem) {
-                const cachedData: CachedData = JSON.parse(cachedItem);
-                if ((new Date().getTime() - cachedData.timestamp) < CACHE_DURATION_MS) {
-                    setActivities(cachedData.activities);
-                    setLoading(false);
-                    return; // Cache is valid, no need to fetch
-                }
-            }
-        } catch (e) {
-            console.error("Failed to read from cache:", e);
-        }
+        const cachedItem = localStorage.getItem(CACHE_KEY);
+        const cachedData: CachedData | null = cachedItem ? JSON.parse(cachedItem) : null;
 
-        // 2. If cache is invalid or missing, fetch from network
         try {
             const token = await user.getIdToken();
-            const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, {
+            
+            // 1. Always fetch the cheap metadata first.
+            const metaResponse = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/metadata`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch activities.');
-            const data: VolunteerActivity[] = await response.json();
-            setActivities(data);
+            if (!metaResponse.ok) throw new Error('Could not check for updates.');
+            const serverMeta = await metaResponse.json();
+
+            // 2. Compare timestamps to see if a full sync is needed.
+            const serverTimestamp = serverMeta.lastModified?._seconds;
+            const localTimestamp = cachedData?.lastModified?._seconds;
+
+            if (!forceRefresh && serverTimestamp === localTimestamp) {
+                console.log("Cache is fresh. No full sync needed. Reads: 1");
+                setIsRefreshing(false);
+                return; // EXIT: The cache is up-to-date.
+            }
+
+            // 3. Only if timestamps differ (or on forced refresh), fetch all activities.
+            console.log("Cache is stale. Performing full sync...");
+            const activitiesResponse = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!activitiesResponse.ok) throw new Error('Failed to fetch activities.');
+            const serverActivities: VolunteerActivity[] = await activitiesResponse.json();
             
-            // Update cache
-            localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: new Date().getTime(), activities: data }));
+            setActivities(serverActivities);
+            
+            // 4. Update the cache with the new data and the new server timestamp.
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+                lastModified: serverMeta.lastModified,
+                activities: serverActivities
+            }));
+
         } catch (e) {
             setError(e instanceof Error ? e.message : 'An unknown error occurred.');
         } finally {
-            setLoading(false);
+            setIsRefreshing(false);
         }
     }, [user]);
 
     useEffect(() => {
-        fetchActivities();
-    }, [fetchActivities]);
+        // On initial load, populate from cache first for instant UI.
+        const cachedItem = localStorage.getItem(CACHE_KEY);
+        if (cachedItem) {
+            setActivities(JSON.parse(cachedItem).activities);
+        }
+        setInitialLoading(false);
 
-    // OPTIMIZED: Update state and cache locally without a full refetch
+        // Then, kick off the smart sync in the background.
+        smartSync();
+    }, [smartSync]);
+
     const handleActivityAdded = (newActivity: VolunteerActivity) => {
+        // Optimistically update the UI for a snappy experience.
         const updatedActivities = [newActivity, ...activities];
         setActivities(updatedActivities);
-        localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: new Date().getTime(), activities: updatedActivities }));
+        
+        // We don't know the new server timestamp, so we mark our cache as potentially stale
+        // by setting the timestamp to null. The next background sync will fix it.
+        const cachedItem = localStorage.getItem(CACHE_KEY);
+        const cachedData: CachedData | null = cachedItem ? JSON.parse(cachedItem) : { lastModified: null, activities: [] };
+        cachedData.activities = updatedActivities;
+        cachedData.lastModified = null; // Invalidate timestamp to force a sync on next load
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cachedData));
     };
 
     const handleGenerateTranscript = async (email: string) => {
@@ -116,12 +143,11 @@ const DashboardPage = () => {
         }
     };
 
-    // CLIENT-SIDE DATA DERIVATION
     const totalHours = useMemo(() => activities.reduce((sum, act) => sum + (act.hours || 0), 0), [activities]);
     const totalSessions = activities.length;
 
     const filteredAndSortedActivities = useMemo(() => {
-        return activities
+        return [...activities]
             .filter(act => filter === 'All' || act.activityType === filter)
             .sort((a, b) => {
                 if (sort.key === 'date') {
@@ -146,15 +172,8 @@ const DashboardPage = () => {
 
     const SkeletonLoader = () => (
         <div className="space-y-8">
-            <div className="grid md:grid-cols-3 gap-8">
-                <div className="h-24 bg-dark-card rounded-lg animate-pulse"></div>
-                <div className="h-24 bg-dark-card rounded-lg animate-pulse"></div>
-                <div className="h-24 bg-dark-card rounded-lg animate-pulse"></div>
-            </div>
-            <div className="grid lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-1 h-80 bg-dark-card rounded-lg animate-pulse"></div>
-                <div className="lg:col-span-2 h-80 bg-dark-card rounded-lg animate-pulse"></div>
-            </div>
+            <div className="grid md:grid-cols-3 gap-8"><div className="h-24 bg-dark-card rounded-lg animate-pulse"></div><div className="h-24 bg-dark-card rounded-lg animate-pulse"></div><div className="h-24 bg-dark-card rounded-lg animate-pulse"></div></div>
+            <div className="grid lg:grid-cols-3 gap-8"><div className="lg:col-span-1 h-80 bg-dark-card rounded-lg animate-pulse"></div><div className="lg:col-span-2 h-80 bg-dark-card rounded-lg animate-pulse"></div></div>
         </div>
     );
 
@@ -164,38 +183,32 @@ const DashboardPage = () => {
             <LogActivityModal isOpen={isLogModalOpen} onClose={() => setIsLogModalOpen(false)} onActivityAdded={handleActivityAdded} />
 
             <main className="container mx-auto px-6 py-20 mt-16">
-                {/* --- HEADER --- */}
                 <Reveal className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
                     <div>
                         <h1 className="text-4xl md:text-5xl font-extrabold text-dark-heading">Mission Control</h1>
                         <p className="text-lg mt-2 text-dark-text">Welcome back, {user?.displayName?.split(' ')[0] || 'Volunteer'}!</p>
                     </div>
                     <div className="flex gap-4 mt-6 md:mt-0">
+                        <button onClick={() => smartSync(true)} disabled={isRefreshing} className="bg-dark-card border border-gray-600 text-dark-text font-semibold px-5 py-2.5 rounded-lg hover:bg-gray-700 hover:text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait">
+                            <i className={`fas fa-sync ${isRefreshing ? 'fa-spin' : ''}`}></i>
+                            <span>{isRefreshing ? 'Syncing...' : 'Refresh'}</span>
+                        </button>
                         <button onClick={() => setIsLogModalOpen(true)} className="bg-primary text-dark-bg font-semibold px-5 py-2.5 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 cta-button">
                             <i className="fas fa-plus-circle"></i><span>Log Activity</span>
                         </button>
                     </div>
                 </Reveal>
 
-                {serverMessage && (
-                    <Reveal className="mb-8">
-                        <div className={`p-4 rounded-lg text-center ${serverMessage.type === 'success' ? 'bg-green-900 text-green-200' : 'bg-red-900 text-red-200'}`}>
-                            {serverMessage.text}
-                        </div>
-                    </Reveal>
-                )}
+                {serverMessage && (<Reveal className="mb-8"><div className={`p-4 rounded-lg text-center ${serverMessage.type === 'success' ? 'bg-green-900 text-green-200' : 'bg-red-900 text-red-200'}`}>{serverMessage.text}</div></Reveal>)}
 
-                {loading ? <SkeletonLoader /> : error ? <p className="text-center p-8 text-red-400">Error: {error}</p> : (
+                {initialLoading ? <SkeletonLoader /> : error ? <p className="text-center p-8 text-red-400">Error: {error}</p> : (
                     <div className="space-y-12">
-                        {/* --- MAIN GRID --- */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {/* Left Column */}
                             <div className="lg:col-span-1 space-y-8">
                                 <ImpactCard icon="fa-clock" label="Total Hours Logged" value={totalHours.toFixed(1)} colorClass="text-primary" />
                                 <ImpactCard icon="fa-check-circle" label="Sessions Completed" value={totalSessions} colorClass="text-secondary" />
                                 <ProgressTracker totalHours={totalHours} />
                             </div>
-                            {/* Right Column */}
                             <div className="lg:col-span-2 space-y-8">
                                 <ActivityChart activities={activities} />
                                 <Reveal>
@@ -245,7 +258,6 @@ const DashboardPage = () => {
                                 </Reveal>
                             </div>
                         </div>
-                        {/* --- ACHIEVEMENTS SECTION --- */}
                         <AchievementsList activities={activities} />
                     </div>
                 )}
