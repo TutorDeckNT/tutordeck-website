@@ -21,13 +21,20 @@ interface VolunteerActivity {
     proofLink: string;
 }
 
-// The cache now also stores the timestamp from the server's metadata
+// This type represents the raw response from the POST /api/activities endpoint
+// where the date is a string.
+interface NewActivityResponse extends Omit<VolunteerActivity, 'activityDate'> {
+    activityDate: string; 
+}
+
 interface CachedData {
     lastModified: { _seconds: number, _nanoseconds: number } | null;
     activities: VolunteerActivity[];
 }
 
 const CACHE_KEY = 'cachedActivities';
+const REFRESH_TIMESTAMP_KEY = 'lastRefreshTimestamp';
+const ONE_HOUR_MS = 60 * 60 * 1000;
 
 const DashboardPage = () => {
     const { user } = useAuth();
@@ -35,6 +42,7 @@ const DashboardPage = () => {
     const [initialLoading, setInitialLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showRefreshButton, setShowRefreshButton] = useState(true);
     
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const [isLogModalOpen, setIsLogModalOpen] = useState(false);
@@ -54,40 +62,24 @@ const DashboardPage = () => {
 
         try {
             const token = await user.getIdToken();
-            
-            // 1. Always fetch the cheap metadata first.
-            const metaResponse = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/metadata`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const metaResponse = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/metadata`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!metaResponse.ok) throw new Error('Could not check for updates.');
             const serverMeta = await metaResponse.json();
 
-            // 2. Compare timestamps to see if a full sync is needed.
             const serverTimestamp = serverMeta.lastModified?._seconds;
             const localTimestamp = cachedData?.lastModified?._seconds;
 
             if (!forceRefresh && serverTimestamp === localTimestamp) {
-                console.log("Cache is fresh. No full sync needed. Reads: 1");
                 setIsRefreshing(false);
-                return; // EXIT: The cache is up-to-date.
+                return;
             }
 
-            // 3. Only if timestamps differ (or on forced refresh), fetch all activities.
-            console.log("Cache is stale. Performing full sync...");
-            const activitiesResponse = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const activitiesResponse = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!activitiesResponse.ok) throw new Error('Failed to fetch activities.');
             const serverActivities: VolunteerActivity[] = await activitiesResponse.json();
             
             setActivities(serverActivities);
-            
-            // 4. Update the cache with the new data and the new server timestamp.
-            localStorage.setItem(CACHE_KEY, JSON.stringify({
-                lastModified: serverMeta.lastModified,
-                activities: serverActivities
-            }));
-
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ lastModified: serverMeta.lastModified, activities: serverActivities }));
         } catch (e) {
             setError(e instanceof Error ? e.message : 'An unknown error occurred.');
         } finally {
@@ -96,38 +88,53 @@ const DashboardPage = () => {
     }, [user]);
 
     useEffect(() => {
-        // On initial load, populate from cache first for instant UI.
         const cachedItem = localStorage.getItem(CACHE_KEY);
         if (cachedItem) {
             setActivities(JSON.parse(cachedItem).activities);
         }
         setInitialLoading(false);
-
-        // Then, kick off the smart sync in the background.
         smartSync();
+
+        // Cooldown logic for the refresh button
+        const lastRefresh = localStorage.getItem(REFRESH_TIMESTAMP_KEY);
+        if (lastRefresh) {
+            const timeSinceLastRefresh = Date.now() - parseInt(lastRefresh, 10);
+            if (timeSinceLastRefresh < ONE_HOUR_MS) {
+                setShowRefreshButton(false);
+                const timeRemaining = ONE_HOUR_MS - timeSinceLastRefresh;
+                const timeoutId = setTimeout(() => setShowRefreshButton(true), timeRemaining);
+                return () => clearTimeout(timeoutId); // Cleanup timeout on unmount
+            }
+        }
     }, [smartSync]);
 
-    const handleActivityAdded = (newActivity: VolunteerActivity) => {
-        // Optimistically update the UI for a snappy experience.
-        const updatedActivities = [newActivity, ...activities];
+    const handleRefreshClick = () => {
+        const now = Date.now();
+        localStorage.setItem(REFRESH_TIMESTAMP_KEY, now.toString());
+        setShowRefreshButton(false);
+        smartSync(true);
+        setTimeout(() => setShowRefreshButton(true), ONE_HOUR_MS);
+    };
+
+    const handleActivityAdded = (newActivityResponse: NewActivityResponse) => {
+        // FIX: Convert the date string from the server response into the format
+        // the rest of the application expects ({ _seconds, _nanoseconds }).
+        const date = new Date(newActivityResponse.activityDate);
+        const newActivityForState: VolunteerActivity = {
+            ...newActivityResponse,
+            activityDate: {
+                _seconds: Math.floor(date.getTime() / 1000),
+                _nanoseconds: 0 
+            }
+        };
+
+        const updatedActivities = [newActivityForState, ...activities];
         setActivities(updatedActivities);
         
-        // We don't know the new server timestamp, so we mark our cache as potentially stale
-        // by setting the timestamp to null. The next background sync will fix it.
         const cachedItem = localStorage.getItem(CACHE_KEY);
-        
-        // --- FIX STARTS HERE ---
-        // Initialize with a default structure if nothing is in the cache.
-        // This guarantees cachedData is an object and satisfies TypeScript.
-        const cachedData: CachedData = cachedItem 
-            ? JSON.parse(cachedItem) 
-            : { lastModified: null, activities: [] };
-
-        // Now we can safely modify the properties.
+        const cachedData: CachedData = cachedItem ? JSON.parse(cachedItem) : { lastModified: null, activities: [] };
         cachedData.activities = updatedActivities;
-        cachedData.lastModified = null; // Invalidate timestamp to force a sync on next load
-        // --- FIX ENDS HERE ---
-
+        cachedData.lastModified = null;
         localStorage.setItem(CACHE_KEY, JSON.stringify(cachedData));
     };
 
@@ -199,10 +206,12 @@ const DashboardPage = () => {
                         <p className="text-lg mt-2 text-dark-text">Welcome back, {user?.displayName?.split(' ')[0] || 'Volunteer'}!</p>
                     </div>
                     <div className="flex gap-4 mt-6 md:mt-0">
-                        <button onClick={() => smartSync(true)} disabled={isRefreshing} className="bg-dark-card border border-gray-600 text-dark-text font-semibold px-5 py-2.5 rounded-lg hover:bg-gray-700 hover:text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait">
-                            <i className={`fas fa-sync ${isRefreshing ? 'fa-spin' : ''}`}></i>
-                            <span>{isRefreshing ? 'Syncing...' : 'Refresh'}</span>
-                        </button>
+                        {showRefreshButton && (
+                            <button onClick={handleRefreshClick} disabled={isRefreshing} className="bg-dark-card border border-gray-600 text-dark-text font-semibold px-5 py-2.5 rounded-lg hover:bg-gray-700 hover:text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait">
+                                <i className={`fas fa-sync ${isRefreshing ? 'fa-spin' : ''}`}></i>
+                                <span>{isRefreshing ? 'Syncing...' : 'Refresh'}</span>
+                            </button>
+                        )}
                         <button onClick={() => setIsLogModalOpen(true)} className="bg-primary text-dark-bg font-semibold px-5 py-2.5 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 cta-button">
                             <i className="fas fa-plus-circle"></i><span>Log Activity</span>
                         </button>
