@@ -21,8 +21,6 @@ interface VolunteerActivity {
     proofLink: string;
 }
 
-// This type represents the raw response from the POST /api/activities endpoint
-// where the date is a string.
 interface NewActivityResponse extends Omit<VolunteerActivity, 'activityDate'> {
     activityDate: string; 
 }
@@ -34,7 +32,9 @@ interface CachedData {
 
 const CACHE_KEY = 'cachedActivities';
 const REFRESH_TIMESTAMP_KEY = 'lastRefreshTimestamp';
+const AUTO_SYNC_TIMESTAMP_KEY = 'lastAutoSyncTimestamp'; // New key for daily sync
 const ONE_HOUR_MS = 60 * 60 * 1000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 const DashboardPage = () => {
     const { user } = useAuth();
@@ -52,7 +52,7 @@ const DashboardPage = () => {
     const [filter, setFilter] = useState('All');
     const [sort, setSort] = useState<{ key: 'date' | 'hours', order: 'asc' | 'desc' }>({ key: 'date', order: 'desc' });
 
-    const smartSync = useCallback(async (forceRefresh = false) => {
+    const smartSync = useCallback(async (isManualRefresh = false) => {
         if (!user) return;
         setIsRefreshing(true);
         setError(null);
@@ -69,7 +69,7 @@ const DashboardPage = () => {
             const serverTimestamp = serverMeta.lastModified?._seconds;
             const localTimestamp = cachedData?.lastModified?._seconds;
 
-            if (!forceRefresh && serverTimestamp === localTimestamp) {
+            if (!isManualRefresh && serverTimestamp === localTimestamp) {
                 setIsRefreshing(false);
                 return;
             }
@@ -80,6 +80,11 @@ const DashboardPage = () => {
             
             setActivities(serverActivities);
             localStorage.setItem(CACHE_KEY, JSON.stringify({ lastModified: serverMeta.lastModified, activities: serverActivities }));
+
+            // If this was an automatic sync, update the auto-sync timestamp.
+            if (!isManualRefresh) {
+                localStorage.setItem(AUTO_SYNC_TIMESTAMP_KEY, Date.now().toString());
+            }
         } catch (e) {
             setError(e instanceof Error ? e.message : 'An unknown error occurred.');
         } finally {
@@ -88,22 +93,33 @@ const DashboardPage = () => {
     }, [user]);
 
     useEffect(() => {
+        // 1. Always load from cache first for an instant UI.
         const cachedItem = localStorage.getItem(CACHE_KEY);
         if (cachedItem) {
             setActivities(JSON.parse(cachedItem).activities);
         }
         setInitialLoading(false);
-        smartSync();
 
-        // Cooldown logic for the refresh button
-        const lastRefresh = localStorage.getItem(REFRESH_TIMESTAMP_KEY);
-        if (lastRefresh) {
-            const timeSinceLastRefresh = Date.now() - parseInt(lastRefresh, 10);
+        // 2. Check if an automatic background sync is needed (once per day).
+        const lastAutoSync = localStorage.getItem(AUTO_SYNC_TIMESTAMP_KEY);
+        const shouldAutoSync = !lastAutoSync || (Date.now() - parseInt(lastAutoSync, 10)) > ONE_DAY_MS;
+
+        if (shouldAutoSync) {
+            console.log("Performing daily automatic background sync.");
+            smartSync(false);
+        } else {
+            console.log("Daily auto-sync not needed yet.");
+        }
+
+        // 3. Manage the visibility of the manual refresh button (1-hour cooldown).
+        const lastManualRefresh = localStorage.getItem(REFRESH_TIMESTAMP_KEY);
+        if (lastManualRefresh) {
+            const timeSinceLastRefresh = Date.now() - parseInt(lastManualRefresh, 10);
             if (timeSinceLastRefresh < ONE_HOUR_MS) {
                 setShowRefreshButton(false);
                 const timeRemaining = ONE_HOUR_MS - timeSinceLastRefresh;
                 const timeoutId = setTimeout(() => setShowRefreshButton(true), timeRemaining);
-                return () => clearTimeout(timeoutId); // Cleanup timeout on unmount
+                return () => clearTimeout(timeoutId);
             }
         }
     }, [smartSync]);
@@ -112,13 +128,11 @@ const DashboardPage = () => {
         const now = Date.now();
         localStorage.setItem(REFRESH_TIMESTAMP_KEY, now.toString());
         setShowRefreshButton(false);
-        smartSync(true);
+        smartSync(true); // Pass true to indicate it's a manual refresh.
         setTimeout(() => setShowRefreshButton(true), ONE_HOUR_MS);
     };
 
     const handleActivityAdded = (newActivityResponse: NewActivityResponse) => {
-        // FIX: Convert the date string from the server response into the format
-        // the rest of the application expects ({ _seconds, _nanoseconds }).
         const date = new Date(newActivityResponse.activityDate);
         const newActivityForState: VolunteerActivity = {
             ...newActivityResponse,
