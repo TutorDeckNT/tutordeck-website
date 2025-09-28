@@ -111,6 +111,8 @@ const DashboardPage = () => {
             const timeSinceLastRefresh = Date.now() - parseInt(lastManualRefresh, 10);
             if (timeSinceLastRefresh < ONE_HOUR_MS) {
                 setShowRefreshButton(false);
+                // THE FIX: Define timeRemaining before using it.
+                const timeRemaining = ONE_HOUR_MS - timeSinceLastRefresh;
                 const timeoutId = setTimeout(() => setShowRefreshButton(true), timeRemaining);
                 return () => clearTimeout(timeoutId);
             }
