@@ -25,8 +25,8 @@ const Footer = () => (
                     <ul className="space-y-2 text-sm">
                         <li className="flex items-start">
                             <i className="fas fa-envelope w-6 text-primary pt-1"></i>
-                            <a href="mailto:prospertutorcorp@gmail.com" className="hover:text-primary">
-                                prospertutorcorp@gmail.com
+                            <a href="mailto:join@tutordeck.org" className="hover:text-primary">
+                                join@tutordeck.org
                             </a>
                         </li>
                         <li className="flex items-start">
