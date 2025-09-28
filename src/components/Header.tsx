@@ -51,8 +51,8 @@ const Header = () => {
             {/* ================================== */}
             <header className="fixed top-0 left-0 right-0 z-40 p-4">
                 <div className="hidden lg:flex justify-between items-center">
-                    <Link to="/" className="flex items-center gap-3">
-                        <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-10 w-10 rounded-full object-cover border-2 border-white/30" />
+                    <Link to="/" className="flex items-center gap-3 bg-dark-card/60 backdrop-blur-lg border border-white/20 rounded-full shadow-xl p-1.5 pr-5 hover:shadow-[0_0_20px_rgba(52,211,153,0.4)] transition-shadow duration-300">
+                        <img src="/mascot.avif" alt="TutorDeck Mascot" className="h-10 w-10 rounded-full object-cover" />
                         <span className="text-2xl font-bold text-white">TutorDeck</span>
                     </Link>
                     <div className="relative" ref={dropdownRef}>
