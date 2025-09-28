@@ -15,7 +15,7 @@ interface AchievementsListProps {
 }
 
 const AchievementItem = ({ ach, earned }: { ach: Achievement, earned: boolean }) => (
-    <div className={`flex items-center gap-4 p-4 rounded-lg transition-all duration-300 transform ${earned ? 'bg-dark-bg hover:scale-105 hover:bg-gray-800' : 'bg-transparent opacity-40'}`}>
+    <div className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-300 transform ${earned ? 'bg-white/5 hover:scale-105 hover:bg-white/10' : 'opacity-40'}`}>
         <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl flex-shrink-0 ${earned ? 'bg-primary text-dark-bg' : 'bg-gray-700 text-gray-400'}`}>
             <i className={`fas ${ach.icon}`}></i>
         </div>
@@ -33,7 +33,7 @@ const AchievementsList = ({ activities }: AchievementsListProps) => {
     return (
         <Reveal>
             <h2 className="text-3xl font-bold text-dark-heading mb-6 text-center md:text-left">Your Achievements</h2>
-            <div className="bg-dark-card p-4 sm:p-6 rounded-lg border border-gray-700">
+            <div className="bg-black/20 backdrop-blur-xl border border-white/20 p-4 sm:p-6 rounded-2xl shadow-lg">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {earnedAchievements.map(ach => <AchievementItem key={ach.id} ach={ach} earned={true} />)}
                     {unearnedAchievements.map(ach => <AchievementItem key={ach.id} ach={ach} earned={false} />)}
