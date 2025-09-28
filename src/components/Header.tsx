@@ -52,7 +52,7 @@ const Header = () => {
             <header className="fixed top-0 left-0 right-0 z-40 p-4">
                 <div className="hidden lg:flex justify-between items-center">
                     <Link to="/" className="flex items-center gap-3 bg-dark-card/60 backdrop-blur-lg border border-white/20 rounded-full shadow-xl p-1.5 pr-5 hover:shadow-[0_0_20px_rgba(52,211,153,0.4)] transition-shadow duration-300">
-                        <img src="/mascot.png" alt="TutorDeck Mascot" className="h-10 w-10 rounded-full object-cover" />
+                        <img src="/mascot.svg" alt="TutorDeck Mascot" className="h-10 w-10 rounded-no object-cover" />
                         <span className="text-2xl font-bold text-white">TutorDeck</span>
                     </Link>
                     <div className="relative" ref={dropdownRef}>
@@ -63,7 +63,7 @@ const Header = () => {
                                     <span>Dashboard</span>
                                 </div>
                                 <button onClick={toggleDropdown} className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-primary/50 block relative z-10">
-                                    <img src={user.photoURL || '/mascot.png'} alt="User Profile" className="w-full h-full object-cover" />
+                                    <img src={user.photoURL || '/mascot.svg'} alt="User Profile" className="w-full h-full object-cover" />
                                 </button>
                                 {isDropdownOpen && (
                                     <div className="absolute top-full right-0 mt-3 w-64 bg-dark-card/80 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl">
@@ -99,7 +99,7 @@ const Header = () => {
                 {/* --- Mobile: Top Left Floating Logo --- */}
                 <div className="fixed top-4 left-4 z-40">
                     <Link to="/" className="flex items-center gap-2 bg-dark-card/60 backdrop-blur-lg border border-white/20 rounded-full shadow-xl p-2 pr-4">
-                        <img src="/mascot.png" alt="TutorDeck Mascot" className="h-8 w-8 rounded-full object-cover" />
+                        <img src="/mascot.svg" alt="TutorDeck Mascot" className="h-8 w-8 rounded-no object-cover" />
                         <span className="font-bold text-white text-lg">TutorDeck</span>
                     </Link>
                 </div>
@@ -114,7 +114,7 @@ const Header = () => {
                         <div className="w-px h-6 bg-white/20 mx-1"></div>
                         <button onClick={toggleMobileMenu} className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
                             {user ? (
-                                <img src={user.photoURL || '/mascot.png'} alt="User Profile" className="w-9 h-9 rounded-full object-cover" />
+                                <img src={user.photoURL || '/mascot.svg'} alt="User Profile" className="w-9 h-9 rounded-no object-cover" />
                             ) : (
                                 <i className="fas fa-user text-xl text-dark-text"></i>
                             )}
@@ -136,7 +136,7 @@ const Header = () => {
                     <div className="w-12 h-1.5 bg-white/30 rounded-full mx-auto mb-6"></div>
                     {user ? (
                         <div className="flex flex-col items-center text-center">
-                            <img src={user.photoURL || '/mascot.png'} alt="User Profile" className="w-16 h-16 rounded-full mb-3 border-2 border-primary" />
+                            <img src={user.photoURL || '/mascot.svg'} alt="User Profile" className="w-16 h-16 rounded-no mb-3 border-2 border-primary" />
                             <p className="font-bold text-dark-heading text-lg">{user.displayName}</p>
                             <p className="text-sm text-dark-text truncate w-full max-w-xs mb-6">{user.email}</p>
                             <nav className="w-full flex flex-col gap-3">
