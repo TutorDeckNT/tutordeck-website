@@ -15,7 +15,7 @@ interface ActivityChartProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-dark-card p-3 border border-gray-700 rounded-lg shadow-lg">
+            <div className="bg-black/40 backdrop-blur-lg p-3 border border-white/20 rounded-lg shadow-lg">
                 <p className="label text-sm font-bold text-dark-heading">{`${label}`}</p>
                 <p className="intro text-xs text-secondary">{`Total Hours : ${payload[0].value.toFixed(1)}`}</p>
             </div>
@@ -28,7 +28,6 @@ const ActivityChart = ({ activities }: ActivityChartProps) => {
     const chartData = useMemo(() => {
         const monthlyHours: { [key: string]: { name: string, hours: number } } = {};
         
-        // Initialize last 6 months
         for (let i = 5; i >= 0; i--) {
             const d = new Date();
             d.setMonth(d.getMonth() - i);
@@ -49,18 +48,18 @@ const ActivityChart = ({ activities }: ActivityChartProps) => {
     }, [activities]);
 
     return (
-        <Reveal className="bg-dark-card p-6 rounded-lg border border-gray-700 h-80">
+        <Reveal className="bg-black/20 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-lg h-80">
             <h3 className="font-bold text-dark-heading mb-4">Monthly Impact</h3>
             {activities.length > 0 ? (
                 <ResponsiveContainer width="100%" height="90%">
                     <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
                         <XAxis dataKey="name" stroke="#d1d5db" fontSize={12} tickLine={false} axisLine={false} />
                         <YAxis stroke="#d1d5db" fontSize={12} tickLine={false} axisLine={false} />
-                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(52, 211, 153, 0.1)' }}/>
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}/>
                         <Bar dataKey="hours" name="Hours" radius={[4, 4, 0, 0]}>
                            {chartData.map((entry, index) => (
-                               <Cell key={`cell-${index}`} fill={entry.hours > 0 ? '#3b82f6' : '#374151'} />
+                               <Cell key={`cell-${index}`} fill={entry.hours > 0 ? '#3b82f6' : 'rgba(255, 255, 255, 0.1)'} />
                            ))}
                         </Bar>
                     </BarChart>
