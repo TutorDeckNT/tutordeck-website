@@ -10,7 +10,7 @@ interface ImpactCardProps {
 
 const ImpactCard = ({ icon, label, value, colorClass }: ImpactCardProps) => {
     return (
-        <Reveal className="bg-dark-card p-6 rounded-lg border border-gray-700 flex items-center gap-6">
+        <Reveal className="bg-black/20 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-lg flex items-center gap-6">
             <div className={`text-3xl ${colorClass}`}>
                 <i className={`fas ${icon}`}></i>
             </div>
