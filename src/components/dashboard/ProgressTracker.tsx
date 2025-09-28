@@ -19,11 +19,11 @@ const ProgressTracker = ({ totalHours }: ProgressTrackerProps) => {
     const progressPercent = nextTier ? (totalHours / nextTier.hours) * 100 : 100;
 
     return (
-        <Reveal className="bg-dark-card p-6 rounded-lg border border-gray-700">
+        <Reveal className="bg-black/20 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-lg">
             <div className="flex justify-between items-center mb-3">
                 <h3 className="font-bold text-dark-heading">Service Award Progress</h3>
                 {currentTier && (
-                    <div className="flex items-center gap-2 text-sm font-semibold bg-dark-bg px-3 py-1 rounded-full">
+                    <div className="flex items-center gap-2 text-sm font-semibold bg-black/30 px-3 py-1 rounded-full">
                         <i className={`fas ${currentTier.icon}`}></i>
                         <span>{currentTier.name} Tier</span>
                     </div>
@@ -35,7 +35,7 @@ const ProgressTracker = ({ totalHours }: ProgressTrackerProps) => {
                     <p className="text-sm text-dark-text mb-3">
                         You're <span className="font-bold text-primary">{(nextTier.hours - totalHours).toFixed(1)}</span> hours away from the <span className="font-bold text-white">{nextTier.name}</span> award!
                     </p>
-                    <div className="w-full bg-dark-bg rounded-full h-2.5">
+                    <div className="w-full bg-white/10 rounded-full h-2.5">
                         <div className="bg-primary h-2.5 rounded-full" style={{ width: `${progressPercent}%` }}></div>
                     </div>
                     <div className="flex justify-between text-xs text-dark-text mt-1">
