@@ -190,14 +190,14 @@ const DashboardPage = () => {
     };
 
     const SortIcon = ({ column }: { column: 'date' | 'hours' }) => {
-        if (sort.key !== column) return <i className="fas fa-sort text-gray-500 ml-2"></i>;
+        if (sort.key !== column) return <i className="fas fa-sort text-gray-400 ml-2"></i>;
         return sort.order === 'desc' ? <i className="fas fa-sort-down text-white ml-2"></i> : <i className="fas fa-sort-up text-white ml-2"></i>;
     };
 
     const SkeletonLoader = () => (
         <div className="space-y-8">
-            <div className="grid md:grid-cols-3 gap-8"><div className="h-24 bg-dark-card rounded-lg animate-pulse"></div><div className="h-24 bg-dark-card rounded-lg animate-pulse"></div><div className="h-24 bg-dark-card rounded-lg animate-pulse"></div></div>
-            <div className="grid lg:grid-cols-3 gap-8"><div className="lg:col-span-1 h-80 bg-dark-card rounded-lg animate-pulse"></div><div className="lg:col-span-2 h-80 bg-dark-card rounded-lg animate-pulse"></div></div>
+            <div className="grid md:grid-cols-3 gap-8"><div className="h-24 bg-dark-card rounded-2xl animate-pulse"></div><div className="h-24 bg-dark-card rounded-2xl animate-pulse"></div><div className="h-24 bg-dark-card rounded-2xl animate-pulse"></div></div>
+            <div className="grid lg:grid-cols-3 gap-8"><div className="lg:col-span-1 h-80 bg-dark-card rounded-2xl animate-pulse"></div><div className="lg:col-span-2 h-80 bg-dark-card rounded-2xl animate-pulse"></div></div>
         </div>
     );
 
@@ -214,20 +214,20 @@ const DashboardPage = () => {
                     </div>
                     <div className="flex gap-4 mt-6 md:mt-0">
                         {showRefreshButton && (
-                            <button onClick={handleRefreshClick} disabled={isRefreshing} className="bg-dark-card border border-gray-600 text-dark-text font-semibold px-5 py-2.5 rounded-lg hover:bg-gray-700 hover:text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait">
+                            <button onClick={handleRefreshClick} disabled={isRefreshing} className="bg-white/10 backdrop-blur-md border border-white/20 text-dark-heading font-semibold px-5 py-2.5 rounded-xl hover:bg-white/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait">
                                 <i className={`fas fa-sync ${isRefreshing ? 'fa-spin' : ''}`}></i>
                                 <span>{isRefreshing ? 'Syncing...' : 'Refresh'}</span>
                             </button>
                         )}
-                        <button onClick={() => setIsLogModalOpen(true)} className="bg-primary text-dark-bg font-semibold px-5 py-2.5 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 cta-button">
+                        <button onClick={() => setIsLogModalOpen(true)} className="bg-primary/80 backdrop-blur-md border border-primary text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-primary transition-colors flex items-center justify-center gap-2 cta-button">
                             <i className="fas fa-plus-circle"></i><span>Log Activity</span>
                         </button>
                     </div>
                 </Reveal>
 
-                {serverMessage && (<Reveal className="mb-8"><div className={`p-4 rounded-lg text-center ${serverMessage.type === 'success' ? 'bg-green-900 text-green-200' : 'bg-red-900 text-red-200'}`}>{serverMessage.text}</div></Reveal>)}
+                {serverMessage && (<Reveal className="mb-8"><div className={`p-4 rounded-2xl text-center backdrop-blur-xl border ${serverMessage.type === 'success' ? 'bg-green-500/20 border-green-400 text-green-200' : 'bg-red-500/20 border-red-400 text-red-200'}`}>{serverMessage.text}</div></Reveal>)}
 
-                {initialLoading ? <SkeletonLoader /> : error ? <p className="text-center p-8 text-red-400">Error: {error}</p> : (
+                {initialLoading ? <SkeletonLoader /> : error ? <p className="text-center p-8 text-red-400 bg-black/20 backdrop-blur-xl border border-red-400/50 rounded-2xl">Error: {error}</p> : (
                     <div className="space-y-12">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <div className="lg:col-span-1 space-y-8">
@@ -241,37 +241,37 @@ const DashboardPage = () => {
                                     <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                                         <h2 className="text-2xl font-bold text-dark-heading">Volunteer Transcript</h2>
                                         <div className="flex items-center gap-4 w-full md:w-auto">
-                                            <select onChange={(e) => setFilter(e.target.value)} value={filter} className="bg-dark-card border border-gray-600 rounded-lg py-2 px-3 text-sm text-dark-text focus:outline-none focus:ring-1 focus:ring-primary w-full md:w-auto">
+                                            <select onChange={(e) => setFilter(e.target.value)} value={filter} className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-xl py-2 px-3 text-sm text-dark-text focus:outline-none focus:ring-1 focus:ring-primary w-full md:w-auto">
                                                 <option>All</option><option>Peer Tutoring</option><option>Mentorship</option>
                                             </select>
-                                            <button onClick={() => { setServerMessage(null); setIsEmailModalOpen(true); }} disabled={activities.length === 0} className="bg-secondary text-white font-semibold px-4 py-2 rounded-lg hover:bg-secondary-dark transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                                            <button onClick={() => { setServerMessage(null); setIsEmailModalOpen(true); }} disabled={activities.length === 0} className="bg-secondary/80 backdrop-blur-md text-white font-semibold px-4 py-2 rounded-xl hover:bg-secondary transition-colors disabled:bg-gray-500/20 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm border border-secondary">
                                                 <i className="fas fa-envelope"></i><span>Email</span>
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="bg-dark-card rounded-lg border border-gray-700 overflow-hidden">
+                                    <div className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-2xl shadow-lg overflow-hidden">
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left">
-                                                <thead className="bg-dark-bg">
+                                                <thead className="border-b border-white/20">
                                                     <tr>
-                                                        <th className="p-4 font-semibold text-primary cursor-pointer hover:bg-gray-700 transition-colors" onClick={() => handleSort('date')}>Date <SortIcon column="date" /></th>
+                                                        <th className="p-4 font-semibold text-primary cursor-pointer hover:bg-white/5 transition-colors" onClick={() => handleSort('date')}>Date <SortIcon column="date" /></th>
                                                         <th className="p-4 font-semibold text-primary">Activity</th>
-                                                        <th className="p-4 font-semibold text-primary text-right cursor-pointer hover:bg-gray-700 transition-colors" onClick={() => handleSort('hours')}>Hours <SortIcon column="hours" /></th>
+                                                        <th className="p-4 font-semibold text-primary text-right cursor-pointer hover:bg-white/5 transition-colors" onClick={() => handleSort('hours')}>Hours <SortIcon column="hours" /></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {filteredAndSortedActivities.length > 0 ? (
                                                         filteredAndSortedActivities.map((activity) => (
-                                                            <tr key={activity.id} className="border-t border-gray-700 hover:bg-dark-bg transition-colors">
+                                                            <tr key={activity.id} className="border-t border-white/10 hover:bg-white/5 transition-colors">
                                                                 <td className="p-4 whitespace-nowrap">{new Date(activity.activityDate._seconds * 1000).toLocaleDateString()}</td>
                                                                 <td className="p-4">{activity.activityType}</td>
                                                                 <td className="p-4 font-bold text-right">{activity.hours.toFixed(1)}</td>
                                                             </tr>
                                                         ))
                                                     ) : (
-                                                        <tr><td colSpan={3} className="text-center p-8 text-gray-500">
+                                                        <tr><td colSpan={3} className="text-center p-8 text-gray-400">
                                                             <div className="flex flex-col items-center gap-4">
-                                                                <i className="fas fa-folder-open text-4xl text-gray-600"></i>
+                                                                <i className="fas fa-folder-open text-4xl text-gray-500"></i>
                                                                 <span className="font-semibold">No Activities Found</span>
                                                                 <p className="text-sm max-w-xs">Log your first volunteer session to see your transcript and start tracking your impact!</p>
                                                             </div>
