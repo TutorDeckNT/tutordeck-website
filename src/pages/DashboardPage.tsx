@@ -9,6 +9,7 @@ import ImpactCard from '../components/dashboard/ImpactCard';
 import ProgressTracker from '../components/dashboard/ProgressTracker';
 import ActivityChart from '../components/dashboard/ActivityChart';
 import AchievementsList from '../components/dashboard/AchievementsList';
+import SquaresBackground from '../components/dashboard/SquaresBackground';
 
 interface VolunteerActivity {
     id: string;
@@ -32,9 +33,9 @@ interface CachedData {
 
 const CACHE_KEY = 'cachedActivities';
 const REFRESH_TIMESTAMP_KEY = 'lastRefreshTimestamp';
-const AUTO_SYNC_TIMESTAMP_KEY = 'lastAutoSyncTimestamp'; // New key for daily sync
+const AUTO_SYNC_TIMESTAMP_KEY = 'lastAutoSyncTimestamp';
 const ONE_HOUR_MS = 60 * 60 * 1000;
-const ONE_DAY_MS = 24 * 60 * 60 * 1000; // 24 hours
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 const DashboardPage = () => {
     const { user } = useAuth();
@@ -81,7 +82,6 @@ const DashboardPage = () => {
             setActivities(serverActivities);
             localStorage.setItem(CACHE_KEY, JSON.stringify({ lastModified: serverMeta.lastModified, activities: serverActivities }));
 
-            // If this was an automatic sync, update the auto-sync timestamp.
             if (!isManualRefresh) {
                 localStorage.setItem(AUTO_SYNC_TIMESTAMP_KEY, Date.now().toString());
             }
@@ -93,31 +93,24 @@ const DashboardPage = () => {
     }, [user]);
 
     useEffect(() => {
-        // 1. Always load from cache first for an instant UI.
         const cachedItem = localStorage.getItem(CACHE_KEY);
         if (cachedItem) {
             setActivities(JSON.parse(cachedItem).activities);
         }
         setInitialLoading(false);
 
-        // 2. Check if an automatic background sync is needed (once per day).
         const lastAutoSync = localStorage.getItem(AUTO_SYNC_TIMESTAMP_KEY);
         const shouldAutoSync = !lastAutoSync || (Date.now() - parseInt(lastAutoSync, 10)) > ONE_DAY_MS;
 
         if (shouldAutoSync) {
-            console.log("Performing daily automatic background sync.");
             smartSync(false);
-        } else {
-            console.log("Daily auto-sync not needed yet.");
         }
 
-        // 3. Manage the visibility of the manual refresh button (1-hour cooldown).
         const lastManualRefresh = localStorage.getItem(REFRESH_TIMESTAMP_KEY);
         if (lastManualRefresh) {
             const timeSinceLastRefresh = Date.now() - parseInt(lastManualRefresh, 10);
             if (timeSinceLastRefresh < ONE_HOUR_MS) {
                 setShowRefreshButton(false);
-                const timeRemaining = ONE_HOUR_MS - timeSinceLastRefresh;
                 const timeoutId = setTimeout(() => setShowRefreshButton(true), timeRemaining);
                 return () => clearTimeout(timeoutId);
             }
@@ -128,7 +121,7 @@ const DashboardPage = () => {
         const now = Date.now();
         localStorage.setItem(REFRESH_TIMESTAMP_KEY, now.toString());
         setShowRefreshButton(false);
-        smartSync(true); // Pass true to indicate it's a manual refresh.
+        smartSync(true);
         setTimeout(() => setShowRefreshButton(true), ONE_HOUR_MS);
     };
 
@@ -197,44 +190,45 @@ const DashboardPage = () => {
     };
 
     const SortIcon = ({ column }: { column: 'date' | 'hours' }) => {
-        if (sort.key !== column) return <i className="fas fa-sort text-gray-500 ml-2"></i>;
+        if (sort.key !== column) return <i className="fas fa-sort text-gray-400 ml-2"></i>;
         return sort.order === 'desc' ? <i className="fas fa-sort-down text-white ml-2"></i> : <i className="fas fa-sort-up text-white ml-2"></i>;
     };
 
     const SkeletonLoader = () => (
         <div className="space-y-8">
-            <div className="grid md:grid-cols-3 gap-8"><div className="h-24 bg-dark-card rounded-lg animate-pulse"></div><div className="h-24 bg-dark-card rounded-lg animate-pulse"></div><div className="h-24 bg-dark-card rounded-lg animate-pulse"></div></div>
-            <div className="grid lg:grid-cols-3 gap-8"><div className="lg:col-span-1 h-80 bg-dark-card rounded-lg animate-pulse"></div><div className="lg:col-span-2 h-80 bg-dark-card rounded-lg animate-pulse"></div></div>
+            <div className="grid md:grid-cols-3 gap-8"><div className="h-24 bg-white/10 rounded-2xl animate-pulse"></div><div className="h-24 bg-white/10 rounded-2xl animate-pulse"></div><div className="h-24 bg-white/10 rounded-2xl animate-pulse"></div></div>
+            <div className="grid lg:grid-cols-3 gap-8"><div className="lg:col-span-1 h-80 bg-white/10 rounded-2xl animate-pulse"></div><div className="lg:col-span-2 h-80 bg-white/10 rounded-2xl animate-pulse"></div></div>
         </div>
     );
 
     return (
         <>
+            <SquaresBackground />
             <EmailModal isOpen={isEmailModalOpen} onClose={() => setIsEmailModalOpen(false)} onSubmit={handleGenerateTranscript} isLoading={isGenerating} defaultEmail={user?.email || ''} />
             <LogActivityModal isOpen={isLogModalOpen} onClose={() => setIsLogModalOpen(false)} onActivityAdded={handleActivityAdded} />
 
-            <main className="container mx-auto px-6 py-20 mt-16">
+            <main className="container mx-auto px-6 py-24 mt-12">
                 <Reveal className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
                     <div>
-                        <h1 className="text-4xl md:text-5xl font-extrabold text-dark-heading">Mission Control</h1>
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.4)]">Mission Control</h1>
                         <p className="text-lg mt-2 text-dark-text">Welcome back, {user?.displayName?.split(' ')[0] || 'Volunteer'}!</p>
                     </div>
                     <div className="flex gap-4 mt-6 md:mt-0">
                         {showRefreshButton && (
-                            <button onClick={handleRefreshClick} disabled={isRefreshing} className="bg-dark-card border border-gray-600 text-dark-text font-semibold px-5 py-2.5 rounded-lg hover:bg-gray-700 hover:text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait">
+                            <button onClick={handleRefreshClick} disabled={isRefreshing} className="bg-white/10 backdrop-blur-md border border-white/20 text-dark-heading font-semibold px-5 py-2.5 rounded-xl hover:bg-white/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait">
                                 <i className={`fas fa-sync ${isRefreshing ? 'fa-spin' : ''}`}></i>
                                 <span>{isRefreshing ? 'Syncing...' : 'Refresh'}</span>
                             </button>
                         )}
-                        <button onClick={() => setIsLogModalOpen(true)} className="bg-primary text-dark-bg font-semibold px-5 py-2.5 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 cta-button">
+                        <button onClick={() => setIsLogModalOpen(true)} className="bg-primary/80 backdrop-blur-md border border-primary text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-primary transition-colors flex items-center justify-center gap-2 cta-button">
                             <i className="fas fa-plus-circle"></i><span>Log Activity</span>
                         </button>
                     </div>
                 </Reveal>
 
-                {serverMessage && (<Reveal className="mb-8"><div className={`p-4 rounded-lg text-center ${serverMessage.type === 'success' ? 'bg-green-900 text-green-200' : 'bg-red-900 text-red-200'}`}>{serverMessage.text}</div></Reveal>)}
+                {serverMessage && (<Reveal className="mb-8"><div className={`p-4 rounded-2xl text-center backdrop-blur-xl border ${serverMessage.type === 'success' ? 'bg-green-500/20 border-green-400 text-green-200' : 'bg-red-500/20 border-red-400 text-red-200'}`}>{serverMessage.text}</div></Reveal>)}
 
-                {initialLoading ? <SkeletonLoader /> : error ? <p className="text-center p-8 text-red-400">Error: {error}</p> : (
+                {initialLoading ? <SkeletonLoader /> : error ? <p className="text-center p-8 text-red-400 bg-black/20 backdrop-blur-xl border border-red-400/50 rounded-2xl">Error: {error}</p> : (
                     <div className="space-y-12">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <div className="lg:col-span-1 space-y-8">
@@ -248,37 +242,37 @@ const DashboardPage = () => {
                                     <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                                         <h2 className="text-2xl font-bold text-dark-heading">Volunteer Transcript</h2>
                                         <div className="flex items-center gap-4 w-full md:w-auto">
-                                            <select onChange={(e) => setFilter(e.target.value)} value={filter} className="bg-dark-card border border-gray-600 rounded-lg py-2 px-3 text-sm text-dark-text focus:outline-none focus:ring-1 focus:ring-primary w-full md:w-auto">
+                                            <select onChange={(e) => setFilter(e.target.value)} value={filter} className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-xl py-2 px-3 text-sm text-dark-text focus:outline-none focus:ring-1 focus:ring-primary w-full md:w-auto">
                                                 <option>All</option><option>Peer Tutoring</option><option>Mentorship</option>
                                             </select>
-                                            <button onClick={() => { setServerMessage(null); setIsEmailModalOpen(true); }} disabled={activities.length === 0} className="bg-secondary text-white font-semibold px-4 py-2 rounded-lg hover:bg-secondary-dark transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                                            <button onClick={() => { setServerMessage(null); setIsEmailModalOpen(true); }} disabled={activities.length === 0} className="bg-secondary/80 backdrop-blur-md text-white font-semibold px-4 py-2 rounded-xl hover:bg-secondary transition-colors disabled:bg-gray-500/20 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm border border-secondary">
                                                 <i className="fas fa-envelope"></i><span>Email</span>
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="bg-dark-card rounded-lg border border-gray-700 overflow-hidden">
+                                    <div className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-2xl shadow-lg overflow-hidden">
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left">
-                                                <thead className="bg-dark-bg">
+                                                <thead className="border-b border-white/20">
                                                     <tr>
-                                                        <th className="p-4 font-semibold text-primary cursor-pointer hover:bg-gray-700 transition-colors" onClick={() => handleSort('date')}>Date <SortIcon column="date" /></th>
+                                                        <th className="p-4 font-semibold text-primary cursor-pointer hover:bg-white/5 transition-colors" onClick={() => handleSort('date')}>Date <SortIcon column="date" /></th>
                                                         <th className="p-4 font-semibold text-primary">Activity</th>
-                                                        <th className="p-4 font-semibold text-primary text-right cursor-pointer hover:bg-gray-700 transition-colors" onClick={() => handleSort('hours')}>Hours <SortIcon column="hours" /></th>
+                                                        <th className="p-4 font-semibold text-primary text-right cursor-pointer hover:bg-white/5 transition-colors" onClick={() => handleSort('hours')}>Hours <SortIcon column="hours" /></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {filteredAndSortedActivities.length > 0 ? (
                                                         filteredAndSortedActivities.map((activity) => (
-                                                            <tr key={activity.id} className="border-t border-gray-700 hover:bg-dark-bg transition-colors">
+                                                            <tr key={activity.id} className="border-t border-white/10 hover:bg-white/5 transition-colors">
                                                                 <td className="p-4 whitespace-nowrap">{new Date(activity.activityDate._seconds * 1000).toLocaleDateString()}</td>
                                                                 <td className="p-4">{activity.activityType}</td>
                                                                 <td className="p-4 font-bold text-right">{activity.hours.toFixed(1)}</td>
                                                             </tr>
                                                         ))
                                                     ) : (
-                                                        <tr><td colSpan={3} className="text-center p-8 text-gray-500">
+                                                        <tr><td colSpan={3} className="text-center p-8 text-gray-400">
                                                             <div className="flex flex-col items-center gap-4">
-                                                                <i className="fas fa-folder-open text-4xl text-gray-600"></i>
+                                                                <i className="fas fa-folder-open text-4xl text-gray-500"></i>
                                                                 <span className="font-semibold">No Activities Found</span>
                                                                 <p className="text-sm max-w-xs">Log your first volunteer session to see your transcript and start tracking your impact!</p>
                                                             </div>
