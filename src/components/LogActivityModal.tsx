@@ -22,7 +22,8 @@ interface LogActivityModalProps {
 const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModalProps) => {
     const { user } = useAuth();
     const [activityType, setActivityType] = useState('');
-    const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T'));
+    // --- FIX #1: The date state should be a simple string, not an array. ---
+    const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
     const [hours, setHours] = useState('');
     const [proofLink, setProofLink] = useState('');
     
@@ -35,10 +36,13 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
         if (isOpen && dateInputRef.current) {
             const instance = flatpickr(dateInputRef.current, {
                 dateFormat: "Y-m-d",
-                defaultDate: new Date().toISOString().split('T'),
+                // --- FIX #2: defaultDate should also be a simple string. ---
+                defaultDate: new Date().toISOString().split('T')[0],
+                // --- FIX #3: Correctly handle the array returned by flatpickr. ---
                 onChange: (selectedDates: Date[]) => {
-                    if (selectedDates) {
-                        setActivityDate(selectedDates.toISOString().split('T'));
+                    // Access the first element of the array before calling methods on it.
+                    if (selectedDates[0]) {
+                        setActivityDate(selectedDates[0].toISOString().split('T')[0]);
                     }
                 },
             });
@@ -49,7 +53,8 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     useEffect(() => {
         if (!isOpen) {
             setActivityType('');
-            setActivityDate(new Date().toISOString().split('T'));
+            // --- FIX #4: Reset the state correctly. ---
+            setActivityDate(new Date().toISOString().split('T')[0]);
             setHours('');
             setProofLink('');
             setError(null);
