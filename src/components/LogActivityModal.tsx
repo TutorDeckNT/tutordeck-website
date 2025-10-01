@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 
 declare const flatpickr: any;
 
-// --- FIX #1: Define the correct data structure, matching the backend response ---
 interface VolunteerActivity {
     id: string;
     activityType: string;
@@ -13,7 +12,6 @@ interface VolunteerActivity {
     proofLink: string;
 }
 
-// --- FIX #2: Update the props to use the correct data structure ---
 interface LogActivityModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -67,14 +65,25 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
         setSubmitting(true);
         try {
             const token = await user.getIdToken();
+            
+            // --- THE FIX: Move the token from the header to the body ---
+            const activityData = { activityType, activityDate, hours: parseFloat(hours), proofLink };
+            
             const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ activityType, activityDate, hours: parseFloat(hours), proofLink })
+                headers: { 
+                    'Content-Type': 'application/json',
+                    // The 'Authorization' header is removed from here
+                },
+                body: JSON.stringify({ 
+                    token: token, // The token is now part of the body
+                    ...activityData 
+                })
             });
+
             const data = await response.json();
             if (!response.ok) { throw new Error(data.message || "An unknown error occurred."); }
-            onActivityAdded(data); // The 'data' object now correctly matches the VolunteerActivity type
+            onActivityAdded(data);
             onClose();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to submit activity.");
@@ -124,4 +133,4 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     );
 };
 
-export default LogActivityModal;
+export default LogActivityModal;```
