@@ -4,18 +4,20 @@ import { useAuth } from '../contexts/AuthContext';
 
 declare const flatpickr: any;
 
-interface NewActivityResponse {
+// --- FIX #1: Define the correct data structure, matching the backend response ---
+interface VolunteerActivity {
     id: string;
     activityType: string;
-    activityDate: string;
+    activityDate: { _seconds: number; _nanoseconds: number; };
     hours: number;
     proofLink: string;
 }
 
+// --- FIX #2: Update the props to use the correct data structure ---
 interface LogActivityModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onActivityAdded: (newActivity: NewActivityResponse) => void;
+    onActivityAdded: (newActivity: VolunteerActivity) => void;
 }
 
 const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModalProps) => {
@@ -72,7 +74,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             });
             const data = await response.json();
             if (!response.ok) { throw new Error(data.message || "An unknown error occurred."); }
-            onActivityAdded(data);
+            onActivityAdded(data); // The 'data' object now correctly matches the VolunteerActivity type
             onClose();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to submit activity.");
