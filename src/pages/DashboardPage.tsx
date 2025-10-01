@@ -21,9 +21,6 @@ interface VolunteerActivity {
     proofLink: string;
 }
 
-// This interface is no longer needed as the POST response is now the same as the GET response
-// type NewActivityResponse = VolunteerActivity;
-
 interface CachedData {
     lastModified: { _seconds: number, _nanoseconds: number } | null;
     activities: VolunteerActivity[];
@@ -138,9 +135,6 @@ const DashboardPage = () => {
         setTimeout(() => setShowRefreshButton(true), ONE_HOUR_MS);
     };
 
-    // --- FIX: SIMPLIFIED FUNCTION ---
-    // This function now directly accepts the VolunteerActivity type, as the backend POST
-    // response is now consistent with the GET response.
     const handleActivityAdded = (newActivity: VolunteerActivity) => {
         const updatedActivities = [newActivity, ...activities];
         setActivities(updatedActivities);
@@ -148,7 +142,6 @@ const DashboardPage = () => {
         const cachedItem = localStorage.getItem(CACHE_KEY);
         const cachedData: CachedData = cachedItem ? JSON.parse(cachedItem) : { lastModified: null, activities: [] };
         cachedData.activities = updatedActivities;
-        // Invalidate the lastModified timestamp in the cache to ensure the next sync will fetch fresh data
         cachedData.lastModified = null; 
         localStorage.setItem(CACHE_KEY, JSON.stringify(cachedData));
     };
