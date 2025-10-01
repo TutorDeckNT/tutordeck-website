@@ -1,5 +1,4 @@
-// src/pages/DashboardPage.tsx
-
+// TypeScript
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Reveal from '../components/Reveal';
@@ -22,9 +21,8 @@ interface VolunteerActivity {
     proofLink: string;
 }
 
-interface NewActivityResponse extends Omit<VolunteerActivity, 'activityDate'> {
-    activityDate: string; 
-}
+// This interface is no longer needed as the POST response is now the same as the GET response
+// type NewActivityResponse = VolunteerActivity;
 
 interface CachedData {
     lastModified: { _seconds: number, _nanoseconds: number } | null;
@@ -65,7 +63,7 @@ const DashboardPage = () => {
             const token = await user.getIdToken();
             const fetchOptions = {
                 headers: { 'Authorization': `Bearer ${token}` },
-                cache: 'no-cache' as RequestCache // THE FIX: Bypass cache to avoid browser-specific issues
+                cache: 'no-cache' as RequestCache
             };
 
             const metaResponse = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/metadata`, fetchOptions);
@@ -91,7 +89,6 @@ const DashboardPage = () => {
                 localStorage.setItem(AUTO_SYNC_TIMESTAMP_KEY, Date.now().toString());
             }
         } catch (e) {
-            // THE FIX: Improved error logging and user-facing message
             console.error("Data sync failed:", e);
             let errorMessage = 'An unknown error occurred during data sync.';
             if (e instanceof Error) {
@@ -141,23 +138,18 @@ const DashboardPage = () => {
         setTimeout(() => setShowRefreshButton(true), ONE_HOUR_MS);
     };
 
-    const handleActivityAdded = (newActivityResponse: NewActivityResponse) => {
-        const date = new Date(newActivityResponse.activityDate);
-        const newActivityForState: VolunteerActivity = {
-            ...newActivityResponse,
-            activityDate: {
-                _seconds: Math.floor(date.getTime() / 1000),
-                _nanoseconds: 0 
-            }
-        };
-
-        const updatedActivities = [newActivityForState, ...activities];
+    // --- FIX: SIMPLIFIED FUNCTION ---
+    // This function now directly accepts the VolunteerActivity type, as the backend POST
+    // response is now consistent with the GET response.
+    const handleActivityAdded = (newActivity: VolunteerActivity) => {
+        const updatedActivities = [newActivity, ...activities];
         setActivities(updatedActivities);
         
         const cachedItem = localStorage.getItem(CACHE_KEY);
         const cachedData: CachedData = cachedItem ? JSON.parse(cachedItem) : { lastModified: null, activities: [] };
         cachedData.activities = updatedActivities;
-        cachedData.lastModified = null;
+        // Invalidate the lastModified timestamp in the cache to ensure the next sync will fetch fresh data
+        cachedData.lastModified = null; 
         localStorage.setItem(CACHE_KEY, JSON.stringify(cachedData));
     };
 
