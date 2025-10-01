@@ -1,4 +1,5 @@
-// TypeScript
+// src/components/LogActivityModal.tsx
+
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -21,7 +22,7 @@ interface LogActivityModalProps {
 const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModalProps) => {
     const { user } = useAuth();
     const [activityType, setActivityType] = useState('');
-    const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
+    const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T'));
     const [hours, setHours] = useState('');
     const [proofLink, setProofLink] = useState('');
     
@@ -34,10 +35,10 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
         if (isOpen && dateInputRef.current) {
             const instance = flatpickr(dateInputRef.current, {
                 dateFormat: "Y-m-d",
-                defaultDate: new Date().toISOString().split('T')[0],
+                defaultDate: new Date().toISOString().split('T'),
                 onChange: (selectedDates: Date[]) => {
-                    if (selectedDates[0]) {
-                        setActivityDate(selectedDates[0].toISOString().split('T')[0]);
+                    if (selectedDates) {
+                        setActivityDate(selectedDates.toISOString().split('T'));
                     }
                 },
             });
@@ -48,7 +49,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     useEffect(() => {
         if (!isOpen) {
             setActivityType('');
-            setActivityDate(new Date().toISOString().split('T')[0]);
+            setActivityDate(new Date().toISOString().split('T'));
             setHours('');
             setProofLink('');
             setError(null);
@@ -66,17 +67,15 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
         try {
             const token = await user.getIdToken();
             
-            // --- THE FIX: Move the token from the header to the body ---
             const activityData = { activityType, activityDate, hours: parseFloat(hours), proofLink };
             
             const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    // The 'Authorization' header is removed from here
                 },
                 body: JSON.stringify({ 
-                    token: token, // The token is now part of the body
+                    token: token,
                     ...activityData 
                 })
             });
@@ -133,4 +132,4 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     );
 };
 
-export default LogActivityModal;```
+export default LogActivityModal;
