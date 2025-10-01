@@ -1,4 +1,5 @@
-// TypeScript
+// src/pages/DashboardPage.tsx
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Reveal from '../components/Reveal';
@@ -62,7 +63,12 @@ const DashboardPage = () => {
 
         try {
             const token = await user.getIdToken();
-            const metaResponse = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/metadata`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const fetchOptions = {
+                headers: { 'Authorization': `Bearer ${token}` },
+                cache: 'no-cache' as RequestCache // THE FIX: Bypass cache to avoid browser-specific issues
+            };
+
+            const metaResponse = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/metadata`, fetchOptions);
             if (!metaResponse.ok) throw new Error('Could not check for updates.');
             const serverMeta = await metaResponse.json();
 
@@ -74,7 +80,7 @@ const DashboardPage = () => {
                 return;
             }
 
-            const activitiesResponse = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const activitiesResponse = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, fetchOptions);
             if (!activitiesResponse.ok) throw new Error('Failed to fetch activities.');
             const serverActivities: VolunteerActivity[] = await activitiesResponse.json();
             
@@ -85,7 +91,17 @@ const DashboardPage = () => {
                 localStorage.setItem(AUTO_SYNC_TIMESTAMP_KEY, Date.now().toString());
             }
         } catch (e) {
-            setError(e instanceof Error ? e.message : 'An unknown error occurred.');
+            // THE FIX: Improved error logging and user-facing message
+            console.error("Data sync failed:", e);
+            let errorMessage = 'An unknown error occurred during data sync.';
+            if (e instanceof Error) {
+                if (e.message.includes('Failed to fetch')) {
+                    errorMessage = 'Network error: Failed to sync data. Please check your internet connection. If the problem persists, the server may be temporarily unavailable.';
+                } else {
+                    errorMessage = e.message;
+                }
+            }
+            setError(errorMessage);
         } finally {
             setIsRefreshing(false);
         }
@@ -227,7 +243,7 @@ const DashboardPage = () => {
 
                 {serverMessage && (<Reveal className="mb-8"><div className={`p-4 rounded-2xl text-center backdrop-blur-xl border ${serverMessage.type === 'success' ? 'bg-green-500/20 border-green-400 text-green-200' : 'bg-red-500/20 border-red-400 text-red-200'}`}>{serverMessage.text}</div></Reveal>)}
 
-                {initialLoading ? <SkeletonLoader /> : error ? <p className="text-center p-8 text-red-400 bg-black/20 backdrop-blur-xl border border-red-400/50 rounded-2xl">Error: {error}</p> : (
+                {initialLoading ? <SkeletonLoader /> : error ? <p className="text-center p-8 text-red-400 bg-black/20 backdrop-blur-xl border border-red-400/50 rounded-2xl">{error}</p> : (
                     <div className="space-y-12">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <div className="lg:col-span-1 space-y-8">
