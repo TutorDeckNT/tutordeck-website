@@ -33,6 +33,7 @@ const AUTO_SYNC_TIMESTAMP_KEY = 'lastAutoSyncTimestamp';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
+
 const DashboardPage = () => {
     const { user } = useAuth();
     const [activities, setActivities] = useState<VolunteerActivity[]>([]);
