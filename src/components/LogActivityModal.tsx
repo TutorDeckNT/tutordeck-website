@@ -69,15 +69,14 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             
             const activityData = { activityType, activityDate, hours: parseFloat(hours), proofLink };
             
-            // --- THE FIX: The token is now sent in the BODY of the POST request ---
+            // KEEPING THIS FIX: The token is sent in the BODY for better firewall compatibility.
             const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    // NO Authorization header here anymore
                 },
                 body: JSON.stringify({ 
-                    token: token, // Token is now a field in the JSON body
+                    token: token, 
                     ...activityData 
                 })
             });
@@ -88,7 +87,6 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             onClose();
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Failed to submit activity.";
-            // Provide a more helpful error message if it's a network failure
             if (errorMessage.includes('Failed to fetch')) {
                 setError('Network Error: Could not connect to the server. Please check your connection or try again later.');
             } else {
