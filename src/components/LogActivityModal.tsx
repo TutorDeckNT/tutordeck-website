@@ -38,6 +38,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     const dateInputRef = useRef<HTMLInputElement>(null);
     const hoursInputRef = useRef<HTMLInputElement>(null);
     const proofInputRef = useRef<HTMLInputElement>(null);
+    const flatpickrInstance = useRef<any>(null);
 
     const steps = [
         { id: 'type', title: 'Activity Type', icon: 'fa-tags' },
@@ -82,12 +83,12 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
 
     // Initialize Flatpickr when the date step is active
     useEffect(() => {
-        let instance: any = null;
         if (isOpen && currentStep === 1 && dateInputRef.current) {
-            instance = flatpickr(dateInputRef.current, {
+            flatpickrInstance.current = flatpickr(dateInputRef.current, {
                 dateFormat: "Y-m-d",
                 defaultDate: activityDate,
                 maxDate: new Date(),
+                clickOpens: false, // <-- THE KEY CHANGE: Prevents opening on input click
                 onChange: (selectedDates: Date[]) => {
                     if (selectedDates[0]) {
                         setActivityDate(selectedDates[0].toISOString().split('T')[0]);
@@ -95,12 +96,17 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                 },
             });
         }
-        return () => { if (instance) instance.destroy(); };
+        // Cleanup function to destroy instance when modal closes or step changes
+        return () => {
+            if (flatpickrInstance.current) {
+                flatpickrInstance.current.destroy();
+                flatpickrInstance.current = null;
+            }
+        };
     }, [isOpen, currentStep, activityDate]);
 
     // Auto-focus inputs on step change
     useEffect(() => {
-        if (currentStep === 1) dateInputRef.current?.focus();
         if (currentStep === 2) hoursInputRef.current?.focus();
         if (currentStep === 3) proofInputRef.current?.focus();
     }, [currentStep]);
@@ -198,7 +204,23 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                         {/* Step 1: Date */}
                         <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 1 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                             <label htmlFor="activityDate" className="block text-sm font-medium text-dark-text mb-2">Date</label>
-                            <input ref={dateInputRef} id="activityDate" type="text" placeholder="YYYY-MM-DD" className="w-full bg-black/30 border border-white/20 rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary custom-calendar-icon" />
+                            <div className="relative">
+                                <input 
+                                    ref={dateInputRef} 
+                                    id="activityDate" 
+                                    type="text" 
+                                    placeholder="YYYY-MM-DD" 
+                                    className="w-full bg-black/30 border border-white/20 rounded-lg py-2 px-3 pr-10 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" 
+                                />
+                                <button 
+                                    type="button" 
+                                    onClick={() => flatpickrInstance.current?.open()}
+                                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-primary transition-colors"
+                                    aria-label="Open calendar"
+                                >
+                                    <i className="fas fa-calendar-alt"></i>
+                                </button>
+                            </div>
                         </div>
                         {/* Step 2: Hours */}
                         <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 2 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
