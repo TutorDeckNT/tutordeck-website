@@ -49,8 +49,9 @@ const DashboardPage = () => {
     const [filter, setFilter] = useState('All');
     const [sort, setSort] = useState<{ key: 'date' | 'hours', order: 'asc' | 'desc' }>({ key: 'date', order: 'desc' });
 
-    // --- DIAGNOSTIC STEP 1.2: State for connectivity test result ---
     const [testResult, setTestResult] = useState('');
+    // --- DIAGNOSTIC STEP 2.2: State for health check result ---
+    const [healthCheckResult, setHealthCheckResult] = useState('');
 
     const smartSync = useCallback(async (isManualRefresh = false) => {
         if (!user) return;
@@ -105,7 +106,6 @@ const DashboardPage = () => {
         }
     }, [user]);
 
-    // --- DIAGNOSTIC STEP 1.2: Handler function to test a generic, public API ---
     const handleTestConnectivity = async () => {
         setTestResult('Testing...');
         try {
@@ -118,6 +118,22 @@ const DashboardPage = () => {
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
             setTestResult(`ERROR: Failed to fetch from test API. Message: ${errorMessage}`);
+        }
+    };
+
+    // --- DIAGNOSTIC STEP 2.2: Handler function to test your backend's health check endpoint ---
+    const handleHealthCheck = async () => {
+        setHealthCheckResult('Testing...');
+        try {
+            const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/healthcheck`);
+            if (!response.ok) {
+                throw new Error(`Server responded with status ${response.status}`);
+            }
+            const data = await response.json();
+            setHealthCheckResult(`SUCCESS: Health check passed. Message: "${data.message}"`);
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+            setHealthCheckResult(`ERROR: Health check failed. Message: ${errorMessage}`);
         }
     };
 
@@ -246,19 +262,31 @@ const DashboardPage = () => {
                     </div>
                 </Reveal>
 
-                {/* --- DIAGNOSTIC STEP 1.2: UI Panel --- */}
                 <Reveal className="mb-8">
-                    <div className="p-4 bg-yellow-900/50 border border-yellow-700 rounded-2xl">
-                        <h3 className="font-bold text-yellow-300 text-lg mb-2">Diagnostic Panel (Step 1.2)</h3>
-                        <p className="text-sm text-yellow-400 mb-4">Please click the button below and report the exact message that appears.</p>
-                        <button onClick={handleTestConnectivity} className="bg-yellow-500 text-black font-semibold px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors">
-                            Test General Connectivity
-                        </button>
-                        {testResult && (
-                            <div className="mt-4 p-3 bg-black/30 rounded-lg">
-                                <p className="font-mono text-yellow-200 whitespace-pre-wrap">{testResult}</p>
-                            </div>
-                        )}
+                    <div className="p-4 bg-gray-900/50 border border-gray-700 rounded-2xl space-y-4">
+                        <div>
+                            <h3 className="font-bold text-gray-300 text-lg mb-2">Diagnostic Panel (Step 1.2)</h3>
+                            <button onClick={handleTestConnectivity} className="bg-gray-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                                Test General Connectivity
+                            </button>
+                            {testResult && (
+                                <div className="mt-2 p-3 bg-black/30 rounded-lg">
+                                    <p className="font-mono text-gray-200 whitespace-pre-wrap">{testResult}</p>
+                                </div>
+                            )}
+                        </div>
+                        <div className="border-t border-gray-700 pt-4">
+                            <h3 className="font-bold text-blue-300 text-lg mb-2">Diagnostic Panel (Step 2.2)</h3>
+                            <p className="text-sm text-blue-400 mb-4">Now, please click this new button and report the exact message.</p>
+                            <button onClick={handleHealthCheck} className="bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                                Test TutorDeck API Health
+                            </button>
+                            {healthCheckResult && (
+                                <div className="mt-2 p-3 bg-black/30 rounded-lg">
+                                    <p className="font-mono text-blue-200 whitespace-pre-wrap">{healthCheckResult}</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </Reveal>
 
@@ -266,6 +294,7 @@ const DashboardPage = () => {
 
                 {initialLoading ? <SkeletonLoader /> : error ? <p className="text-center p-8 text-red-400 bg-black/20 backdrop-blur-xl border border-red-400/50 rounded-2xl">{error}</p> : (
                     <div className="space-y-12">
+                        {/* The rest of the component remains unchanged */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <div className="lg:col-span-1 space-y-8">
                                 <ImpactCard icon="fa-clock" label="Total Hours Logged" value={totalHours.toFixed(1)} colorClass="text-primary" />
