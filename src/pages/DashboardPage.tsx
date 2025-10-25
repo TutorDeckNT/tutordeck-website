@@ -1,6 +1,5 @@
 // src/pages/DashboardPage.tsx
 
-// TypeScript
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Reveal from '../components/Reveal';
@@ -49,6 +48,9 @@ const DashboardPage = () => {
 
     const [filter, setFilter] = useState('All');
     const [sort, setSort] = useState<{ key: 'date' | 'hours', order: 'asc' | 'desc' }>({ key: 'date', order: 'desc' });
+
+    // --- DIAGNOSTIC STEP 1.2: State for connectivity test result ---
+    const [testResult, setTestResult] = useState('');
 
     const smartSync = useCallback(async (isManualRefresh = false) => {
         if (!user) return;
@@ -102,6 +104,22 @@ const DashboardPage = () => {
             setIsRefreshing(false);
         }
     }, [user]);
+
+    // --- DIAGNOSTIC STEP 1.2: Handler function to test a generic, public API ---
+    const handleTestConnectivity = async () => {
+        setTestResult('Testing...');
+        try {
+            const response = await fetch('https://jsonplaceholder.typicode.com/todos/1');
+            if (!response.ok) {
+                throw new Error(`Response not OK. Status: ${response.status}`);
+            }
+            const data = await response.json();
+            setTestResult(`SUCCESS: Fetched test data. Title: "${data.title}"`);
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+            setTestResult(`ERROR: Failed to fetch from test API. Message: ${errorMessage}`);
+        }
+    };
 
     useEffect(() => {
         const cachedItem = localStorage.getItem(CACHE_KEY);
@@ -206,12 +224,6 @@ const DashboardPage = () => {
 
     return (
         <>
-            {/* --- DIAGNOSTIC STEP 1.1: Display the API URL --- */}
-            <div className="fixed top-24 left-4 text-xs text-yellow-400 bg-black/70 p-2 rounded-lg z-50 shadow-lg">
-                <p className="font-bold">DEBUG:</p>
-                <p>API URL is {import.meta.env.VITE_RENDER_API_URL}</p>
-            </div>
-
             <EmailModal isOpen={isEmailModalOpen} onClose={() => setIsEmailModalOpen(false)} onSubmit={handleGenerateTranscript} isLoading={isGenerating} defaultEmail={user?.email || ''} />
             <LogActivityModal isOpen={isLogModalOpen} onClose={() => setIsLogModalOpen(false)} onActivityAdded={handleActivityAdded} />
 
@@ -231,6 +243,22 @@ const DashboardPage = () => {
                         <button onClick={() => setIsLogModalOpen(true)} className="bg-primary/80 backdrop-blur-md border border-primary text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-primary transition-colors flex items-center justify-center gap-2 cta-button">
                             <i className="fas fa-plus-circle"></i><span>Log Activity</span>
                         </button>
+                    </div>
+                </Reveal>
+
+                {/* --- DIAGNOSTIC STEP 1.2: UI Panel --- */}
+                <Reveal className="mb-8">
+                    <div className="p-4 bg-yellow-900/50 border border-yellow-700 rounded-2xl">
+                        <h3 className="font-bold text-yellow-300 text-lg mb-2">Diagnostic Panel (Step 1.2)</h3>
+                        <p className="text-sm text-yellow-400 mb-4">Please click the button below and report the exact message that appears.</p>
+                        <button onClick={handleTestConnectivity} className="bg-yellow-500 text-black font-semibold px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors">
+                            Test General Connectivity
+                        </button>
+                        {testResult && (
+                            <div className="mt-4 p-3 bg-black/30 rounded-lg">
+                                <p className="font-mono text-yellow-200 whitespace-pre-wrap">{testResult}</p>
+                            </div>
+                        )}
                     </div>
                 </Reveal>
 
