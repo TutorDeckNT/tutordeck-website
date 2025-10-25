@@ -50,8 +50,10 @@ const DashboardPage = () => {
     const [sort, setSort] = useState<{ key: 'date' | 'hours', order: 'asc' | 'desc' }>({ key: 'date', order: 'desc' });
 
     const [testResult, setTestResult] = useState('');
-    // --- DIAGNOSTIC STEP 2.2: State for health check result ---
     const [healthCheckResult, setHealthCheckResult] = useState('');
+    // --- DIAGNOSTIC STEP: State for Render domain test ---
+    const [renderDomainTestResult, setRenderDomainTestResult] = useState('');
+
 
     const smartSync = useCallback(async (isManualRefresh = false) => {
         if (!user) return;
@@ -95,7 +97,7 @@ const DashboardPage = () => {
             let errorMessage = 'An unknown error occurred during data sync.';
             if (e instanceof Error) {
                 if (e.message.includes('Failed to fetch')) {
-                    errorMessage = 'Network error: Failed to sync data. Please check your internet connection. If the problem persists, the server may be temporarily unavailable.';
+                    errorMessage = 'Network error: Failed to sync data. The school network may be blocking this domain. Please try submitting an activity first.';
                 } else {
                     errorMessage = e.message;
                 }
@@ -121,7 +123,6 @@ const DashboardPage = () => {
         }
     };
 
-    // --- DIAGNOSTIC STEP 2.2: Handler function to test your backend's health check endpoint ---
     const handleHealthCheck = async () => {
         setHealthCheckResult('Testing...');
         try {
@@ -134,6 +135,22 @@ const DashboardPage = () => {
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
             setHealthCheckResult(`ERROR: Health check failed. Message: ${errorMessage}`);
+        }
+    };
+
+    // --- DIAGNOSTIC STEP: Handler to test another Render domain ---
+    const handleRenderDomainTest = async () => {
+        setRenderDomainTestResult('Testing...');
+        try {
+            // This is a public, static site hosted on Render. We just need to see if we can fetch its HTML.
+            const response = await fetch('https://render-examples.onrender.com/nextjs-hello-world');
+            if (!response.ok) {
+                throw new Error(`Response not OK. Status: ${response.status}`);
+            }
+            setRenderDomainTestResult('SUCCESS: Connection to another Render-hosted site was successful.');
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+            setRenderDomainTestResult(`ERROR: Failed to connect to another Render site. Message: ${errorMessage}. This suggests the entire onrender.com domain may be blocked.`);
         }
     };
 
@@ -264,28 +281,22 @@ const DashboardPage = () => {
 
                 <Reveal className="mb-8">
                     <div className="p-4 bg-gray-900/50 border border-gray-700 rounded-2xl space-y-4">
+                        {/* Diagnostic tests from previous steps can be removed or kept, here they are kept for completeness */}
                         <div>
                             <h3 className="font-bold text-gray-300 text-lg mb-2">Diagnostic Panel (Step 1.2)</h3>
-                            <button onClick={handleTestConnectivity} className="bg-gray-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
-                                Test General Connectivity
-                            </button>
-                            {testResult && (
-                                <div className="mt-2 p-3 bg-black/30 rounded-lg">
-                                    <p className="font-mono text-gray-200 whitespace-pre-wrap">{testResult}</p>
-                                </div>
-                            )}
+                            <button onClick={handleTestConnectivity} className="bg-gray-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">Test General Connectivity</button>
+                            {testResult && (<div className="mt-2 p-3 bg-black/30 rounded-lg"><p className="font-mono text-gray-200 whitespace-pre-wrap">{testResult}</p></div>)}
                         </div>
                         <div className="border-t border-gray-700 pt-4">
                             <h3 className="font-bold text-blue-300 text-lg mb-2">Diagnostic Panel (Step 2.2)</h3>
-                            <p className="text-sm text-blue-400 mb-4">Now, please click this new button and report the exact message.</p>
-                            <button onClick={handleHealthCheck} className="bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
-                                Test TutorDeck API Health
-                            </button>
-                            {healthCheckResult && (
-                                <div className="mt-2 p-3 bg-black/30 rounded-lg">
-                                    <p className="font-mono text-blue-200 whitespace-pre-wrap">{healthCheckResult}</p>
-                                </div>
-                            )}
+                            <button onClick={handleHealthCheck} className="bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">Test TutorDeck API Health</button>
+                            {healthCheckResult && (<div className="mt-2 p-3 bg-black/30 rounded-lg"><p className="font-mono text-blue-200 whitespace-pre-wrap">{healthCheckResult}</p></div>)}
+                        </div>
+                        <div className="border-t border-gray-700 pt-4">
+                            <h3 className="font-bold text-purple-300 text-lg mb-2">Final Diagnostic: Test Render Domain</h3>
+                             <p className="text-sm text-purple-400 mb-4">This final test checks if the entire `onrender.com` domain is blocked.</p>
+                            <button onClick={handleRenderDomainTest} className="bg-purple-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors">Test Another Render Site</button>
+                            {renderDomainTestResult && (<div className="mt-2 p-3 bg-black/30 rounded-lg"><p className="font-mono text-purple-200 whitespace-pre-wrap">{renderDomainTestResult}</p></div>)}
                         </div>
                     </div>
                 </Reveal>
@@ -294,7 +305,6 @@ const DashboardPage = () => {
 
                 {initialLoading ? <SkeletonLoader /> : error ? <p className="text-center p-8 text-red-400 bg-black/20 backdrop-blur-xl border border-red-400/50 rounded-2xl">{error}</p> : (
                     <div className="space-y-12">
-                        {/* The rest of the component remains unchanged */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <div className="lg:col-span-1 space-y-8">
                                 <ImpactCard icon="fa-clock" label="Total Hours Logged" value={totalHours.toFixed(1)} colorClass="text-primary" />
