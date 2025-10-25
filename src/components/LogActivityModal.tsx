@@ -184,7 +184,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && currentStep >= 2 && currentStep < totalSteps - 1) {
+        if (e.key === 'Enter' && currentStep >= 1 && currentStep < totalSteps - 1) {
             e.preventDefault();
             handleNext();
         }
@@ -216,13 +216,13 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                         
                         {/* Step 0: Activity Type */}
                         {index === 0 && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <button onClick={() => handleSelectActivityType('Peer Tutoring')} className="p-8 bg-white/5 border-2 border-transparent hover:border-primary rounded-xl text-left transition-all transform hover:scale-105">
+                            <div className="flex flex-col md:flex-row gap-4">
+                                <button onClick={() => handleSelectActivityType('Peer Tutoring')} className="p-8 flex-1 bg-white/5 border-2 border-white/10 hover:border-primary rounded-xl text-left transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary">
                                     <i className="fas fa-book-reader text-3xl text-primary mb-3"></i>
                                     <h3 className="text-xl font-bold text-dark-heading">Peer Tutoring</h3>
                                     <p className="text-sm text-dark-text">Helping a fellow student with course material.</p>
                                 </button>
-                                <button onClick={() => handleSelectActivityType('Mentorship')} className="p-8 bg-white/5 border-2 border-transparent hover:border-secondary rounded-xl text-left transition-all transform hover:scale-105">
+                                <button onClick={() => handleSelectActivityType('Mentorship')} className="p-8 flex-1 bg-white/5 border-2 border-white/10 hover:border-secondary rounded-xl text-left transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-secondary">
                                     <i className="fas fa-user-friends text-3xl text-secondary mb-3"></i>
                                     <h3 className="text-xl font-bold text-dark-heading">Mentorship</h3>
                                     <p className="text-sm text-dark-text">Guiding or advising another student.</p>
@@ -269,10 +269,10 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-50 p-4 transition-opacity duration-300" onClick={onClose}>
-            <div className="bg-dark-card/80 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-2xl h-[36rem] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="bg-dark-card/80 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-2xl min-h-[32rem] flex flex-col" onClick={e => e.stopPropagation()}>
                 {/* Progress Bar */}
                 <div className="w-full bg-white/10 rounded-t-2xl h-2">
-                    <div className="bg-primary h-2 rounded-t-2xl transition-all duration-500" style={{ width: `${((currentStep + 1) / (totalSteps + (isSuccess ? 1 : 0))) * 100}%` }}></div>
+                    <div className="bg-primary h-2 rounded-t-2xl transition-all duration-500" style={{ width: `${((currentStep + (isSuccess ? 1 : 0)) / totalSteps) * 100}%` }}></div>
                 </div>
                 
                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"><i className="fas fa-times text-2xl"></i></button>
