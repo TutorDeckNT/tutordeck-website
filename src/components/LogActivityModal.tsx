@@ -22,7 +22,6 @@ interface LogActivityModalProps {
 const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModalProps) => {
     const { user } = useAuth();
     const [activityType, setActivityType] = useState('');
-    // --- FIX #1: The date state should be a simple string, not an array. ---
     const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
     const [hours, setHours] = useState('');
     const [proofLink, setProofLink] = useState('');
@@ -36,11 +35,8 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
         if (isOpen && dateInputRef.current) {
             const instance = flatpickr(dateInputRef.current, {
                 dateFormat: "Y-m-d",
-                // --- FIX #2: defaultDate should also be a simple string. ---
                 defaultDate: new Date().toISOString().split('T')[0],
-                // --- FIX #3: Correctly handle the array returned by flatpickr. ---
                 onChange: (selectedDates: Date[]) => {
-                    // Access the first element of the array before calling methods on it.
                     if (selectedDates[0]) {
                         setActivityDate(selectedDates[0].toISOString().split('T')[0]);
                     }
@@ -53,7 +49,6 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     useEffect(() => {
         if (!isOpen) {
             setActivityType('');
-            // --- FIX #4: Reset the state correctly. ---
             setActivityDate(new Date().toISOString().split('T')[0]);
             setHours('');
             setProofLink('');
@@ -74,13 +69,15 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             
             const activityData = { activityType, activityDate, hours: parseFloat(hours), proofLink };
             
+            // --- THE FIX: The token is now sent in the BODY of the POST request ---
             const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/activities`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
+                    // NO Authorization header here anymore
                 },
                 body: JSON.stringify({ 
-                    token: token,
+                    token: token, // Token is now a field in the JSON body
                     ...activityData 
                 })
             });
@@ -90,7 +87,13 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             onActivityAdded(data);
             onClose();
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to submit activity.");
+            const errorMessage = err instanceof Error ? err.message : "Failed to submit activity.";
+            // Provide a more helpful error message if it's a network failure
+            if (errorMessage.includes('Failed to fetch')) {
+                setError('Network Error: Could not connect to the server. Please check your connection or try again later.');
+            } else {
+                setError(errorMessage);
+            }
         } finally {
             setSubmitting(false);
         }
