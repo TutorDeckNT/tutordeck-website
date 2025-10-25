@@ -1,3 +1,5 @@
+// src/pages/DashboardPage.tsx
+
 // TypeScript
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -204,6 +206,12 @@ const DashboardPage = () => {
 
     return (
         <>
+            {/* --- DIAGNOSTIC STEP 1.1: Display the API URL --- */}
+            <div className="fixed top-24 left-4 text-xs text-yellow-400 bg-black/70 p-2 rounded-lg z-50 shadow-lg">
+                <p className="font-bold">DEBUG:</p>
+                <p>API URL is {import.meta.env.VITE_RENDER_API_URL}</p>
+            </div>
+
             <EmailModal isOpen={isEmailModalOpen} onClose={() => setIsEmailModalOpen(false)} onSubmit={handleGenerateTranscript} isLoading={isGenerating} defaultEmail={user?.email || ''} />
             <LogActivityModal isOpen={isLogModalOpen} onClose={() => setIsLogModalOpen(false)} onActivityAdded={handleActivityAdded} />
 
