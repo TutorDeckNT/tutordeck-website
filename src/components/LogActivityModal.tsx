@@ -4,7 +4,7 @@ import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProofLinkHistory } from '../hooks/useProofLinkHistory';
 import TutorDeckStudioModal from './TutorDeckStudioModal';
-import DirectUploader from './DirectUploader'; // Import the new uploader
+import DirectUploader from './DirectUploader'; // Corrected import
 import Portal from './Portal';
 
 declare const flatpickr: any;
@@ -195,7 +195,9 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                             {linkError && <p className="text-red-400 text-xs mt-2">{linkError}</p>}
                             
                             <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
-                                <DirectUploader onUploadSuccess={(link) => setProofLink(link)} />
+                                <DirectUploader 
+                                    onUploadSuccess={(link: string) => setProofLink(link)} 
+                                />
                                 <button type="button" onClick={() => setIsStudioOpen(true)} className="w-full p-3 bg-white/5 border border-white/10 hover:border-primary rounded-xl text-center transition-colors"><i className="fas fa-microphone mr-2 text-primary"></i>Record Audio Instead</button>
                             </div>
                         </div>
