@@ -1,6 +1,7 @@
 // src/components/TutorDeckStudioModal.tsx
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import Portal from './Portal'; // Import the Portal component
 
 // --- Types ---
 const RecordingStatus = {
@@ -107,41 +108,43 @@ const TutorDeckStudioModal = ({ isOpen, onClose }: TutorDeckStudioModalProps) =>
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="w-full max-w-md bg-dark-card/80 backdrop-blur-2xl rounded-2xl shadow-2xl p-6 md:p-8 space-y-6 flex flex-col items-center border border-white/20" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center space-x-3"><WaveformIcon className="w-8 h-8 text-primary" /><h1 className="text-3xl font-bold text-dark-heading">TutorDeck Studio</h1></div>
-                <div className="flex items-center justify-center space-x-2 bg-black/20 px-4 py-2 rounded-full">
-                    <span className={`relative flex h-3 w-3`}><span className={`absolute inline-flex h-full w-full rounded-full ${isRecording ? 'bg-red-500 animate-ping' : 'bg-gray-400'}`}></span><span className={`relative inline-flex rounded-full h-3 w-3 ${isRecording ? 'bg-red-500' : 'bg-gray-400'}`}></span></span>
-                    <span className="text-sm text-dark-text">{isRecording ? 'Recording...' : 'Ready to Record'}</span>
-                </div>
-                <div className="bg-black/30 w-48 h-24 flex items-center justify-center rounded-xl border border-white/20"><p className="text-5xl font-mono text-dark-heading tracking-wider">{`${Math.floor(recordingTime / 60).toString().padStart(2, '0')}:${(recordingTime % 60).toString().padStart(2, '0')}`}</p></div>
-                {error && <div className="bg-red-900/50 text-red-300 border border-red-700 rounded-lg p-3 text-center text-sm w-full"><p className="font-semibold">An Error Occurred</p><p>{error}</p></div>}
-                
-                {isStopped && audioUrl ? (
-                    <div className="w-full pt-4 space-y-4 text-center">
-                        <div className="bg-black/20 border border-primary/50 rounded-xl p-4 text-left text-sm">
-                            <h3 className="font-bold text-primary mb-2">Next Steps:</h3>
-                            <ol className="list-decimal list-inside space-y-1 text-dark-text">
-                                <li>Click "Download Recording" to save the audio file.</li>
-                                <li>Upload the file to your Dropbox account.</li>
-                                <li>Copy the Dropbox share link.</li>
-                                <li>Close this window and paste the link into the proof field.</li>
-                            </ol>
+        <Portal>
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-[60] p-4" onClick={onClose}>
+                <div className="w-full max-w-md bg-dark-card/80 backdrop-blur-2xl rounded-2xl shadow-2xl p-6 md:p-8 space-y-6 flex flex-col items-center border border-white/20" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center space-x-3"><WaveformIcon className="w-8 h-8 text-primary" /><h1 className="text-3xl font-bold text-dark-heading">TutorDeck Studio</h1></div>
+                    <div className="flex items-center justify-center space-x-2 bg-black/20 px-4 py-2 rounded-full">
+                        <span className={`relative flex h-3 w-3`}><span className={`absolute inline-flex h-full w-full rounded-full ${isRecording ? 'bg-red-500 animate-ping' : 'bg-gray-400'}`}></span><span className={`relative inline-flex rounded-full h-3 w-3 ${isRecording ? 'bg-red-500' : 'bg-gray-400'}`}></span></span>
+                        <span className="text-sm text-dark-text">{isRecording ? 'Recording...' : 'Ready to Record'}</span>
+                    </div>
+                    <div className="bg-black/30 w-48 h-24 flex items-center justify-center rounded-xl border border-white/20"><p className="text-5xl font-mono text-dark-heading tracking-wider">{`${Math.floor(recordingTime / 60).toString().padStart(2, '0')}:${(recordingTime % 60).toString().padStart(2, '0')}`}</p></div>
+                    {error && <div className="bg-red-900/50 text-red-300 border border-red-700 rounded-lg p-3 text-center text-sm w-full"><p className="font-semibold">An Error Occurred</p><p>{error}</p></div>}
+                    
+                    {isStopped && audioUrl ? (
+                        <div className="w-full pt-4 space-y-4 text-center">
+                            <div className="bg-black/20 border border-primary/50 rounded-xl p-4 text-left text-sm">
+                                <h3 className="font-bold text-primary mb-2">Next Steps:</h3>
+                                <ol className="list-decimal list-inside space-y-1 text-dark-text">
+                                    <li>Click "Download Recording" to save the audio file.</li>
+                                    <li>Upload the file to your Dropbox account.</li>
+                                    <li>Copy the Dropbox share link.</li>
+                                    <li>Close this window and paste the link into the proof field.</li>
+                                </ol>
+                            </div>
+                            <a href={audioUrl} download={`recording-${new Date().toISOString()}.opus`} className="w-full flex items-center justify-center bg-secondary hover:bg-secondary-dark text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-200"><DownloadIcon className="w-5 h-5 mr-2" />Download Recording</a>
+                            <button onClick={resetRecording} className="w-full text-center bg-white/10 hover:bg-white/20 text-dark-heading font-semibold py-3 px-4 rounded-xl transition-colors duration-200">Record Again</button>
                         </div>
-                        <a href={audioUrl} download={`recording-${new Date().toISOString()}.opus`} className="w-full flex items-center justify-center bg-secondary hover:bg-secondary-dark text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-200"><DownloadIcon className="w-5 h-5 mr-2" />Download Recording</a>
-                        <button onClick={resetRecording} className="w-full text-center bg-white/10 hover:bg-white/20 text-dark-heading font-semibold py-3 px-4 rounded-xl transition-colors duration-200">Record Again</button>
-                    </div>
-                ) : (
-                    <div className="w-full pt-4">
-                        <button onClick={isRecording ? stopRecording : startRecording} disabled={status === RecordingStatus.GETTING_PERMISSION || !!error} className={`w-full flex items-center justify-center text-xl font-semibold py-4 px-6 rounded-xl transition-all duration-300 ease-in-out transform focus:outline-none focus:ring-4 ${status === RecordingStatus.GETTING_PERMISSION || !!error ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : isRecording ? 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-400' : 'bg-primary hover:bg-primary-dark text-dark-bg focus:ring-primary/50'}`}>
-                            {isRecording ? <><StopIcon className="w-7 h-7 mr-3" /><span>Stop Recording</span></> : <><MicrophoneIcon className="w-7 h-7 mr-3" /><span>Start Recording</span></>}
-                            {isRecording && <div className="absolute w-full h-full rounded-xl bg-red-500 animate-ping -z-10 opacity-50"></div>}
-                        </button>
-                    </div>
-                )}
-                <button onClick={onClose} className="absolute top-4 right-4 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-dark-text hover:bg-white/20 transition-colors z-10"><i className="fas fa-times"></i></button>
+                    ) : (
+                        <div className="w-full pt-4">
+                            <button onClick={isRecording ? stopRecording : startRecording} disabled={status === RecordingStatus.GETTING_PERMISSION || !!error} className={`w-full flex items-center justify-center text-xl font-semibold py-4 px-6 rounded-xl transition-all duration-300 ease-in-out transform focus:outline-none focus:ring-4 ${status === RecordingStatus.GETTING_PERMISSION || !!error ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : isRecording ? 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-400' : 'bg-primary hover:bg-primary-dark text-dark-bg focus:ring-primary/50'}`}>
+                                {isRecording ? <><StopIcon className="w-7 h-7 mr-3" /><span>Stop Recording</span></> : <><MicrophoneIcon className="w-7 h-7 mr-3" /><span>Start Recording</span></>}
+                                {isRecording && <div className="absolute w-full h-full rounded-xl bg-red-500 animate-ping -z-10 opacity-50"></div>}
+                            </button>
+                        </div>
+                    )}
+                    <button onClick={onClose} className="absolute top-4 right-4 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-dark-text hover:bg-white/20 transition-colors z-10"><i className="fas fa-times"></i></button>
+                </div>
             </div>
-        </div>
+        </Portal>
     );
 };
 
