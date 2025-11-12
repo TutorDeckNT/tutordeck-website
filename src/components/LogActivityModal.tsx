@@ -2,6 +2,9 @@
 
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useProofLinkHistory } from '../hooks/useProofLinkHistory';
+import TutorDeckStudioModal from './TutorDeckStudioModal';
+import DropboxUploadModal from './DropboxUploadModal';
 
 declare const flatpickr: any;
 
@@ -34,6 +37,14 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     const [submitting, setSubmitting] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [linkError, setLinkError] = useState<string | null>(null);
+
+    // Modal visibility state
+    const [isStudioOpen, setIsStudioOpen] = useState(false);
+    const [isDropboxOpen, setIsDropboxOpen] = useState(false);
+
+    // Link history hook
+    const { isDuplicate, addLinkToHistory } = useProofLinkHistory();
 
     const dateInputRef = useRef<HTMLInputElement>(null);
     const hoursInputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +60,23 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     ];
     const totalSteps = steps.length;
 
-    // Reset state when modal is closed or opened
+    const validateProofLink = (link: string) => {
+        if (!link) {
+            setLinkError(null);
+            return false;
+        }
+        if (!link.startsWith('https://www.dropbox.com/')) {
+            setLinkError("Validation Error: Only Dropbox share links are accepted.");
+            return false;
+        }
+        if (isDuplicate(link)) {
+            setLinkError("Validation Error: This link has already been submitted as proof.");
+            return false;
+        }
+        setLinkError(null);
+        return true;
+    };
+
     useEffect(() => {
         if (isOpen) {
             setCurrentStep(0);
@@ -60,10 +87,10 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             setApiError(null);
             setSubmitting(false);
             setIsSuccess(false);
+            setLinkError(null);
         }
     }, [isOpen]);
 
-    // Validate the current step whenever a relevant value changes
     useEffect(() => {
         const validate = () => {
             switch (currentStep) {
@@ -73,60 +100,31 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                     const numHours = parseFloat(hours);
                     return !isNaN(numHours) && numHours > 0 && numHours <= 8;
                 case 3:
-                    if (!proofLink) return false;
-                    try { new URL(proofLink); return true; } catch { return false; }
+                    return validateProofLink(proofLink);
                 default: return true;
             }
         };
         setIsStepValid(validate());
-    }, [currentStep, activityType, activityDate, hours, proofLink]);
+    }, [currentStep, activityType, activityDate, hours, proofLink, isDuplicate]);
 
-    // Initialize Flatpickr when the date step is active
     useEffect(() => {
         if (isOpen && currentStep === 1 && dateInputRef.current) {
             flatpickrInstance.current = flatpickr(dateInputRef.current, {
-                dateFormat: "Y-m-d",
-                defaultDate: activityDate,
-                maxDate: new Date(),
-                clickOpens: false, // <-- THE KEY CHANGE: Prevents opening on input click
-                onChange: (selectedDates: Date[]) => {
-                    if (selectedDates[0]) {
-                        setActivityDate(selectedDates[0].toISOString().split('T')[0]);
-                    }
-                },
+                dateFormat: "Y-m-d", defaultDate: activityDate, maxDate: new Date(), clickOpens: false,
+                onChange: (selectedDates: Date[]) => { if (selectedDates[0]) setActivityDate(selectedDates[0].toISOString().split('T')[0]); },
             });
         }
-        // Cleanup function to destroy instance when modal closes or step changes
-        return () => {
-            if (flatpickrInstance.current) {
-                flatpickrInstance.current.destroy();
-                flatpickrInstance.current = null;
-            }
-        };
+        return () => { if (flatpickrInstance.current) { flatpickrInstance.current.destroy(); flatpickrInstance.current = null; } };
     }, [isOpen, currentStep, activityDate]);
 
-    // Auto-focus inputs on step change
     useEffect(() => {
         if (currentStep === 2) hoursInputRef.current?.focus();
         if (currentStep === 3) proofInputRef.current?.focus();
     }, [currentStep]);
 
-    const handleNext = () => {
-        if (isStepValid && currentStep < totalSteps - 1) {
-            setCurrentStep(prev => prev + 1);
-        }
-    };
-
-    const handleBack = () => {
-        if (currentStep > 0) {
-            setCurrentStep(prev => prev - 1);
-        }
-    };
-
-    const handleSelectActivityType = (type: 'Peer Tutoring' | 'Mentorship') => {
-        setActivityType(type);
-        setTimeout(() => setCurrentStep(1), 200);
-    };
+    const handleNext = () => { if (isStepValid && currentStep < totalSteps - 1) setCurrentStep(prev => prev + 1); };
+    const handleBack = () => { if (currentStep > 0) setCurrentStep(prev => prev - 1); };
+    const handleSelectActivityType = (type: 'Peer Tutoring' | 'Mentorship') => { setActivityType(type); setTimeout(() => setCurrentStep(1), 200); };
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -148,6 +146,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || "An unknown error occurred.");
             
+            addLinkToHistory(proofLink); // Add to history on success
             onActivityAdded(data);
             setIsSuccess(true);
         } catch (err) {
@@ -158,12 +157,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
         }
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && currentStep >= 1 && currentStep < totalSteps - 1) {
-            e.preventDefault();
-            handleNext();
-        }
-    };
+    const handleKeyPress = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && currentStep >= 1 && currentStep < totalSteps - 1) { e.preventDefault(); handleNext(); } };
 
     if (!isOpen) return null;
 
@@ -183,7 +177,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             { title: 'Select Activity Type', description: 'Choose the category that best fits your volunteer work.' },
             { title: 'Select the Date', description: 'When did this activity take place? Use the calendar to select a date.' },
             { title: 'Log Your Hours', description: 'Enter the number of hours you volunteered for this session (e.g., 1.5).' },
-            { title: 'Provide Proof', description: 'Link to a document or image that verifies your activity (e.g., Dropbox, Google Drive).' },
+            { title: 'Provide Proof of Activity', description: 'Submit a unique Dropbox link as evidence for this session.' },
             { title: 'Review & Submit', description: 'Please confirm the details below are correct before submitting.' }
         ];
 
@@ -193,98 +187,61 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                     <h2 className="text-3xl font-bold text-dark-heading mb-2">{stepDetails[currentStep].title}</h2>
                     <p className="text-dark-text mb-8">{stepDetails[currentStep].description}</p>
                     
-                    <div className="relative h-48">
-                        {/* Step 0: Activity Type */}
-                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <button onClick={() => handleSelectActivityType('Peer Tutoring')} className="p-6 flex-1 bg-white/5 border-2 border-white/10 hover:border-primary rounded-xl text-left transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary"><i className="fas fa-book-reader text-2xl text-primary mb-2"></i><h3 className="text-lg font-bold text-dark-heading">Peer Tutoring</h3></button>
-                                <button onClick={() => handleSelectActivityType('Mentorship')} className="p-6 flex-1 bg-white/5 border-2 border-white/10 hover:border-secondary rounded-xl text-left transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-secondary"><i className="fas fa-user-friends text-2xl text-secondary mb-2"></i><h3 className="text-lg font-bold text-dark-heading">Mentorship</h3></button>
-                            </div>
-                        </div>
-                        {/* Step 1: Date */}
-                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 1 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                            <label htmlFor="activityDate" className="block text-sm font-medium text-dark-text mb-2">Date</label>
-                            <div className="relative">
-                                <input 
-                                    ref={dateInputRef} 
-                                    id="activityDate" 
-                                    type="text" 
-                                    placeholder="YYYY-MM-DD" 
-                                    className="w-full bg-black/30 border border-white/20 rounded-lg py-2 px-3 pr-10 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" 
-                                />
-                                <button 
-                                    type="button" 
-                                    onClick={() => flatpickrInstance.current?.open()}
-                                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-primary transition-colors"
-                                    aria-label="Open calendar"
-                                >
-                                    <i className="fas fa-calendar-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                        {/* Step 2: Hours */}
-                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 2 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                            <label htmlFor="hours" className="block text-sm font-medium text-dark-text mb-2">Hours Volunteered</label>
-                            <input ref={hoursInputRef} id="hours" type="number" value={hours} onChange={e => setHours(e.target.value)} min="0.1" max="8" step="0.1" placeholder="e.g., 1.5" className="w-full bg-black/30 border border-white/20 rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" />
-                        </div>
+                    <div className="relative min-h-[220px]">
                         {/* Step 3: Proof Link */}
                         <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 3 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                            <label htmlFor="proofLink" className="block text-sm font-medium text-dark-text mb-2">Proof URL</label>
-                            <input ref={proofInputRef} id="proofLink" type="url" value={proofLink} onChange={e => setProofLink(e.target.value)} placeholder="https://www.dropbox.com/..." className="w-full bg-black/30 border border-white/20 rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" />
-                        </div>
-                        {/* Step 4: Review */}
-                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 4 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                            <div className="bg-black/20 border border-white/20 rounded-xl p-4 space-y-2 text-sm">
-                                <div className="flex justify-between"><span className="font-semibold text-dark-text">Type:</span><span className="text-dark-heading font-bold">{activityType}</span></div>
-                                <div className="flex justify-between"><span className="font-semibold text-dark-text">Date:</span><span className="text-dark-heading font-bold">{new Date(activityDate + 'T00:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span></div>
-                                <div className="flex justify-between"><span className="font-semibold text-dark-text">Hours:</span><span className="text-dark-heading font-bold">{parseFloat(hours || '0').toFixed(1)}</span></div>
+                            <label htmlFor="proofLink" className="block text-sm font-medium text-dark-text mb-2">Dropbox Share Link</label>
+                            <input ref={proofInputRef} id="proofLink" type="url" value={proofLink} onChange={e => setProofLink(e.target.value)} placeholder="https://www.dropbox.com/..." className={`w-full bg-black/30 border rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 ${linkError ? 'border-red-500 focus:ring-red-500' : 'border-white/20 focus:ring-primary'}`} />
+                            {linkError && <p className="text-red-400 text-xs mt-2">{linkError}</p>}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                                <button type="button" onClick={() => setIsStudioOpen(true)} className="p-3 bg-white/5 border border-white/10 hover:border-primary rounded-xl text-center transition-colors"><i className="fas fa-microphone mr-2 text-primary"></i>Record Audio Evidence</button>
+                                <button type="button" onClick={() => setIsDropboxOpen(true)} className="p-3 bg-white/5 border border-white/10 hover:border-secondary rounded-xl text-center transition-colors"><i className="fab fa-dropbox mr-2 text-secondary"></i>Get Link from Dropbox</button>
                             </div>
-                            {apiError && <p className="text-red-400 text-xs text-center pt-2">{apiError}</p>}
                         </div>
+                        {/* Other steps... */}
+                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}><div className="flex flex-col sm:flex-row gap-4"><button onClick={() => handleSelectActivityType('Peer Tutoring')} className="p-6 flex-1 bg-white/5 border-2 border-white/10 hover:border-primary rounded-xl text-left transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary"><i className="fas fa-book-reader text-2xl text-primary mb-2"></i><h3 className="text-lg font-bold text-dark-heading">Peer Tutoring</h3></button><button onClick={() => handleSelectActivityType('Mentorship')} className="p-6 flex-1 bg-white/5 border-2 border-white/10 hover:border-secondary rounded-xl text-left transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-secondary"><i className="fas fa-user-friends text-2xl text-secondary mb-2"></i><h3 className="text-lg font-bold text-dark-heading">Mentorship</h3></button></div></div>
+                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 1 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}><div className="relative"><input ref={dateInputRef} id="activityDate" type="text" placeholder="YYYY-MM-DD" className="w-full bg-black/30 border border-white/20 rounded-lg py-2 px-3 pr-10 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" /><button type="button" onClick={() => flatpickrInstance.current?.open()} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-primary transition-colors" aria-label="Open calendar"><i className="fas fa-calendar-alt"></i></button></div></div>
+                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 2 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}><label htmlFor="hours" className="block text-sm font-medium text-dark-text mb-2">Hours Volunteered</label><input ref={hoursInputRef} id="hours" type="number" value={hours} onChange={e => setHours(e.target.value)} min="0.1" max="8" step="0.1" placeholder="e.g., 1.5" className="w-full bg-black/30 border border-white/20 rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" /></div>
+                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 4 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}><div className="bg-black/20 border border-white/20 rounded-xl p-4 space-y-2 text-sm"><div className="flex justify-between"><span className="font-semibold text-dark-text">Type:</span><span className="text-dark-heading font-bold">{activityType}</span></div><div className="flex justify-between"><span className="font-semibold text-dark-text">Date:</span><span className="text-dark-heading font-bold">{new Date(activityDate + 'T00:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span></div><div className="flex justify-between"><span className="font-semibold text-dark-text">Hours:</span><span className="text-dark-heading font-bold">{parseFloat(hours || '0').toFixed(1)}</span></div></div>{apiError && <p className="text-red-400 text-xs text-center pt-2">{apiError}</p>}</div>
                     </div>
                 </div>
-                {/* Navigation Footer */}
                 <div className="flex-shrink-0 p-6 bg-black/20 border-t border-white/10 rounded-b-lg flex items-center justify-between">
                     <button onClick={handleBack} disabled={currentStep === 0 || submitting} className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Back</button>
-                    {currentStep < totalSteps - 1 ? (
-                        <button onClick={handleNext} disabled={!isStepValid} className="px-8 py-2 rounded-lg bg-primary text-dark-bg font-semibold hover:bg-primary-dark transition-colors disabled:bg-gray-500/40 disabled:text-gray-400 disabled:cursor-not-allowed">Next</button>
-                    ) : (
-                        <button onClick={handleSubmit} disabled={submitting || !isStepValid} className="px-8 py-2 rounded-lg bg-secondary text-white font-semibold hover:bg-secondary-dark transition-colors disabled:bg-gray-500/40 disabled:text-gray-400 disabled:cursor-wait flex items-center gap-2">
-                            {submitting ? <><i className="fas fa-spinner fa-spin"></i> Submitting...</> : 'Submit Activity'}
-                        </button>
-                    )}
+                    {currentStep < totalSteps - 1 ? (<button onClick={handleNext} disabled={!isStepValid} className="px-8 py-2 rounded-lg bg-primary text-dark-bg font-semibold hover:bg-primary-dark transition-colors disabled:bg-gray-500/40 disabled:text-gray-400 disabled:cursor-not-allowed">Next</button>) : (<button onClick={handleSubmit} disabled={submitting || !isStepValid} className="px-8 py-2 rounded-lg bg-secondary text-white font-semibold hover:bg-secondary-dark transition-colors disabled:bg-gray-500/40 disabled:text-gray-400 disabled:cursor-wait flex items-center gap-2">{submitting ? <><i className="fas fa-spinner fa-spin"></i> Submitting...</> : 'Submit Activity'}</button>)}
                 </div>
             </div>
         );
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-50 p-4 transition-opacity duration-300" onClick={onClose}>
-            <div className="bg-dark-card/80 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-4xl flex overflow-hidden" onClick={e => e.stopPropagation()}>
-                {/* Left Navigation Panel */}
-                <div className="w-1/3 bg-black/20 p-8 border-r border-white/10 hidden md:block">
-                    <h3 className="font-bold text-dark-heading text-xl mb-8">Log New Activity</h3>
-                    <ul className="space-y-4">
-                        {steps.map((step, index) => {
-                            const isCompleted = currentStep > index;
-                            const isActive = currentStep === index;
-                            return (
-                                <li key={step.id} className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-300 ${isActive ? 'bg-primary/20' : ''}`}>
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${isCompleted ? 'bg-primary text-dark-bg' : isActive ? 'bg-primary text-dark-bg ring-4 ring-primary/30' : 'bg-white/10 text-dark-text'}`}>
-                                        {isCompleted ? <i className="fas fa-check"></i> : <i className={`fas ${step.icon}`}></i>}
-                                    </div>
-                                    <span className={`font-semibold ${isCompleted ? 'text-dark-text' : isActive ? 'text-primary' : 'text-gray-500'}`}>{step.title}</span>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                </div>
-                {/* Right Content Panel */}
-                <div className="w-full md:w-2/3">
-                    {renderStepContent()}
+        <>
+            <TutorDeckStudioModal isOpen={isStudioOpen} onClose={() => setIsStudioOpen(false)} />
+            <DropboxUploadModal isOpen={isDropboxOpen} onClose={() => setIsDropboxOpen(false)} />
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-50 p-4 transition-opacity duration-300" onClick={onClose}>
+                <div className="bg-dark-card/80 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-4xl flex overflow-hidden" onClick={e => e.stopPropagation()}>
+                    <div className="w-1/3 bg-black/20 p-8 border-r border-white/10 hidden md:block">
+                        <h3 className="font-bold text-dark-heading text-xl mb-8">Log New Activity</h3>
+                        <ul className="space-y-4">
+                            {steps.map((step, index) => {
+                                const isCompleted = currentStep > index;
+                                const isActive = currentStep === index;
+                                return (
+                                    <li key={step.id} className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-300 ${isActive ? 'bg-primary/20' : ''}`}>
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${isCompleted ? 'bg-primary text-dark-bg' : isActive ? 'bg-primary text-dark-bg ring-4 ring-primary/30' : 'bg-white/10 text-dark-text'}`}>
+                                            {isCompleted ? <i className="fas fa-check"></i> : <i className={`fas ${step.icon}`}></i>}
+                                        </div>
+                                        <span className={`font-semibold ${isCompleted ? 'text-dark-text' : isActive ? 'text-primary' : 'text-gray-500'}`}>{step.title}</span>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
+                    <div className="w-full md:w-2/3">
+                        {renderStepContent()}
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
