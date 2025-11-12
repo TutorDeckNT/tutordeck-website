@@ -4,7 +4,6 @@ import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProofLinkHistory } from '../hooks/useProofLinkHistory';
 import TutorDeckStudioModal from './TutorDeckStudioModal';
-import DropboxUploader from './DropboxUploader'; // Import the new uploader component
 import Portal from './Portal';
 
 // TypeScript declaration for the global Dropbox object from their script
@@ -137,7 +136,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
         Dropbox.choose({
             success: (files: any[]) => {
                 if (files && files.length > 0) {
-                    setProofLink(files[0].link); // Use the permanent preview link
+                    setProofLink(files[0].link);
                 }
             },
             linkType: 'preview',
@@ -219,13 +218,14 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                             <input ref={proofInputRef} id="proofLink" type="url" value={proofLink} onChange={e => setProofLink(e.target.value)} placeholder="https://www.dropbox.com/..." className={`w-full bg-black/30 border rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 ${linkError ? 'border-red-500 focus:ring-red-500' : 'border-white/20 focus:ring-primary'}`} />
                             {linkError && <p className="text-red-400 text-xs mt-2">{linkError}</p>}
                             
-                            <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
-                                <h4 className="text-sm font-semibold text-center text-dark-text uppercase tracking-wider">Evidence Tools</h4>
-                                <DropboxUploader />
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <button type="button" onClick={handleDropboxChoose} className="w-full p-3 bg-white/5 border border-white/10 hover:border-secondary rounded-xl text-center transition-colors"><i className="fab fa-dropbox mr-2 text-secondary"></i>Choose Existing File</button>
+                            <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <button type="button" onClick={handleDropboxChoose} className="w-full p-3 bg-white/5 border border-white/10 hover:border-secondary rounded-xl text-center transition-colors"><i className="fab fa-dropbox mr-2 text-secondary"></i>Get Link from Dropbox</button>
                                     <button type="button" onClick={() => setIsStudioOpen(true)} className="w-full p-3 bg-white/5 border border-white/10 hover:border-primary rounded-xl text-center transition-colors"><i className="fas fa-microphone mr-2 text-primary"></i>Record Audio</button>
                                 </div>
+                                <p className="text-xs text-center text-gray-400 px-4">
+                                    <strong>Tip:</strong> You can upload a new file using the "Upload files" button inside the Dropbox window.
+                                </p>
                             </div>
                         </div>
                         {/* Other steps... */}
