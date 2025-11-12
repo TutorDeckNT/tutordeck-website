@@ -4,10 +4,8 @@ import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProofLinkHistory } from '../hooks/useProofLinkHistory';
 import TutorDeckStudioModal from './TutorDeckStudioModal';
+import DirectUploader from './DirectUploader'; // Import the new uploader
 import Portal from './Portal';
-
-// TypeScript declaration for the global Dropbox object from their script
-declare const Dropbox: any;
 
 declare const flatpickr: any;
 
@@ -29,23 +27,18 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     const { user } = useAuth();
     const [currentStep, setCurrentStep] = useState(0);
     
-    // Form State
     const [activityType, setActivityType] = useState<'Peer Tutoring' | 'Mentorship' | ''>('');
     const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
     const [hours, setHours] = useState('');
     const [proofLink, setProofLink] = useState('');
     
-    // Control State
     const [isStepValid, setIsStepValid] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
     const [isSuccess, setIsSuccess] = useState(false);
     const [linkError, setLinkError] = useState<string | null>(null);
-
-    // Modal visibility state
     const [isStudioOpen, setIsStudioOpen] = useState(false);
 
-    // Link history hook
     const { isDuplicate, addLinkToHistory } = useProofLinkHistory();
 
     const dateInputRef = useRef<HTMLInputElement>(null);
@@ -128,23 +121,6 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     const handleBack = () => { if (currentStep > 0) setCurrentStep(prev => prev - 1); };
     const handleSelectActivityType = (type: 'Peer Tutoring' | 'Mentorship') => { setActivityType(type); setTimeout(() => setCurrentStep(1), 200); };
 
-    const handleDropboxChoose = () => {
-        if (typeof Dropbox === 'undefined') {
-            setApiError("Dropbox script not loaded. Please refresh the page.");
-            return;
-        }
-        Dropbox.choose({
-            success: (files: any[]) => {
-                if (files && files.length > 0) {
-                    setProofLink(files[0].link);
-                }
-            },
-            linkType: 'preview',
-            multiselect: false,
-            extensions: ['.pdf', '.png', '.jpeg', '.jpg', '.opus', '.mp3', '.wav', '.m4a'],
-        });
-    };
-
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!isStepValid) return;
@@ -215,17 +191,12 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                         {/* Step 3: Proof Link - The new Evidence Hub */}
                         <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 3 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                             <label htmlFor="proofLink" className="block text-sm font-medium text-dark-text mb-2">Dropbox Share Link</label>
-                            <input ref={proofInputRef} id="proofLink" type="url" value={proofLink} onChange={e => setProofLink(e.target.value)} placeholder="https://www.dropbox.com/..." className={`w-full bg-black/30 border rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 ${linkError ? 'border-red-500 focus:ring-red-500' : 'border-white/20 focus:ring-primary'}`} />
+                            <input ref={proofInputRef} id="proofLink" type="url" value={proofLink} onChange={e => setProofLink(e.target.value)} placeholder="Link will be auto-filled after upload..." className={`w-full bg-black/30 border rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 ${linkError ? 'border-red-500 focus:ring-red-500' : 'border-white/20 focus:ring-primary'}`} />
                             {linkError && <p className="text-red-400 text-xs mt-2">{linkError}</p>}
                             
                             <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <button type="button" onClick={handleDropboxChoose} className="w-full p-3 bg-white/5 border border-white/10 hover:border-secondary rounded-xl text-center transition-colors"><i className="fab fa-dropbox mr-2 text-secondary"></i>Get Link from Dropbox</button>
-                                    <button type="button" onClick={() => setIsStudioOpen(true)} className="w-full p-3 bg-white/5 border border-white/10 hover:border-primary rounded-xl text-center transition-colors"><i className="fas fa-microphone mr-2 text-primary"></i>Record Audio</button>
-                                </div>
-                                <p className="text-xs text-center text-gray-400 px-4">
-                                    <strong>Tip:</strong> You can upload a new file using the "Upload files" button inside the Dropbox window.
-                                </p>
+                                <DirectUploader onUploadSuccess={(link) => setProofLink(link)} />
+                                <button type="button" onClick={() => setIsStudioOpen(true)} className="w-full p-3 bg-white/5 border border-white/10 hover:border-primary rounded-xl text-center transition-colors"><i className="fas fa-microphone mr-2 text-primary"></i>Record Audio Instead</button>
                             </div>
                         </div>
                         {/* Other steps... */}
