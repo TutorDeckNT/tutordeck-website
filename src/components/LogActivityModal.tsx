@@ -159,6 +159,12 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
 
     const handleKeyPress = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && currentStep >= 1 && currentStep < totalSteps - 1) { e.preventDefault(); handleNext(); } };
 
+    const handleCloseAll = () => {
+        setIsStudioOpen(false);
+        setIsDropboxOpen(false);
+        onClose();
+    };
+
     if (!isOpen) return null;
 
     const renderStepContent = () => {
@@ -168,7 +174,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                     <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mb-6"><i className="fas fa-check-circle text-5xl text-primary"></i></div>
                     <h2 className="text-3xl font-bold text-dark-heading mb-2">Activity Logged!</h2>
                     <p className="text-dark-text mb-8">Your contribution has been recorded. Thank you!</p>
-                    <button onClick={onClose} className="cta-button bg-primary text-dark-bg font-semibold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors">Close</button>
+                    <button onClick={handleCloseAll} className="cta-button bg-primary text-dark-bg font-semibold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors">Close</button>
                 </div>
             );
         }
@@ -217,7 +223,10 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
         <>
             <TutorDeckStudioModal isOpen={isStudioOpen} onClose={() => setIsStudioOpen(false)} />
             <DropboxUploadModal isOpen={isDropboxOpen} onClose={() => setIsDropboxOpen(false)} />
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-50 p-4 transition-opacity duration-300" onClick={onClose}>
+            <div 
+                className={`fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${isStudioOpen || isDropboxOpen ? 'opacity-60 pointer-events-none' : ''}`} 
+                onClick={handleCloseAll}
+            >
                 <div className="bg-dark-card/80 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-4xl flex overflow-hidden" onClick={e => e.stopPropagation()}>
                     <div className="w-1/3 bg-black/20 p-8 border-r border-white/10 hidden md:block">
                         <h3 className="font-bold text-dark-heading text-xl mb-8">Log New Activity</h3>
