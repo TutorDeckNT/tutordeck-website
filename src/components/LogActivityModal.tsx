@@ -4,7 +4,11 @@ import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProofLinkHistory } from '../hooks/useProofLinkHistory';
 import TutorDeckStudioModal from './TutorDeckStudioModal';
-import DropboxUploadModal from './DropboxUploadModal';
+import DropboxUploader from './DropboxUploader'; // Import the new uploader component
+import Portal from './Portal';
+
+// TypeScript declaration for the global Dropbox object from their script
+declare const Dropbox: any;
 
 declare const flatpickr: any;
 
@@ -41,7 +45,6 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
 
     // Modal visibility state
     const [isStudioOpen, setIsStudioOpen] = useState(false);
-    const [isDropboxOpen, setIsDropboxOpen] = useState(false);
 
     // Link history hook
     const { isDuplicate, addLinkToHistory } = useProofLinkHistory();
@@ -126,6 +129,23 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     const handleBack = () => { if (currentStep > 0) setCurrentStep(prev => prev - 1); };
     const handleSelectActivityType = (type: 'Peer Tutoring' | 'Mentorship') => { setActivityType(type); setTimeout(() => setCurrentStep(1), 200); };
 
+    const handleDropboxChoose = () => {
+        if (typeof Dropbox === 'undefined') {
+            setApiError("Dropbox script not loaded. Please refresh the page.");
+            return;
+        }
+        Dropbox.choose({
+            success: (files: any[]) => {
+                if (files && files.length > 0) {
+                    setProofLink(files[0].link); // Use the permanent preview link
+                }
+            },
+            linkType: 'preview',
+            multiselect: false,
+            extensions: ['.pdf', '.png', '.jpeg', '.jpg', '.opus', '.mp3', '.wav', '.m4a'],
+        });
+    };
+
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!isStepValid) return;
@@ -146,7 +166,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || "An unknown error occurred.");
             
-            addLinkToHistory(proofLink); // Add to history on success
+            addLinkToHistory(proofLink);
             onActivityAdded(data);
             setIsSuccess(true);
         } catch (err) {
@@ -161,7 +181,6 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
 
     const handleCloseAll = () => {
         setIsStudioOpen(false);
-        setIsDropboxOpen(false);
         onClose();
     };
 
@@ -194,14 +213,19 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                     <p className="text-dark-text mb-8">{stepDetails[currentStep].description}</p>
                     
                     <div className="relative min-h-[220px]">
-                        {/* Step 3: Proof Link */}
+                        {/* Step 3: Proof Link - The new Evidence Hub */}
                         <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 3 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                             <label htmlFor="proofLink" className="block text-sm font-medium text-dark-text mb-2">Dropbox Share Link</label>
                             <input ref={proofInputRef} id="proofLink" type="url" value={proofLink} onChange={e => setProofLink(e.target.value)} placeholder="https://www.dropbox.com/..." className={`w-full bg-black/30 border rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 ${linkError ? 'border-red-500 focus:ring-red-500' : 'border-white/20 focus:ring-primary'}`} />
                             {linkError && <p className="text-red-400 text-xs mt-2">{linkError}</p>}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                                <button type="button" onClick={() => setIsStudioOpen(true)} className="p-3 bg-white/5 border border-white/10 hover:border-primary rounded-xl text-center transition-colors"><i className="fas fa-microphone mr-2 text-primary"></i>Record Audio Evidence</button>
-                                <button type="button" onClick={() => setIsDropboxOpen(true)} className="p-3 bg-white/5 border border-white/10 hover:border-secondary rounded-xl text-center transition-colors"><i className="fab fa-dropbox mr-2 text-secondary"></i>Get Link from Dropbox</button>
+                            
+                            <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
+                                <h4 className="text-sm font-semibold text-center text-dark-text uppercase tracking-wider">Evidence Tools</h4>
+                                <DropboxUploader />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <button type="button" onClick={handleDropboxChoose} className="w-full p-3 bg-white/5 border border-white/10 hover:border-secondary rounded-xl text-center transition-colors"><i className="fab fa-dropbox mr-2 text-secondary"></i>Choose Existing File</button>
+                                    <button type="button" onClick={() => setIsStudioOpen(true)} className="w-full p-3 bg-white/5 border border-white/10 hover:border-primary rounded-xl text-center transition-colors"><i className="fas fa-microphone mr-2 text-primary"></i>Record Audio</button>
+                                </div>
                             </div>
                         </div>
                         {/* Other steps... */}
@@ -222,34 +246,35 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     return (
         <>
             <TutorDeckStudioModal isOpen={isStudioOpen} onClose={() => setIsStudioOpen(false)} />
-            <DropboxUploadModal isOpen={isDropboxOpen} onClose={() => setIsDropboxOpen(false)} />
-            <div 
-                className={`fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${isStudioOpen || isDropboxOpen ? 'opacity-60 pointer-events-none' : ''}`} 
-                onClick={handleCloseAll}
-            >
-                <div className="bg-dark-card/80 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-4xl flex overflow-hidden" onClick={e => e.stopPropagation()}>
-                    <div className="w-1/3 bg-black/20 p-8 border-r border-white/10 hidden md:block">
-                        <h3 className="font-bold text-dark-heading text-xl mb-8">Log New Activity</h3>
-                        <ul className="space-y-4">
-                            {steps.map((step, index) => {
-                                const isCompleted = currentStep > index;
-                                const isActive = currentStep === index;
-                                return (
-                                    <li key={step.id} className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-300 ${isActive ? 'bg-primary/20' : ''}`}>
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${isCompleted ? 'bg-primary text-dark-bg' : isActive ? 'bg-primary text-dark-bg ring-4 ring-primary/30' : 'bg-white/10 text-dark-text'}`}>
-                                            {isCompleted ? <i className="fas fa-check"></i> : <i className={`fas ${step.icon}`}></i>}
-                                        </div>
-                                        <span className={`font-semibold ${isCompleted ? 'text-dark-text' : isActive ? 'text-primary' : 'text-gray-500'}`}>{step.title}</span>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </div>
-                    <div className="w-full md:w-2/3">
-                        {renderStepContent()}
+            <Portal>
+                <div 
+                    className={`fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${isStudioOpen ? 'opacity-60 pointer-events-none' : ''}`} 
+                    onClick={handleCloseAll}
+                >
+                    <div className="bg-dark-card/80 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-4xl flex overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="w-1/3 bg-black/20 p-8 border-r border-white/10 hidden md:block">
+                            <h3 className="font-bold text-dark-heading text-xl mb-8">Log New Activity</h3>
+                            <ul className="space-y-4">
+                                {steps.map((step, index) => {
+                                    const isCompleted = currentStep > index;
+                                    const isActive = currentStep === index;
+                                    return (
+                                        <li key={step.id} className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-300 ${isActive ? 'bg-primary/20' : ''}`}>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${isCompleted ? 'bg-primary text-dark-bg' : isActive ? 'bg-primary text-dark-bg ring-4 ring-primary/30' : 'bg-white/10 text-dark-text'}`}>
+                                                {isCompleted ? <i className="fas fa-check"></i> : <i className={`fas ${step.icon}`}></i>}
+                                            </div>
+                                            <span className={`font-semibold ${isCompleted ? 'text-dark-text' : isActive ? 'text-primary' : 'text-gray-500'}`}>{step.title}</span>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                        <div className="w-full md:w-2/3">
+                            {renderStepContent()}
+                        </div>
                     </div>
                 </div>
-            </div>
+            </Portal>
         </>
     );
 };
