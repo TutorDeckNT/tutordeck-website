@@ -22,6 +22,17 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
             return;
         }
 
+        // --- FIX: Add JavaScript validation for audio files ---
+        if (!file.type.startsWith('audio/')) {
+            setStatus('error');
+            setErrorMessage('Invalid file type. Please select an audio file.');
+            // Reset file input to allow re-selection
+            if(fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+            return;
+        }
+
         setStatus('uploading');
         setErrorMessage(null);
 
@@ -80,7 +91,8 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
                 ref={fileInputRef}
                 onChange={handleFileSelect}
                 className="hidden"
-                accept=".pdf,.png,.jpeg,.jpg,.opus,.mp3,.wav,.m4a"
+                // --- FIX: Update accept attribute to hint for audio files ---
+                accept="audio/*"
             />
             <button
                 type="button"
@@ -89,7 +101,7 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
                 className="w-full p-3 bg-white/5 border border-white/10 hover:border-blue-400 rounded-xl text-center transition-colors disabled:opacity-50 disabled:cursor-wait"
             >
                 <i className="fas fa-upload mr-2 text-blue-400"></i>
-                {status === 'uploading' ? 'Uploading...' : 'Upload Proof File'}
+                {status === 'uploading' ? 'Uploading...' : 'Upload Audio Proof'}
             </button>
             <div className="h-6 flex items-center justify-center px-2 text-center">
                 {getStatusContent()}
