@@ -16,28 +16,13 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const allowedExtensions = [
-        '.mp3',
-        '.wav',
-        '.m4a',
-        '.aac',
-        '.ogg',
-        '.opus',
-    ];
+    // Allow common audio extensions including .opus
+    const audioExtensionPattern = /\.(mp3|wav|m4a|aac|ogg|opus)$/i;
 
     const isAllowedAudio = (file: File) => {
-        // If browser provides a MIME type and it's audio, accept it
-        if (file.type && file.type.startsWith('audio/')) {
-            return true;
-        }
-
-        // Fallback: check file extension (handles .opus and others)
-        const name = file.name.toLowerCase();
-        const dotIndex = name.lastIndexOf('.');
-        if (dotIndex === -1) return false;
-
-        const ext = name.slice(dotIndex);
-        return allowedExtensions.includes(ext);
+        // Debug logging if you want to see what the browser gives you:
+        // console.log('Selected file:', { name: file.name, type: file.type });
+        return audioExtensionPattern.test(file.name);
     };
 
     const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,11 +31,9 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
             return;
         }
 
-        // Validation for audio files including .opus
         if (!isAllowedAudio(file)) {
             setStatus('error');
-            setErrorMessage('Invalid file type. Please select an audio file.');
-            // Reset file input to allow re-selection
+            setErrorMessage('Invalid file type. Please select an audio file (mp3, wav, m4a, aac, ogg, opus).');
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
@@ -80,14 +63,13 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
             }
 
             setStatus('success');
-            onUploadSuccess(data.link); // Pass the link up to the parent
+            onUploadSuccess(data.link);
             setTimeout(() => setStatus('idle'), 3000);
 
         } catch (err) {
             setStatus('error');
             setErrorMessage(err instanceof Error ? err.message : 'An unknown error occurred.');
         } finally {
-            // Reset file input to allow re-uploading the same file
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
@@ -115,8 +97,8 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
                 ref={fileInputRef}
                 onChange={handleFileSelect}
                 className="hidden"
-                // Hint to browser: accept audio files and .opus explicitly
-                accept="audio/*,.opus"
+                // Hint: list the specific audio types you want
+                accept=".mp3,.wav,.m4a,.aac,.ogg,.opus,audio/*"
             />
             <button
                 type="button"
