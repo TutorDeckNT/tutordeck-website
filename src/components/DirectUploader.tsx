@@ -16,13 +16,23 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Allow common audio extensions including .opus
-    const audioExtensionPattern = /\.(mp3|wav|m4a|aac|ogg|opus)$/i;
+    const allowedExtensions = ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'opus', 'flac', 'webm'];
 
     const isAllowedAudio = (file: File) => {
-        // Debug logging if you want to see what the browser gives you:
-        // console.log('Selected file:', { name: file.name, type: file.type });
-        return audioExtensionPattern.test(file.name);
+        // Get the file name, trim whitespace, convert to lowercase
+        const fileName = file.name.trim().toLowerCase();
+        
+        // Extract extension after the last dot
+        const lastDot = fileName.lastIndexOf('.');
+        if (lastDot === -1) {
+            console.log('No extension found in:', file.name);
+            return false;
+        }
+        
+        const extension = fileName.substring(lastDot + 1);
+        console.log('File:', file.name, 'Extension:', extension, 'Type:', file.type);
+        
+        return allowedExtensions.includes(extension);
     };
 
     const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,8 +107,7 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
                 ref={fileInputRef}
                 onChange={handleFileSelect}
                 className="hidden"
-                // Hint: list the specific audio types you want
-                accept=".mp3,.wav,.m4a,.aac,.ogg,.opus,audio/*"
+                accept=".mp3,.wav,.m4a,.aac,.ogg,.opus,.flac,.webm,audio/*"
             />
             <button
                 type="button"
