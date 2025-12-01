@@ -1,7 +1,7 @@
 // src/components/DirectUploader.tsx
 
 import React, { useState, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useDropbox } from '../contexts/DropboxContext';
 
 type UploadStatus = 'idle' | 'uploading' | 'success' | 'error';
 
@@ -10,7 +10,7 @@ interface DirectUploaderProps {
 }
 
 const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
-    const { user } = useAuth();
+    const { isAuthenticated, login, dbx } = useDropbox();
     const [status, setStatus] = useState<UploadStatus>('idle');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     
@@ -19,86 +19,86 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
     const allowedExtensions = ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'opus', 'flac', 'webm'];
 
     const isAllowedAudio = (file: File) => {
-        // Get the file name, trim whitespace, convert to lowercase
         const fileName = file.name.trim().toLowerCase();
-        
-        // Extract extension after the last dot
         const lastDot = fileName.lastIndexOf('.');
-        if (lastDot === -1) {
-            console.log('No extension found in:', file.name);
-            return false;
-        }
-        
+        if (lastDot === -1) return false;
         const extension = fileName.substring(lastDot + 1);
-        console.log('File:', file.name, 'Extension:', extension, 'Type:', file.type);
-        
         return allowedExtensions.includes(extension);
     };
 
     const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (!file || !user) {
+        if (!file) return;
+
+        if (!isAuthenticated || !dbx) {
+            setErrorMessage("Please connect to Dropbox first.");
             return;
         }
 
         if (!isAllowedAudio(file)) {
             setStatus('error');
-            setErrorMessage('Invalid file type. Please select an audio file (mp3, wav, m4a, aac, ogg, opus).');
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-            }
+            setErrorMessage('Invalid file type. Please select an audio file.');
+            if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
 
         setStatus('uploading');
         setErrorMessage(null);
 
-        const formData = new FormData();
-        formData.append('proofFile', file);
-
         try {
-            const token = await user.getIdToken();
-            const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/upload-proof`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: formData,
+            // 1. Upload File
+            const timestamp = Date.now();
+            const fileName = `${timestamp}-${file.name}`;
+            const uploadResponse = await dbx.filesUpload({
+                path: '/' + fileName, // Uploads to App Folder root
+                contents: file
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Upload failed.');
-            }
+            // 2. Create Shared Link
+            const shareResponse = await dbx.sharingCreateSharedLinkWithSettings({
+                path: uploadResponse.result.path_display || '/' + fileName,
+                settings: { requested_visibility: { '.tag': 'public' } }
+            });
 
             setStatus('success');
-            onUploadSuccess(data.link);
+            onUploadSuccess(shareResponse.result.url);
             setTimeout(() => setStatus('idle'), 3000);
 
-        } catch (err) {
+        } catch (err: any) {
+            console.error("Dropbox Upload Error", err);
             setStatus('error');
-            setErrorMessage(err instanceof Error ? err.message : 'An unknown error occurred.');
-        } finally {
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
+            // Handle specific Dropbox errors
+            if (err.error && err.error.error_summary && err.error.error_summary.includes('expired_access_token')) {
+                setErrorMessage('Session expired. Please reconnect Dropbox.');
+            } else {
+                setErrorMessage('Upload failed. Check your connection.');
             }
+        } finally {
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
     const getStatusContent = () => {
         switch (status) {
-            case 'uploading':
-                return <p className="text-sm text-blue-400 font-semibold">Uploading, please wait...</p>;
-            case 'success':
-                return <p className="text-sm text-green-400 font-semibold">✅ Success! Link has been added.</p>;
-            case 'error':
-                return <p className="text-sm text-red-400 font-semibold">❌ Error: {errorMessage}</p>;
-            case 'idle':
-            default:
-                return null;
+            case 'uploading': return <p className="text-sm text-blue-400 font-semibold">Uploading to your Dropbox...</p>;
+            case 'success': return <p className="text-sm text-green-400 font-semibold">✅ Success! Link added.</p>;
+            case 'error': return <p className="text-sm text-red-400 font-semibold">❌ {errorMessage}</p>;
+            default: return null;
         }
     };
+
+    if (!isAuthenticated) {
+        return (
+            <button
+                type="button"
+                onClick={login}
+                className="w-full p-3 bg-[#0061FE] hover:bg-[#0061FE]/90 text-white rounded-xl text-center transition-colors font-semibold"
+            >
+                <i className="fab fa-dropbox mr-2"></i>
+                Connect Dropbox to Upload
+            </button>
+        );
+    }
 
     return (
         <div className="w-full space-y-2">
