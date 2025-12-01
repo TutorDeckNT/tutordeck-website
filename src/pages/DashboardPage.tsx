@@ -45,6 +45,7 @@ const DashboardPage = () => {
     const [isLogModalOpen, setIsLogModalOpen] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const [serverMessage, setServerMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [copySuccess, setCopySuccess] = useState(false);
 
     const [filter, setFilter] = useState('All');
     const [sort, setSort] = useState<{ key: 'date' | 'hours', order: 'asc' | 'desc' }>({ key: 'date', order: 'desc' });
@@ -101,6 +102,47 @@ const DashboardPage = () => {
             setIsRefreshing(false);
         }
     }, [user]);
+
+    // --- NEW: Referral Redemption Logic ---
+    useEffect(() => {
+        const redeemReferral = async () => {
+            const referralUid = localStorage.getItem('pending_referral');
+            if (!referralUid || !user) return;
+
+            // Prevent self-referral on client side (backend also checks)
+            if (referralUid === user.uid) {
+                localStorage.removeItem('pending_referral');
+                return;
+            }
+
+            try {
+                const token = await user.getIdToken();
+                const response = await fetch(`${import.meta.env.VITE_RENDER_API_URL}/api/redeem-referral`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, referrerId: referralUid })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    setServerMessage({ type: 'success', text: "🎉 Referral bonus applied! You earned 30 mins." });
+                    smartSync(true); // Refresh to show the new hours
+                } else {
+                    // If it failed (e.g., already referred), we still clear the code so we don't retry
+                    console.log("Referral redemption info:", data.message);
+                }
+            } catch (err) {
+                console.error("Referral redemption error:", err);
+            } finally {
+                localStorage.removeItem('pending_referral');
+            }
+        };
+
+        if (user && !initialLoading) {
+            redeemReferral();
+        }
+    }, [user, initialLoading, smartSync]);
 
     useEffect(() => {
         const cachedItem = localStorage.getItem(CACHE_KEY);
@@ -169,6 +211,14 @@ const DashboardPage = () => {
         }
     };
 
+    const copyReferralLink = () => {
+        if (!user) return;
+        const link = `${window.location.origin}/?ref=${user.uid}`;
+        navigator.clipboard.writeText(link);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 3000);
+    };
+
     const totalHours = useMemo(() => activities.reduce((sum, act) => sum + (act.hours || 0), 0), [activities]);
     const totalSessions = activities.length;
 
@@ -235,6 +285,30 @@ const DashboardPage = () => {
                             <div className="lg:col-span-1 space-y-8">
                                 <ImpactCard icon="fa-clock" label="Total Hours Logged" value={totalHours.toFixed(1)} colorClass="text-primary" />
                                 <ImpactCard icon="fa-check-circle" label="Sessions Completed" value={totalSessions} colorClass="text-secondary" />
+                                
+                                {/* --- NEW: Referral Card --- */}
+                                <Reveal className="bg-gradient-to-br from-purple-900/40 to-blue-900/40 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-lg">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
+                                            <i className="fas fa-user-plus"></i>
+                                        </div>
+                                        <h3 className="font-bold text-dark-heading">Refer & Earn</h3>
+                                    </div>
+                                    <p className="text-sm text-gray-300 mb-4">
+                                        Give 30 mins, get 1 hour. Share your link to earn bonus volunteer credit.
+                                    </p>
+                                    <button 
+                                        onClick={copyReferralLink}
+                                        className="w-full bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg py-2 px-3 text-sm font-semibold text-white transition-all flex items-center justify-center gap-2"
+                                    >
+                                        {copySuccess ? (
+                                            <><i className="fas fa-check text-green-400"></i> Copied!</>
+                                        ) : (
+                                            <><i className="fas fa-link"></i> Copy Link</>
+                                        )}
+                                    </button>
+                                </Reveal>
+
                                 <ProgressTracker totalHours={totalHours} />
                             </div>
                             <div className="lg:col-span-2 space-y-8">
@@ -244,7 +318,7 @@ const DashboardPage = () => {
                                         <h2 className="text-2xl font-bold text-dark-heading">Volunteer Transcript</h2>
                                         <div className="flex items-center gap-4 w-full md:w-auto">
                                             <select onChange={(e) => setFilter(e.target.value)} value={filter} className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-xl py-2 px-3 text-sm text-dark-text focus:outline-none focus:ring-1 focus:ring-primary w-full md:w-auto">
-                                                <option>All</option><option>Peer Tutoring</option><option>Mentorship</option>
+                                                <option>All</option><option>Peer Tutoring</option><option>Mentorship</option><option>Referral Bonus</option><option>Sign-up Bonus</option>
                                             </select>
                                             <button onClick={() => { setServerMessage(null); setIsEmailModalOpen(true); }} disabled={activities.length === 0} className="bg-secondary/80 backdrop-blur-md text-white font-semibold px-4 py-2 rounded-xl hover:bg-secondary transition-colors disabled:bg-gray-500/20 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm border border-secondary">
                                                 <i className="fas fa-envelope"></i><span>Email</span>
@@ -266,7 +340,11 @@ const DashboardPage = () => {
                                                         filteredAndSortedActivities.map((activity) => (
                                                             <tr key={activity.id} className="border-t border-white/10 hover:bg-white/5 transition-colors">
                                                                 <td className="p-4 whitespace-nowrap">{new Date(activity.activityDate._seconds * 1000).toLocaleDateString()}</td>
-                                                                <td className="p-4">{activity.activityType}</td>
+                                                                <td className="p-4">
+                                                                    {activity.activityType}
+                                                                    {/* Show description if available (e.g. for referrals) */}
+                                                                    {(activity as any).description && <span className="block text-xs text-gray-500">{(activity as any).description}</span>}
+                                                                </td>
                                                                 <td className="p-4 font-bold text-right">{activity.hours.toFixed(1)}</td>
                                                             </tr>
                                                         ))
