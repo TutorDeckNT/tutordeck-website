@@ -6,7 +6,7 @@ import { useDropbox } from '../contexts/DropboxContext';
 type UploadStatus = 'idle' | 'uploading' | 'success' | 'error';
 
 interface DirectUploaderProps {
-    onUploadSuccess: (link: string) => void;
+    onUploadSuccess: (link: string, duration: number) => void;
 }
 
 const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
@@ -24,6 +24,25 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
         if (lastDot === -1) return false;
         const extension = fileName.substring(lastDot + 1);
         return allowedExtensions.includes(extension);
+    };
+
+    const getAudioDuration = (file: File): Promise<number> => {
+        return new Promise((resolve) => {
+            const objectUrl = URL.createObjectURL(file);
+            const audio = new Audio(objectUrl);
+            
+            audio.onloadedmetadata = () => {
+                const duration = audio.duration;
+                URL.revokeObjectURL(objectUrl);
+                // Return duration in seconds, default to 0 if infinite or NaN
+                resolve(isFinite(duration) ? duration : 0);
+            };
+
+            audio.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                resolve(0);
+            };
+        });
     };
 
     const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +65,10 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
         setErrorMessage(null);
 
         try {
-            // 1. Upload File
+            // 1. Get Duration Client-Side
+            const duration = await getAudioDuration(file);
+
+            // 2. Upload File
             const timestamp = Date.now();
             const fileName = `${timestamp}-${file.name}`;
             const uploadResponse = await dbx.filesUpload({
@@ -54,14 +76,14 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
                 contents: file
             });
 
-            // 2. Create Shared Link
+            // 3. Create Shared Link
             const shareResponse = await dbx.sharingCreateSharedLinkWithSettings({
                 path: uploadResponse.result.path_display || '/' + fileName,
                 settings: { requested_visibility: { '.tag': 'public' } }
             });
 
             setStatus('success');
-            onUploadSuccess(shareResponse.result.url);
+            onUploadSuccess(shareResponse.result.url, duration);
             setTimeout(() => setStatus('idle'), 3000);
 
         } catch (err: any) {
@@ -80,7 +102,7 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
 
     const getStatusContent = () => {
         switch (status) {
-            case 'uploading': return <p className="text-sm text-blue-400 font-semibold">Uploading to your Dropbox...</p>;
+            case 'uploading': return <p className="text-sm text-blue-400 font-semibold">Uploading & Analyzing...</p>;
             case 'success': return <p className="text-sm text-green-400 font-semibold">✅ Success! Link added.</p>;
             case 'error': return <p className="text-sm text-red-400 font-semibold">❌ {errorMessage}</p>;
             default: return null;
