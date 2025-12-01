@@ -18,9 +18,28 @@ const ScrollToTop = () => {
   return null;
 };
 
+// --- NEW: Referral Capture Component ---
+const ReferralCapture = () => {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get('ref');
+    
+    if (refCode) {
+      // Store the referral code for later use in Dashboard
+      localStorage.setItem('pending_referral', refCode);
+      
+      // Clean the URL visually without reloading the page
+      const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + window.location.hash;
+      window.history.replaceState({ path: newUrl }, '', newUrl);
+    }
+  }, []);
+  return null;
+};
+
 function App() {
   return (
     <DropboxProvider>
+      <ReferralCapture />
       <ScrollToTop />
       <Header />
       <Routes>
