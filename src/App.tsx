@@ -10,6 +10,7 @@ import VerificationPage from './pages/VerificationPage';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
+import { DropboxProvider } from './contexts/DropboxContext';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -19,7 +20,7 @@ const ScrollToTop = () => {
 
 function App() {
   return (
-    <>
+    <DropboxProvider>
       <ScrollToTop />
       <Header />
       <Routes>
@@ -34,7 +35,7 @@ function App() {
         </Route>
       </Routes>
       <Footer />
-    </>
+    </DropboxProvider>
   );
 }
 
