@@ -10,14 +10,14 @@ const RecordingStatus = {
   GETTING_PERMISSION: 'getting_permission',
   RECORDING: 'recording',
   STOPPED: 'stopped',
-  UPLOADING: 'uploading', // New status
+  UPLOADING: 'uploading',
   ERROR: 'error',
 } as const;
 
 type RecordingStatusType = typeof RecordingStatus[keyof typeof RecordingStatus];
 
-// --- Icons (Same as before) ---
-const WaveformIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.75h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zM7.5 6.75h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zM11.25 4.5h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm1.5-18h-1.5a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5zm3 18h-1.5a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5zm-3-1.5h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0-3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0-3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0-3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm-3 4.5h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0-3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zM15 6.75h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm3.75-12h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5z" /></svg>);
+// --- Icons ---
+const WaveformIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.75h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zM11.25 4.5h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm1.5-18h-1.5a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5zm3 18h-1.5a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5zm-3-1.5h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0-3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0-3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0-3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm-3 4.5h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0-3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zM15 6.75h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm3.75-12h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zm0 3h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5z" /></svg>);
 const MicrophoneIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5a6 6 0 00-12 0v1.5a6 6 0 006 6z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12a7.5 7.5 0 11-15 0" /></svg>);
 const StopIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}><path fillRule="evenodd" d="M4.5 7.5a3 3 0 013-3h9a3 3 0 013 3v9a3 3 0 01-3 3h-9a3 3 0 01-3-3v-9z" clipRule="evenodd" /></svg>);
 const CloudArrowUpIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>);
@@ -94,9 +94,13 @@ const useOpusRecorder = () => {
 };
 
 // --- Main Modal Component ---
-interface TutorDeckStudioModalProps { isOpen: boolean; onClose: () => void; }
+interface TutorDeckStudioModalProps { 
+    isOpen: boolean; 
+    onClose: () => void;
+    onSuccess?: (link: string, duration: number) => void;
+}
 
-const TutorDeckStudioModal = ({ isOpen, onClose }: TutorDeckStudioModalProps) => {
+const TutorDeckStudioModal = ({ isOpen, onClose, onSuccess }: TutorDeckStudioModalProps) => {
     const { status, setStatus, audioBlob, recordingTime, error, startRecording, stopRecording, resetRecording } = useOpusRecorder();
     const { isAuthenticated, login, dbx } = useDropbox();
     const [uploadError, setUploadError] = useState<string | null>(null);
@@ -129,14 +133,24 @@ const TutorDeckStudioModal = ({ isOpen, onClose }: TutorDeckStudioModalProps) =>
                 settings: { requested_visibility: { '.tag': 'public' } }
             });
 
-            setSuccessLink(shareResponse.result.url);
-            // Copy to clipboard automatically
-            navigator.clipboard.writeText(shareResponse.result.url);
+            const link = shareResponse.result.url;
+            setSuccessLink(link);
+            navigator.clipboard.writeText(link);
+
+            // 3. Pass back duration (recordingTime is in seconds)
+            if (onSuccess) {
+                onSuccess(link, recordingTime);
+            }
+
         } catch (err: any) {
             console.error("Upload failed", err);
             setUploadError("Failed to upload to Dropbox. Please try again.");
             setStatus(RecordingStatus.STOPPED);
         }
+    };
+
+    const handleDone = () => {
+        onClose();
     };
 
     if (!isOpen) return null;
@@ -168,7 +182,7 @@ const TutorDeckStudioModal = ({ isOpen, onClose }: TutorDeckStudioModalProps) =>
                                 <p className="text-sm text-green-100">Link copied to clipboard.</p>
                             </div>
                             <p className="text-xs text-gray-400 break-all">{successLink}</p>
-                            <button onClick={onClose} className="w-full bg-primary text-dark-bg font-bold py-3 rounded-xl">Done</button>
+                            <button onClick={handleDone} className="w-full bg-primary text-dark-bg font-bold py-3 rounded-xl">Done</button>
                         </div>
                     ) : (
                         // Controls
