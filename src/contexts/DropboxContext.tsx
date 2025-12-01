@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Dropbox } from 'dropbox';
+import { Dropbox, DropboxAuth } from 'dropbox';
 
 interface DropboxContextType {
   isAuthenticated: boolean;
@@ -42,6 +42,7 @@ export const DropboxProvider = ({ children }: { children: ReactNode }) => {
   // 2. Initialize Dropbox Client when token exists
   useEffect(() => {
     if (accessToken) {
+      // The Dropbox class is used for making API calls (upload, share)
       const dropbox = new Dropbox({ accessToken });
       setDbx(dropbox);
     } else {
@@ -54,15 +55,22 @@ export const DropboxProvider = ({ children }: { children: ReactNode }) => {
       console.error("Dropbox Client ID is missing in .env");
       return;
     }
-    const dbxAuth = new Dropbox({ clientId: CLIENT_ID });
+    
+    // Use DropboxAuth specifically for the authentication flow
+    const dbxAuth = new DropboxAuth({ clientId: CLIENT_ID });
+    
     // Redirect to Dropbox Auth page. 
     // We use the current window location as the redirect URI.
-    // Dropbox will append #access_token=... to this URL.
     const redirectUri = window.location.origin + window.location.pathname;
     
-    dbxAuth.auth.getAuthenticationUrl(redirectUri)
-      .then((authUrl) => {
-        window.location.href = authUrl as any;
+    dbxAuth.getAuthenticationUrl(redirectUri)
+      .then((authUrl: any) => {
+        // authUrl can be a string or an object depending on SDK version/options, 
+        // but for this flow it is the URL string.
+        window.location.href = authUrl;
+      })
+      .catch((error: any) => {
+        console.error("Error getting Dropbox auth URL:", error);
       });
   };
 
