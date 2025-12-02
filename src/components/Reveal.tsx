@@ -1,5 +1,3 @@
---- START OF FILE src/components/Reveal.tsx ---
-
 import { useEffect, useRef, ReactNode, ElementType, HTMLAttributes } from 'react';
 
 type RevealVariant = 'fade-up' | 'fade-in' | 'slide-left' | 'zoom-in' | 'blur-in';
