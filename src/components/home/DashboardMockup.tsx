@@ -1,5 +1,3 @@
---- START OF FILE src/components/home/DashboardMockup.tsx ---
-
 import React from 'react';
 
 interface DashboardMockupProps {
