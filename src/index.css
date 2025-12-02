@@ -1,105 +1,181 @@
-// Configuration: File types to IGNORE
-const IGNORED_TYPES = [
-    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 
-    'image/svg+xml', 'video/mp4', 'audio/mpeg'
-];
+--- START OF FILE index.css ---
 
-// Configuration: Extensions to IGNORE (fallback if MIME type fails)
-const IGNORED_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.mp4', '.mp3'];
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-function createUploader() {
-    // 1. Check if button already exists to prevent duplicates
-    if (document.getElementById('ai-bulk-uploader')) return;
-
-    // 2. Find the AI Studio Input area (The footer area usually contains the prompt box)
-    // Note: Class names in Google apps change often, so we look for structural markers.
-    const inputArea = document.querySelector('footer') || document.querySelector('textarea')?.closest('div[role="region"]');
-
-    if (!inputArea) return; // UI hasn't loaded yet
-
-    // 3. Create the File Input (Hidden)
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.multiple = true;
-    fileInput.webkitdirectory = true; // Allows folder selection
-    fileInput.style.display = 'none';
-
-    // 4. Create the UI Button
-    const btn = document.createElement('button');
-    btn.id = 'ai-bulk-uploader';
-    btn.className = 'custom-ai-uploader-btn';
-    btn.innerHTML = `
-        <svg height="20" viewBox="0 0 24 24" width="20"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-        Load Code/Text
-    `;
-
-    // 5. Handle File Selection
-    btn.addEventListener('click', () => {
-        fileInput.click();
-    });
-
-    fileInput.addEventListener('change', async (e) => {
-        const rawFiles = Array.from(e.target.files);
-        
-        // FILTER: Remove images and non-text/code files
-        const validFiles = rawFiles.filter(file => {
-            const isImageMime = IGNORED_TYPES.some(type => file.type.includes(type));
-            const isImageExt = IGNORED_EXTS.some(ext => file.name.toLowerCase().endsWith(ext));
-            return !isImageMime && !isImageExt;
-        });
-
-        if (validFiles.length === 0) {
-            alert("No valid non-image files found in selection.");
-            return;
-        }
-
-        console.log(`Uploading ${validFiles.length} files...`);
-        
-        // 6. Trigger the Drop Event into AI Studio
-        uploadFilesToAiStudio(validFiles);
-    });
-
-    // 7. Inject the button
-    // We try to place it before the text area wrapper
-    const container = inputArea.parentElement || inputArea;
-    container.insertBefore(btn, container.firstChild);
-    container.appendChild(fileInput);
+/* Custom styles for reveal-on-scroll animations */
+.reveal {
+    opacity: 0;
+    transition: opacity 1s ease-out, transform 1s ease-out, filter 1s ease-out;
+    will-change: opacity, transform;
 }
 
-function uploadFilesToAiStudio(files) {
-    // Find the drop target. Usually the window or the main text area accepts drops.
-    const dropTarget = document.querySelector('textarea') || document.body;
+/* Variants */
+.reveal.fade-up { transform: translateY(30px); }
+.reveal.fade-up.visible { opacity: 1; transform: translateY(0); }
 
-    // Create a DataTransfer object (standard browser API for drag/drop)
-    const dataTransfer = new DataTransfer();
-    files.forEach(file => dataTransfer.items.add(file));
+.reveal.fade-in { opacity: 0; }
+.reveal.fade-in.visible { opacity: 1; }
 
-    // Dispatch events to simulate a user dragging and dropping files
-    const events = ['dragenter', 'dragover', 'drop'];
+.reveal.slide-left { transform: translateX(50px); }
+.reveal.slide-left.visible { opacity: 1; transform: translateX(0); }
 
-    events.forEach(eventType => {
-        const event = new DragEvent(eventType, {
-            bubbles: true,
-            cancelable: true,
-            dataTransfer: dataTransfer
-        });
-        dropTarget.dispatchEvent(event);
-    });
+.reveal.zoom-in { transform: scale(0.95); }
+.reveal.zoom-in.visible { opacity: 1; transform: scale(1); }
 
-    // Optional: Visual feedback
-    const btn = document.getElementById('ai-bulk-uploader');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '✅ Uploaded!';
-    setTimeout(() => btn.innerHTML = originalText, 2000);
+.reveal.blur-in { filter: blur(10px); opacity: 0; }
+.reveal.blur-in.visible { filter: blur(0); opacity: 1; }
+
+/* Custom styles for the React Carousel */
+.carousel-container { overflow: hidden; }
+.carousel-track { display: flex; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+.carousel-slide { flex: 0 0 100%; box-sizing: border-box; }
+
+/* Custom scrollbar for a better dark mode experience */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #1f2937; }
+::-webkit-scrollbar-thumb { background: #34d399; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #059669; }
+
+/* Hero video background */
+.hero-video-bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: translate(-50%, -50%);
+    z-index: -1;
 }
 
-// 8. Observer: Keep watching the DOM because AI Studio is a Single Page App (SPA)
-// If you navigate away and back, the button needs to be re-added.
-const observer = new MutationObserver(() => {
-    createUploader();
-});
+/* Alternating layout helper */
+.alternating-layout:nth-child(even) .alternating-layout-content {
+    order: 2;
+}
 
-observer.observe(document.body, { childList: true, subtree: true });
+/* Subtle background pattern */
+.bg-dot-pattern {
+    background-image: radial-gradient(#374151 1px, transparent 1px);
+    background-size: 20px 20px;
+}
 
-// Initial run
-setTimeout(createUploader, 1500);
+/* Timeline styles for about.html */
+.timeline { position: relative; max-width: 1200px; margin: 0 auto; }
+.timeline::after { content: ''; position: absolute; width: 6px; background-color: #1f2937; top: 0; bottom: 0; left: 50%; margin-left: -3px; }
+.timeline-container { padding: 10px 40px; position: relative; background-color: inherit; width: 50%; }
+.timeline-container::after { content: ''; position: absolute; width: 25px; height: 25px; right: -17px; background-color: #111827; border: 4px solid #34d399; top: 15px; border-radius: 50%; z-index: 1; }
+.timeline-left { left: 0; }
+.timeline-right { left: 50%; }
+.timeline-right::after { left: -16px; }
+.timeline-content { padding: 20px 30px; background-color: #1f2937; position: relative; border-radius: 6px; border: 1px solid #374151; }
+@media screen and (max-width: 768px) {
+    .timeline::after { left: 31px; }
+    .timeline-container { width: 100%; padding-left: 70px; padding-right: 25px; }
+    .timeline-container::before { left: 60px; border: medium solid white; border-width: 10px 10px 10px 0; border-color: transparent white transparent transparent; }
+    .timeline-left::after, .timeline-right::after { left: 15px; }
+    .timeline-right { left: 0%; }
+}
+
+/* Enhanced Button Micro-interactions */
+.cta-button {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.cta-button:hover {
+    transform: scale(1.05) translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Testimonial Card Style */
+.testimonial-card {
+    background: linear-gradient(135deg, #1f2937, #111827);
+    border-left: 4px solid #34d399;
+}
+
+/* --- NEW: Custom PURE WHITE calendar icon --- */
+.custom-calendar-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25em;
+}
+
+/* --- FINALIZED: Custom Flatpickr Calendar Theme --- */
+.flatpickr-calendar {
+  background: #1f2937; /* dark-card */
+  border: 1px solid #374151; /* gray-700 */
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+.flatpickr-calendar .flatpickr-month {
+  color: #f9fafb; /* dark-heading */
+}
+.flatpickr-calendar .flatpickr-weekday {
+  color: #34d399; /* primary */
+  font-weight: 600;
+}
+.flatpickr-calendar .flatpickr-day {
+  color: #d1d5db; /* dark-text */
+}
+.flatpickr-calendar .flatpickr-day:hover {
+  background: #374151; /* gray-700 */
+  border-color: transparent;
+}
+.flatpickr-calendar .flatpickr-day.today {
+  border-color: #3b82f6; /* secondary */
+}
+.flatpickr-calendar .flatpickr-day.selected,
+.flatpickr-calendar .flatpickr-day.startRange,
+.flatpickr-calendar .flatpickr-day.endRange {
+  background: #34d399; /* primary */
+  color: #111827; /* dark-bg */
+  border-color: #34d399; /* primary */
+}
+.flatpickr-calendar .flatpickr-day.disabled,
+.flatpickr-calendar .flatpickr-day.prevMonthDay,
+.flatpickr-calendar .flatpickr-day.nextMonthDay {
+  color: #4b5563; /* gray-600 */
+}
+.flatpickr-calendar .flatpickr-prev-month svg,
+.flatpickr-calendar .flatpickr-next-month svg {
+  fill: #d1d5db; /* dark-text */
+}
+.flatpickr-calendar .flatpickr-prev-month:hover svg,
+.flatpickr-calendar .flatpickr-next-month:hover svg {
+  fill: #34d399; /* primary */
+}
+.flatpickr-time input, .flatpickr-time .flatpickr-am-pm {
+  color: #d1d5db; /* dark-text */
+}
+
+/* --- 3D Perspective Utilities --- */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Floating Animation */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Radar Pulse Animation */
+@keyframes radar {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(52, 211, 153, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+.animate-radar {
+  animation: radar 2s infinite;
+}
