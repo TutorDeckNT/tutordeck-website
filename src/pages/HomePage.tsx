@@ -1,85 +1,220 @@
-import { useState } from 'react';
-import AnimatedStat from '../components/AnimatedStat';
-import Reveal from '../components/Reveal';
-import VolunteerCarousel from '../components/VolunteerCarousel';
-import { Link } from 'react-router-dom';
-import EventModal from '../components/EventModal';
+--- START OF FILE src/pages/HomePage.tsx ---
 
-const volunteerData = [
-  { name: ' ', award: 'Gold', quote: ' ', icon: 'fa-award text-yellow-400' },
-//  { name: 'Jane Smith', award: 'Silver', quote: 'Instrumental in launching our Middle School Mentorship program.', icon: 'fa-award text-gray-300' },
-//  { name: 'Sam Wilson', award: 'Bronze', quote: 'A consistent and reliable tutor, always ready to help with STEM subjects.', icon: 'fa-award text-yellow-600' },
-//  { name: 'Emily White', award: 'Rising Star', quote: 'Showed incredible initiative by co-founding the Richland High chapter.', icon: 'fa-star text-blue-400' },
-];
+import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import Reveal from '../components/Reveal';
+import EventModal from '../components/EventModal';
+import DashboardMockup from '../components/home/DashboardMockup';
+import BentoGrid from '../components/home/BentoGrid';
 
 const HomePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeFeatureStep, setActiveFeatureStep] = useState(0);
+  
+  // Refs for the sticky scroll section
+  const step1Ref = useRef<HTMLDivElement>(null);
+  const step2Ref = useRef<HTMLDivElement>(null);
+  const step3Ref = useRef<HTMLDivElement>(null);
+
+  // Intersection Observer for Sticky Scroll
+  useEffect(() => {
+    const options = { root: null, threshold: 0.5, rootMargin: "-20% 0px -20% 0px" };
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          if (entry.target === step1Ref.current) setActiveFeatureStep(0);
+          if (entry.target === step2Ref.current) setActiveFeatureStep(1);
+          if (entry.target === step3Ref.current) setActiveFeatureStep(2);
+        }
+      });
+    }, options);
+
+    if (step1Ref.current) observer.observe(step1Ref.current);
+    if (step2Ref.current) observer.observe(step2Ref.current);
+    if (step3Ref.current) observer.observe(step3Ref.current);
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <>
       <EventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      <main>
-        <section id="hero" className="min-h-screen flex items-center justify-center text-center relative overflow-hidden">
-          <video autoPlay loop muted playsInline className="hero-video-bg"><source src="https://assets.mixkit.co/videos/preview/mixkit-students-in-a-classroom-2322-large.mp4" type="video/mp4" /></video>
-          <div className="absolute inset-0 bg-dark-bg opacity-80"></div>
-          <Reveal className="container mx-auto px-6 relative z-10">
+      
+      <main className="bg-dark-bg overflow-x-hidden">
+        
+        {/* --- 1. HERO SECTION: The Spark --- */}
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+          {/* Video Background with Heavy Gradient */}
+          <div className="absolute inset-0 z-0">
+            <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-40">
+              <source src="https://assets.mixkit.co/videos/preview/mixkit-students-in-a-classroom-2322-large.mp4" type="video/mp4" />
+            </video>
+            <div className="absolute inset-0 bg-gradient-to-b from-dark-bg/80 via-dark-bg/50 to-dark-bg"></div>
+            <div className="absolute inset-0 bg-radial-gradient from-transparent to-dark-bg"></div>
+          </div>
 
-            {/* ANNOUNCEMENT BANNER */}
-            <div className="max-w-3xl mx-auto mb-16 flex items-center gap-2 group">
-              <div className="flex-grow bg-[#e6fffa] rounded-l-full p-2 overflow-hidden relative h-12 flex items-center shadow-[0_0_15px_rgba(167,243,208,0.5)] transition-shadow duration-300 group-hover:shadow-[0_0_25px_rgba(167,243,208,0.7)]">
-                <div className="flex animate-marquee">
-                  <span className="whitespace-nowrap uppercase font-bold tracking-wider text-black text-sm px-6">TutorDeck 2025-2026 Introductory Event is Upcoming. Check event dates now.</span>
-                  <span className="whitespace-nowrap uppercase font-bold tracking-wider text-black text-sm px-6">TutorDeck 2025-2026 Introductory Event is Upcoming. Check event dates now.</span>
-                </div>
-              </div>
-              <button onClick={() => setIsModalOpen(true)} className="flex-shrink-0 bg-[#e6fffa] rounded-r-full p-2 h-12 flex items-center text-sm text-black font-semibold hover:bg-opacity-80 transition-all duration-300 px-5 shadow-[0_0_15px_rgba(167,243,208,0.5)] group-hover:shadow-[0_0_25px_rgba(167,243,208,0.7)]">
+          {/* Content */}
+          <div className="relative z-10 container mx-auto px-6 text-center">
+            {/* Floating Event Pill */}
+            <Reveal variant="fade-up" className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 mb-8 cursor-pointer hover:bg-white/20 transition-colors" onClick={() => setIsModalOpen(true)}>
+              <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+              <span className="text-xs font-bold text-white uppercase tracking-wider">Upcoming: 2025 Intro Event</span>
+              <i className="fas fa-chevron-right text-xs text-gray-400"></i>
+            </Reveal>
+
+            <Reveal variant="blur-in" delay={0.2}>
+              <h1 className="text-6xl md:text-8xl font-extrabold text-white tracking-tight mb-6 leading-tight">
+                Your Academic <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-primary">Legacy Starts Here.</span>
+              </h1>
+            </Reveal>
+
+            <Reveal variant="fade-up" delay={0.5}>
+              <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mb-10 font-light">
+                Join the student-led movement redefining peer education. <br className="hidden md:block"/>
+                No paper logs. No barriers. Just impact.
+              </p>
+            </Reveal>
+
+            <Reveal variant="zoom-in" delay={0.8} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link to="/get-involved" className="group relative px-8 py-4 bg-primary text-dark-bg font-bold rounded-full overflow-hidden">
+                <span className="relative z-10 group-hover:text-white transition-colors">Join the Movement</span>
+                <div className="absolute inset-0 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out"></div>
+              </Link>
+              <button onClick={() => document.getElementById('mission')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 text-white font-semibold hover:text-primary transition-colors">
                 Learn More
               </button>
-            </div>
+            </Reveal>
+          </div>
 
-            <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-primary mb-4 py-2">
-              Empowering Students, Together.
-            </h1>
-            <p className="text-lg md:text-xl max-w-3xl mx-auto text-dark-text mb-8">A student-led initiative dedicated to providing free, accessible, and high-quality tutoring for all.</p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/get-involved" className="cta-button bg-primary text-dark-bg font-semibold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors w-full sm:w-auto">Get Involved</Link>
+          {/* Scroll Indicator */}
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-gray-500">
+            <i className="fas fa-chevron-down"></i>
+          </div>
+        </section>
+
+
+        {/* --- 2. MISSION: Kinetic Typography --- */}
+        <section id="mission" className="py-32 bg-dark-bg relative">
+          <div className="container mx-auto px-6">
+            <Reveal variant="fade-up" className="max-w-4xl mx-auto text-center">
+              <h2 className="text-4xl md:text-6xl font-bold leading-tight text-gray-700">
+                We believe in the power of students <br />
+                <span className="text-white transition-colors duration-700">to lift each other up.</span>
+              </h2>
+              <div className="w-24 h-1 bg-primary mx-auto mt-12 rounded-full"></div>
+            </Reveal>
+          </div>
+        </section>
+
+
+        {/* --- 3. CENTERPIECE: The Dashboard Deep Dive (Sticky Scroll) --- */}
+        <section className="relative bg-dark-bg">
+          <div className="container mx-auto px-6">
+            <div className="flex flex-col lg:flex-row">
+              
+              {/* Left Column: Scrolling Text Steps */}
+              <div className="lg:w-1/2">
+                {/* Step 1 */}
+                <div ref={step1Ref} className="min-h-screen flex flex-col justify-center p-6 border-l-2 border-gray-800 pl-10">
+                  <Reveal variant="slide-left" className={activeFeatureStep === 0 ? 'opacity-100' : 'opacity-30 blur-sm transition-all duration-500'}>
+                    <div className="text-primary font-mono text-sm mb-4">01. LOG</div>
+                    <h3 className="text-4xl font-bold text-white mb-4">Log with Ease.</h3>
+                    <p className="text-xl text-gray-400 leading-relaxed">
+                      Forget lost paper forms. Upload audio proof directly from your phone, select your activity, and log hours in seconds. Our Dropbox integration keeps everything secure.
+                    </p>
+                  </Reveal>
+                </div>
+
+                {/* Step 2 */}
+                <div ref={step2Ref} className="min-h-screen flex flex-col justify-center p-6 border-l-2 border-gray-800 pl-10">
+                  <Reveal variant="slide-left" className={activeFeatureStep === 1 ? 'opacity-100' : 'opacity-30 blur-sm transition-all duration-500'}>
+                    <div className="text-secondary font-mono text-sm mb-4">02. TRACK</div>
+                    <h3 className="text-4xl font-bold text-white mb-4">Gamified Impact.</h3>
+                    <p className="text-xl text-gray-400 leading-relaxed">
+                      Watch your hours grow. Our automated tier system unlocks Bronze, Silver, and Gold awards as you hit milestones, keeping you motivated and recognized.
+                    </p>
+                  </Reveal>
+                </div>
+
+                {/* Step 3 */}
+                <div ref={step3Ref} className="min-h-screen flex flex-col justify-center p-6 border-l-2 border-gray-800 pl-10">
+                  <Reveal variant="slide-left" className={activeFeatureStep === 2 ? 'opacity-100' : 'opacity-30 blur-sm transition-all duration-500'}>
+                    <div className="text-green-400 font-mono text-sm mb-4">03. VERIFY</div>
+                    <h3 className="text-4xl font-bold text-white mb-4">Official Transcripts.</h3>
+                    <p className="text-xl text-gray-400 leading-relaxed">
+                      University-ready documentation at the click of a button. Generate verifiable PDF transcripts with unique QR codes that admissions officers can instantly validate.
+                    </p>
+                  </Reveal>
+                </div>
+              </div>
+
+              {/* Right Column: Sticky 3D Mockup */}
+              <div className="hidden lg:block lg:w-1/2 relative">
+                <div className="sticky top-0 h-screen flex items-center justify-center perspective-1000">
+                  <DashboardMockup activeStep={activeFeatureStep} />
+                </div>
+              </div>
+
             </div>
+          </div>
+        </section>
+
+
+        {/* --- 4. ECOSYSTEM: Bento Grid --- */}
+        <BentoGrid />
+
+
+        {/* --- 5. COMMUNITY: Horizontal Scroll --- */}
+        <section className="py-24 bg-dark-card overflow-hidden">
+          <div className="container mx-auto px-6 mb-12">
+            <Reveal>
+              <h2 className="text-4xl font-bold text-white">Our Leaders</h2>
+            </Reveal>
+          </div>
+          
+          {/* Horizontal Scroll Container */}
+          <div className="flex gap-8 overflow-x-auto pb-12 px-6 snap-x snap-mandatory no-scrollbar">
+            {[
+              { name: "Manav A.", role: "President", quote: "Building a legacy.", color: "bg-blue-500" },
+              { name: "Shaurya J.", role: "VP of Operations", quote: "Efficiency is key.", color: "bg-purple-500" },
+              { name: "Aakanksh R.", role: "VP of Outreach", quote: "Connecting minds.", color: "bg-green-500" },
+              { name: "Alwin John", role: "Richland Lead", quote: "Expanding horizons.", color: "bg-orange-500" },
+            ].map((leader, idx) => (
+              <div key={idx} className="snap-center flex-shrink-0 w-80 h-96 bg-gray-800 rounded-2xl relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300">
+                <div className={`absolute inset-0 opacity-20 ${leader.color}`}></div>
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black to-transparent">
+                  <p className="text-gray-300 italic mb-2">"{leader.quote}"</p>
+                  <h3 className="text-2xl font-bold text-white">{leader.name}</h3>
+                  <p className={`text-sm font-bold uppercase tracking-wider ${leader.color.replace('bg-', 'text-')}`}>{leader.role}</p>
+                </div>
+              </div>
+            ))}
+            
+            {/* Join Card */}
+            <div className="snap-center flex-shrink-0 w-80 h-96 border-2 border-dashed border-gray-700 rounded-2xl flex flex-col items-center justify-center text-center p-6 hover:border-primary transition-colors cursor-pointer group">
+              <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-black transition-colors">
+                <i className="fas fa-plus text-2xl"></i>
+              </div>
+              <h3 className="text-xl font-bold text-white">You?</h3>
+              <p className="text-gray-500 mt-2">Join our leadership team.</p>
+            </div>
+          </div>
+        </section>
+
+
+        {/* --- 6. FINALE: CTA --- */}
+        <section className="py-32 bg-dark-bg text-center relative">
+          <div className="absolute inset-0 bg-dot-pattern opacity-30"></div>
+          <Reveal variant="zoom-in" className="relative z-10 container mx-auto px-6">
+            <h2 className="text-5xl md:text-7xl font-extrabold text-white mb-8">Ready to make a difference?</h2>
+            <Link to="/get-involved" className="inline-block bg-white text-black text-xl font-bold py-5 px-12 rounded-full hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300">
+              Get Started Now
+            </Link>
           </Reveal>
         </section>
 
-        <section id="about-summary" className="py-24 bg-dark-card alternating-layout">
-          <Reveal className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
-            <div className="alternating-layout-content">
-              <h2 className="text-4xl font-bold text-dark-heading mb-4">A Movement by Students, for Students.</h2>
-              <p className="mb-6 text-dark-text">TutorDeck began with a simple idea: to make quality educational support accessible to everyone by empowering students to teach and lead. We are a growing nonprofit initiative building a global community of learners and mentors.</p>
-              <Link to="/about" className="font-semibold text-primary hover:text-primary-dark transition-colors">Discover Our Story <i className="fas fa-arrow-right ml-2"></i></Link>
-            </div>
-            <div><img src="https://images.unsplash.com/photo-1543269865-cbf4_27effbad?q=80&w=2070&auto.format&fit=crop" alt="Students collaborating" className="rounded-lg shadow-2xl" /></div>
-          </Reveal>
-        </section>
-
-        <section id="impact" className="py-24 bg-dark-bg bg-dot-pattern">
-          <Reveal className="container mx-auto px-6 text-center">
-            <h2 className="text-4xl font-bold text-dark-heading mb-12">Our Impact in Numbers</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
-              <div className="bg-dark-card p-8 rounded-lg"><AnimatedStat to="2" /><p className="text-lg font-semibold uppercase tracking-wider text-dark-text">Chapters</p></div>
-              <div className="bg-dark-card p-8 rounded-lg"><AnimatedStat to="250" /><p className="text-lg font-semibold uppercase tracking-wider text-dark-text">Tutors</p></div>
-              <div className="bg-dark-card p-8 rounded-lg"><AnimatedStat to="500" /><p className="text-lg font-semibold uppercase tracking-wider text-dark-text">Students Helped</p></div>
-            </div>
-          </Reveal>
-        </section>
-
-        <section id="testimonial" className="py-24 bg-dark-card">
-          <Reveal className="container mx-auto px-6">
-            <div className="testimonial-card max-w-3xl mx-auto p-8 rounded-lg shadow-2xl">
-              <i className="fas fa-quote-left text-5xl text-primary/50 absolute -top-4 -left-4"></i>
-              <p className="text-2xl italic text-dark-heading mb-6">"Getting help from a peer tutor through TutorDeck didn't just improve my grades in English, it gave me the confidence to ask questions. It made me realize I wasn't alone."</p>
-              <p className="font-bold text-right text-primary">— Ricky B., 11th Grade Student</p>
-            </div>
-          </Reveal>
-        </section>
-
-        <VolunteerCarousel volunteers={volunteerData} />
       </main>
     </>
   );
