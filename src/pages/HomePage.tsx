@@ -1,5 +1,3 @@
---- START OF FILE src/pages/HomePage.tsx ---
-
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Reveal from '../components/Reveal';
