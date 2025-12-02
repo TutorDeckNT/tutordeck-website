@@ -1,5 +1,3 @@
---- START OF FILE src/components/home/BentoGrid.tsx ---
-
 import React from 'react';
 import Reveal from '../Reveal';
 import AnimatedStat from '../AnimatedStat';
