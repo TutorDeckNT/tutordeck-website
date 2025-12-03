@@ -1,3 +1,5 @@
+--- START OF FILE DashboardMockup.tsx ---
+
 import React from 'react';
 import { 
   motion, 
@@ -22,30 +24,30 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   });
 
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
+    stiffness: 120,
+    damping: 25,
     restDelta: 0.001
   });
 
-  // --- 1. Camera Rig (Rotations & Scale) ---
-  // We use 6 keyframes to create "holds" (plateaus) for each section.
-  // [0.0-0.3]: Hold Log View
-  // [0.3-0.4]: Transition
-  // [0.4-0.6]: Hold Track View
-  // [0.6-0.7]: Transition
-  // [0.7-1.0]: Hold Verify View
+  // --- TIMELINE DEFINITION ---
+  // 0.00 -> 0.25: PHASE 1: LOG (Modal visible, Camera angled left)
+  // 0.25 -> 0.35: TRANSITION 1 (Modal exits, Camera centers)
+  // 0.35 -> 0.65: PHASE 2: TRACK (Charts grow, Dashboard clear)
+  // 0.65 -> 0.75: TRANSITION 2 (Dashboard blurs, Document enters)
+  // 0.75 -> 1.00: PHASE 3: VERIFY (Document fully visible)
 
+  // --- 1. Camera Rig (Rotations & Scale) ---
   const rotateX = useTransform(
     smoothProgress, 
-    [0, 0.3, 0.4, 0.6, 0.7, 1], 
+    [0, 0.25, 0.35, 0.65, 0.75, 1], 
     isDesktop && !prefersReducedMotion 
-      ? [5, 5, 5, 5, 0, 0]   // Log(5) -> Track(5) -> Verify(0)
+      ? [5, 5, 5, 5, 0, 0]   // Tilt stays consistent until Document phase
       : [0, 0, 0, 0, 0, 0]
   );
   
   const rotateY = useTransform(
     smoothProgress, 
-    [0, 0.3, 0.4, 0.6, 0.7, 1], 
+    [0, 0.25, 0.35, 0.65, 0.75, 1], 
     isDesktop && !prefersReducedMotion 
       ? [-5, -5, -12, -12, 0, 0] // Log(-5) -> Track(-12) -> Verify(0)
       : [0, 0, 0, 0, 0, 0]
@@ -53,49 +55,52 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   
   const scale = useTransform(
     smoothProgress, 
-    [0, 0.3, 0.4, 0.6, 0.7, 1], 
+    [0, 0.25, 0.35, 0.65, 0.75, 1], 
     isDesktop 
-      ? [1, 1, 1.1, 1.1, 1.05, 1.05] // Log(1) -> Track(1.1) -> Verify(1.05)
+      ? [1, 1, 1.1, 1.1, 1.05, 1.05] // Zoom in for Charts, slight pull back for Doc
       : [1, 1, 1, 1, 1, 1]
   );
 
   const x = useTransform(
     smoothProgress,
-    [0, 0.3, 0.4, 0.6, 0.7, 1],
+    [0, 0.25, 0.35, 0.65, 0.75, 1],
     isDesktop 
-      ? ["0%", "0%", "5%", "5%", "0%", "0%"] // Shift right during Track phase
+      ? ["0%", "0%", "5%", "5%", "0%", "0%"] // Shift right during Track phase to center charts
       : ["0%", "0%", "0%", "0%", "0%", "0%"]
   );
 
   // --- 2. Scene 1: Log Modal ---
-  // Stays visible until 0.3, then fades out quickly by 0.38
-  const modalOpacity = useTransform(smoothProgress, [0.3, 0.38], [1, 0]);
-  const modalY = useTransform(smoothProgress, [0.3, 0.38], ["-50%", "-60%"]);
-  const modalBlur = useTransform(smoothProgress, [0.3, 0.38], ["0px", "10px"]);
-  const modalPointerEvents = useTransform(smoothProgress, (v: number) => v > 0.35 ? 'none' : 'auto');
+  // Exits strictly during Transition 1
+  const modalOpacity = useTransform(smoothProgress, [0.25, 0.35], [1, 0]);
+  const modalY = useTransform(smoothProgress, [0.25, 0.35], ["-50%", "-60%"]);
+  const modalBlur = useTransform(smoothProgress, [0.25, 0.35], ["0px", "10px"]);
+  const modalPointerEvents = useTransform(smoothProgress, (v: number) => v > 0.3 ? 'none' : 'auto');
 
   // --- 3. Scene 2: Charts ---
-  // Bars start growing at 0.35 (mid-transition) and finish by 0.45 (start of Track section)
-  const bar1Height = useTransform(smoothProgress, [0.35, 0.45], ["0%", "35%"]);
-  const bar2Height = useTransform(smoothProgress, [0.37, 0.47], ["0%", "55%"]);
-  const bar3Height = useTransform(smoothProgress, [0.39, 0.49], ["0%", "40%"]);
-  const bar4Height = useTransform(smoothProgress, [0.41, 0.51], ["0%", "70%"]);
-  const bar5Height = useTransform(smoothProgress, [0.43, 0.53], ["0%", "45%"]);
-  const bar6Height = useTransform(smoothProgress, [0.45, 0.55], ["0%", "90%"]);
-  const bar7Height = useTransform(smoothProgress, [0.47, 0.57], ["0%", "65%"]);
-  const bar8Height = useTransform(smoothProgress, [0.49, 0.59], ["0%", "85%"]);
+  // Grow during the early part of Phase 2
+  const barStart = 0.35;
+  const barEnd = 0.55;
   
-  const chartGlowOpacity = useTransform(smoothProgress, [0.45, 0.55], [0, 1]);
+  const bar1Height = useTransform(smoothProgress, [barStart, barEnd], ["0%", "35%"]);
+  const bar2Height = useTransform(smoothProgress, [barStart + 0.02, barEnd], ["0%", "55%"]);
+  const bar3Height = useTransform(smoothProgress, [barStart + 0.04, barEnd], ["0%", "40%"]);
+  const bar4Height = useTransform(smoothProgress, [barStart + 0.06, barEnd], ["0%", "70%"]);
+  const bar5Height = useTransform(smoothProgress, [barStart + 0.08, barEnd], ["0%", "45%"]);
+  const bar6Height = useTransform(smoothProgress, [barStart + 0.10, barEnd], ["0%", "90%"]);
+  const bar7Height = useTransform(smoothProgress, [barStart + 0.12, barEnd], ["0%", "65%"]);
+  const bar8Height = useTransform(smoothProgress, [barStart + 0.14, barEnd], ["0%", "85%"]);
+  
+  const chartGlowOpacity = useTransform(smoothProgress, [barStart, barEnd], [0, 0.6]); // Reduced max opacity for clarity
 
   // --- 4. Scene 3: Document ---
-  // Enters between 0.6 and 0.7 (transition to Verify)
-  const docY = useTransform(smoothProgress, [0.6, 0.7], ["120%", "0%"]);
-  const docRotateX = useTransform(smoothProgress, [0.6, 0.7], [45, 0]);
-  const docOpacity = useTransform(smoothProgress, [0.6, 0.65], [0, 1]);
+  // Enters during Transition 2
+  const docY = useTransform(smoothProgress, [0.65, 0.75], ["120%", "0%"]);
+  const docRotateX = useTransform(smoothProgress, [0.65, 0.75], [45, 0]);
+  const docOpacity = useTransform(smoothProgress, [0.65, 0.70], [0, 1]);
   
-  // Background blurs out as document enters
-  const dashboardBlur = useTransform(smoothProgress, [0.6, 0.7], ["0px", "4px"]);
-  const dashboardOpacity = useTransform(smoothProgress, [0.6, 0.7], [1, 0.4]);
+  // Dashboard background blurs out ONLY when Document enters
+  const dashboardBlur = useTransform(smoothProgress, [0.65, 0.75], ["0px", "4px"]);
+  const dashboardOpacity = useTransform(smoothProgress, [0.65, 0.75], [1, 0.4]);
 
   return (
     <div className="w-full max-w-5xl mx-auto h-[600px] flex items-center justify-center perspective-1000" aria-hidden="true">
@@ -114,6 +119,7 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
         className="relative w-full max-w-4xl bg-dark-card/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden transform-style-3d will-change-transform"
         style={{ rotateX, rotateY, scale, x }}
       >
+        {/* Browser Header */}
         <div className="h-10 bg-white/5 border-b border-white/10 flex items-center px-4 gap-2 backface-hidden">
           <div className="flex gap-2">
             <div className="w-3 h-3 rounded-full bg-red-500/80 shadow-inner"></div>
@@ -128,6 +134,7 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
         </div>
 
         <div className="flex h-[500px] relative">
+          {/* Sidebar */}
           <div className="w-20 bg-black/20 border-r border-white/5 flex flex-col items-center py-6 gap-6 z-10">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg shadow-primary/20 text-dark-bg font-bold text-lg">T</div>
             <div className="flex-1 w-full flex flex-col items-center gap-4 mt-4">
@@ -140,6 +147,7 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 border border-white/20"></div>
           </div>
 
+          {/* Main Dashboard Content */}
           <motion.div 
             className="flex-1 bg-dark-bg/40 p-8 relative overflow-hidden"
             style={{ filter: useTransform(dashboardBlur, (v: string) => `blur(${v})`), opacity: dashboardOpacity }}
@@ -161,6 +169,7 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
               </motion.div>
             </div>
 
+            {/* Stats Cards */}
             <div className="grid grid-cols-3 gap-4 mb-8">
               {[
                 { l: 'Total Hours', v: '124.5', i: 'clock', c: 'text-primary' },
@@ -181,6 +190,7 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
               ))}
             </div>
 
+            {/* Chart Section */}
             <div className="bg-dark-card/60 border border-white/10 rounded-xl p-6 h-64 relative overflow-hidden">
                <div className="flex justify-between mb-6 relative z-10">
                   <div>
@@ -192,13 +202,17 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
                <div className="absolute inset-x-6 bottom-6 h-32 flex items-end justify-between gap-3">
                   {[bar1Height, bar2Height, bar3Height, bar4Height, bar5Height, bar6Height, bar7Height, bar8Height].map((height, i) => (
                     <div key={i} className="w-full bg-white/5 rounded-t-sm relative h-full flex items-end">
+                       {/* 
+                          FIX: Render Glow FIRST so it sits BEHIND the solid bar. 
+                          This prevents the "blurred upper part" issue.
+                       */}
                        <motion.div 
-                         className="w-full rounded-t-sm bg-gradient-to-t from-primary/60 to-primary"
-                         style={{ height }}
+                          className="absolute inset-x-0 bottom-0 bg-primary blur-md rounded-t-sm"
+                          style={{ height, opacity: chartGlowOpacity }}
                        />
                        <motion.div 
-                          className="absolute inset-0 bg-primary blur-md"
-                          style={{ height, opacity: chartGlowOpacity }}
+                         className="w-full rounded-t-sm bg-gradient-to-t from-primary/60 to-primary relative z-10"
+                         style={{ height }}
                        />
                     </div>
                   ))}
@@ -207,6 +221,7 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
           </motion.div>
         </div>
 
+        {/* Modal Overlay (Scene 1) */}
         <motion.div 
           className="absolute top-1/2 left-1/2 w-[340px] bg-dark-card/90 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6"
           style={{ 
@@ -242,6 +257,7 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
            </div>
         </motion.div>
 
+        {/* Document Overlay (Scene 3) */}
         <motion.div 
            className="absolute inset-0 flex items-center justify-center"
            style={{ 
