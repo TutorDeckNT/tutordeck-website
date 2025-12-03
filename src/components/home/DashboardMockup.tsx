@@ -1,13 +1,12 @@
 // src/components/home/DashboardMockup.tsx
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { 
   motion, 
   useScroll, 
   useTransform, 
   useSpring, 
-  useReducedMotion,
-  MotionValue
+  useReducedMotion
 } from 'framer-motion';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 
@@ -40,10 +39,6 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   // --- 3. Motion Transforms (The Timeline) ---
   
   // Camera Rig: Rotates and pans based on scroll position
-  // [0.0-0.3]: Log Mode (Angled Left)
-  // [0.3-0.6]: Track Mode (Deep Angle, Zoomed)
-  // [0.6-1.0]: Verify Mode (Flat, Front-on)
-  
   const rotateX = useTransform(
     smoothProgress, 
     [0, 0.3, 0.6, 1], 
@@ -72,10 +67,10 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   const modalOpacity = useTransform(smoothProgress, [0.2, 0.35], [1, 0]);
   const modalY = useTransform(smoothProgress, [0, 0.35], ["-50%", "-60%"]);
   const modalBlur = useTransform(smoothProgress, [0.2, 0.35], ["0px", "10px"]);
-  const modalPointerEvents = useTransform(smoothProgress, (v) => v > 0.3 ? 'none' : 'auto');
+  // Explicitly type 'v' as number because smoothProgress is a MotionValue<number>
+  const modalPointerEvents = useTransform(smoothProgress, (v: number) => v > 0.3 ? 'none' : 'auto');
 
   // Scene 2: Charts (Bars grow between 0.3 and 0.5)
-  // We map specific ranges for stagger effects
   const bar1Height = useTransform(smoothProgress, [0.30, 0.40], ["0%", "35%"]);
   const bar2Height = useTransform(smoothProgress, [0.32, 0.42], ["0%", "55%"]);
   const bar3Height = useTransform(smoothProgress, [0.34, 0.44], ["0%", "40%"]);
@@ -150,7 +145,8 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
           {/* Main Canvas */}
           <motion.div 
             className="flex-1 bg-dark-bg/40 p-8 relative overflow-hidden"
-            style={{ filter: useTransform(dashboardBlur, v => `blur(${v})`), opacity: dashboardOpacity }}
+            // Explicitly type 'v' as string because dashboardBlur is a MotionValue<string>
+            style={{ filter: useTransform(dashboardBlur, (v: string) => `blur(${v})`), opacity: dashboardOpacity }}
           >
             
             {/* Header Area */}
@@ -227,11 +223,12 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
         {/* Overlay 1: Log Activity Modal (Scene 1) */}
         <motion.div 
           className="absolute top-1/2 left-1/2 w-[340px] bg-dark-card/90 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6"
+          // Explicitly type 'v' as string because modalBlur is a MotionValue<string>
           style={{ 
             opacity: modalOpacity, 
             y: modalY, 
             x: "-50%",
-            filter: useTransform(modalBlur, v => `blur(${v})`),
+            filter: useTransform(modalBlur, (v: string) => `blur(${v})`),
             pointerEvents: modalPointerEvents
           }}
         >
