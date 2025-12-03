@@ -16,7 +16,12 @@ const HomePage = () => {
 
   // Intersection Observer for Sticky Scroll
   useEffect(() => {
-    const options = { root: null, threshold: 0.5, rootMargin: "-20% 0px -20% 0px" };
+    // Adjusted threshold and margin for better detection
+    const options = { 
+      root: null, 
+      threshold: 0.3, // Trigger when 30% of the element is visible
+      rootMargin: "-10% 0px -10% 0px" // Shrink the detection area slightly to focus on the center
+    };
     
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -116,35 +121,53 @@ const HomePage = () => {
               <div className="lg:w-1/2">
                 {/* Step 1 */}
                 <div ref={step1Ref} className="min-h-screen flex flex-col justify-center p-6 border-l-2 border-gray-800 pl-10">
-                  <Reveal variant="slide-left" className={activeFeatureStep === 0 ? 'opacity-100' : 'opacity-30 blur-sm transition-all duration-500'}>
+                  <div 
+                    className={`transition-all duration-700 ease-out transform ${
+                      activeFeatureStep === 0 
+                        ? 'opacity-100 translate-x-0 blur-0' 
+                        : 'opacity-20 -translate-x-4 blur-sm'
+                    }`}
+                  >
                     <div className="text-primary font-mono text-sm mb-4">01. LOG</div>
                     <h3 className="text-4xl font-bold text-white mb-4">Log with Ease.</h3>
                     <p className="text-xl text-gray-400 leading-relaxed">
                       Forget lost paper forms. Upload audio proof directly from your phone, select your activity, and log hours in seconds. Our Dropbox integration keeps everything secure.
                     </p>
-                  </Reveal>
+                  </div>
                 </div>
 
                 {/* Step 2 */}
                 <div ref={step2Ref} className="min-h-screen flex flex-col justify-center p-6 border-l-2 border-gray-800 pl-10">
-                  <Reveal variant="slide-left" className={activeFeatureStep === 1 ? 'opacity-100' : 'opacity-30 blur-sm transition-all duration-500'}>
+                  <div 
+                    className={`transition-all duration-700 ease-out transform ${
+                      activeFeatureStep === 1 
+                        ? 'opacity-100 translate-x-0 blur-0' 
+                        : 'opacity-20 -translate-x-4 blur-sm'
+                    }`}
+                  >
                     <div className="text-secondary font-mono text-sm mb-4">02. TRACK</div>
                     <h3 className="text-4xl font-bold text-white mb-4">Gamified Impact.</h3>
                     <p className="text-xl text-gray-400 leading-relaxed">
                       Watch your hours grow. Our automated tier system unlocks Bronze, Silver, and Gold awards as you hit milestones, keeping you motivated and recognized.
                     </p>
-                  </Reveal>
+                  </div>
                 </div>
 
                 {/* Step 3 */}
                 <div ref={step3Ref} className="min-h-screen flex flex-col justify-center p-6 border-l-2 border-gray-800 pl-10">
-                  <Reveal variant="slide-left" className={activeFeatureStep === 2 ? 'opacity-100' : 'opacity-30 blur-sm transition-all duration-500'}>
+                  <div 
+                    className={`transition-all duration-700 ease-out transform ${
+                      activeFeatureStep === 2 
+                        ? 'opacity-100 translate-x-0 blur-0' 
+                        : 'opacity-20 -translate-x-4 blur-sm'
+                    }`}
+                  >
                     <div className="text-green-400 font-mono text-sm mb-4">03. VERIFY</div>
                     <h3 className="text-4xl font-bold text-white mb-4">Official Transcripts.</h3>
                     <p className="text-xl text-gray-400 leading-relaxed">
                       University-ready documentation at the click of a button. Generate verifiable PDF transcripts with unique QR codes that admissions officers can instantly validate.
                     </p>
-                  </Reveal>
+                  </div>
                 </div>
               </div>
 
