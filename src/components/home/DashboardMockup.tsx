@@ -16,6 +16,7 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   const prefersReducedMotion = useReducedMotion();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   
+  // We track the scroll progress of the ENTIRE section (approx 300vh height)
   const { scrollYProgress } = useScroll({
     target: scrollContainerRef,
     offset: ["start start", "end end"]
@@ -26,6 +27,11 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
     damping: 30,
     restDelta: 0.001
   });
+
+  // --- Animation Ranges ---
+  // 0.0 - 0.33: Step 1 (Log)
+  // 0.33 - 0.66: Step 2 (Track)
+  // 0.66 - 1.0: Step 3 (Verify)
 
   const rotateX = useTransform(
     smoothProgress, 
@@ -51,11 +57,13 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
     isDesktop ? ["0%", "5%", "0%", "0%"] : ["0%", "0%", "0%", "0%"]
   );
 
-  const modalOpacity = useTransform(smoothProgress, [0.2, 0.35], [1, 0]);
+  // Scene 1: Log Modal (Visible initially, fades out as we move to Step 2)
+  const modalOpacity = useTransform(smoothProgress, [0.25, 0.35], [1, 0]);
   const modalY = useTransform(smoothProgress, [0, 0.35], ["-50%", "-60%"]);
-  const modalBlur = useTransform(smoothProgress, [0.2, 0.35], ["0px", "10px"]);
+  const modalBlur = useTransform(smoothProgress, [0.25, 0.35], ["0px", "10px"]);
   const modalPointerEvents = useTransform(smoothProgress, (v: number) => v > 0.3 ? 'none' : 'auto');
 
+  // Scene 2: Charts (Bars grow as we enter Step 2)
   const bar1Height = useTransform(smoothProgress, [0.30, 0.40], ["0%", "35%"]);
   const bar2Height = useTransform(smoothProgress, [0.32, 0.42], ["0%", "55%"]);
   const bar3Height = useTransform(smoothProgress, [0.34, 0.44], ["0%", "40%"]);
@@ -67,8 +75,9 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   
   const chartGlowOpacity = useTransform(smoothProgress, [0.4, 0.5], [0, 1]);
 
-  const docY = useTransform(smoothProgress, [0.6, 0.8], ["120%", "0%"]);
-  const docRotateX = useTransform(smoothProgress, [0.6, 0.8], [45, 0]);
+  // Scene 3: Document (Slides up as we enter Step 3)
+  const docY = useTransform(smoothProgress, [0.6, 0.75], ["120%", "0%"]);
+  const docRotateX = useTransform(smoothProgress, [0.6, 0.75], [45, 0]);
   const docOpacity = useTransform(smoothProgress, [0.6, 0.7], [0, 1]);
   
   const dashboardBlur = useTransform(smoothProgress, [0.6, 0.7], ["0px", "4px"]);
