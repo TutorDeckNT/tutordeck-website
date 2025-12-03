@@ -1,3 +1,5 @@
+// src/pages/HomePage.tsx
+
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Reveal from '../components/Reveal';
@@ -7,18 +9,21 @@ import BentoGrid from '../components/home/BentoGrid';
 
 const HomePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // State for the text transitions on the left
   const [activeFeatureStep, setActiveFeatureStep] = useState(0);
   
-  // Refs for the sticky scroll text sections
+  // Refs for the text steps (used for the text fade-in/out logic)
   const step1Ref = useRef<HTMLDivElement>(null);
   const step2Ref = useRef<HTMLDivElement>(null);
   const step3Ref = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer for Sticky Scroll
+  // Ref for the entire scrollable container (passed to the 3D Mockup for scroll progress)
+  const scrollSectionRef = useRef<HTMLElement>(null);
+
+  // Intersection Observer for Text Steps (Left Column)
+  // This keeps the text fading in/out based on what's currently centered
   useEffect(() => {
-    // "Center Slice" detection: 
-    // Triggers ONLY when the element hits the middle 20% of the screen.
-    // This creates that snappy "Apple-style" switch exactly when you read it.
     const options = { 
       root: null, 
       threshold: 0, 
@@ -46,14 +51,9 @@ const HomePage = () => {
     <>
       <EventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       
-      {/* 
-         CRITICAL FIX: Removed 'overflow-x-hidden' from main. 
-         This allows 'position: sticky' to work correctly in the children.
-      */}
       <main className="bg-dark-bg">
         
         {/* --- 1. HERO SECTION --- */}
-        {/* Added overflow-hidden HERE instead to contain the video/gradients */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
           {/* Video Background */}
           <div className="absolute inset-0 z-0">
@@ -118,7 +118,8 @@ const HomePage = () => {
 
 
         {/* --- 3. STICKY SCROLL EXPERIENCE --- */}
-        <section className="relative bg-dark-bg">
+        {/* We attach the ref here so the DashboardMockup knows the bounds of this section */}
+        <section ref={scrollSectionRef} className="relative bg-dark-bg">
           <div className="container mx-auto px-6">
             <div className="flex flex-col lg:flex-row items-start">
               
@@ -168,8 +169,9 @@ const HomePage = () => {
                  while the tall left column scrolls.
               */}
               <div className="hidden lg:block lg:w-1/2 relative">
-                <div className="sticky top-0 h-screen flex items-center justify-center">
-                   <DashboardMockup activeStep={activeFeatureStep} />
+                <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
+                   {/* We pass the ref of the parent section to drive the animation */}
+                   <DashboardMockup scrollContainerRef={scrollSectionRef} />
                 </div>
               </div>
 
@@ -179,7 +181,6 @@ const HomePage = () => {
 
 
         {/* --- 4. BENTO GRID --- */}
-        {/* Added overflow-hidden here to contain blobs */}
         <div className="relative overflow-hidden">
             <BentoGrid />
         </div>
