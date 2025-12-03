@@ -1,5 +1,3 @@
-// src/pages/HomePage.tsx
-
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Reveal from '../components/Reveal';
@@ -13,20 +11,20 @@ const HomePage = () => {
   // State for the text transitions on the left
   const [activeFeatureStep, setActiveFeatureStep] = useState(0);
   
-  // Refs for the text steps (used for the text fade-in/out logic)
+  // Refs for the text steps
   const step1Ref = useRef<HTMLDivElement>(null);
   const step2Ref = useRef<HTMLDivElement>(null);
   const step3Ref = useRef<HTMLDivElement>(null);
 
-  // Ref for the entire scrollable container (passed to the 3D Mockup for scroll progress)
+  // Ref for the entire scrollable container
   const scrollSectionRef = useRef<HTMLElement>(null);
 
-  // Intersection Observer for Text Steps (Left Column)
-  // This keeps the text fading in/out based on what's currently centered
+  // Intersection Observer to toggle text focus
   useEffect(() => {
     const options = { 
       root: null, 
       threshold: 0, 
+      // This creates a "trigger zone" in the middle 10% of the screen
       rootMargin: "-45% 0px -45% 0px" 
     };
     
@@ -55,7 +53,6 @@ const HomePage = () => {
         
         {/* --- 1. HERO SECTION --- */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          {/* Video Background */}
           <div className="absolute inset-0 z-0">
             <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-40">
               <source src="https://assets.mixkit.co/videos/preview/mixkit-students-in-a-classroom-2322-large.mp4" type="video/mp4" />
@@ -64,7 +61,6 @@ const HomePage = () => {
             <div className="absolute inset-0 bg-radial-gradient from-transparent to-dark-bg"></div>
           </div>
 
-          {/* Content */}
           <div className="relative z-10 container mx-auto px-6 text-center">
             <Reveal variant="fade-up" className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 mb-8 cursor-pointer hover:bg-white/20 transition-colors" onClick={() => setIsModalOpen(true)}>
               <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
@@ -102,7 +98,6 @@ const HomePage = () => {
           </div>
         </section>
 
-
         {/* --- 2. MISSION SECTION --- */}
         <section id="mission" className="py-32 bg-dark-bg relative">
           <div className="container mx-auto px-6">
@@ -116,17 +111,13 @@ const HomePage = () => {
           </div>
         </section>
 
-
         {/* --- 3. STICKY SCROLL EXPERIENCE --- */}
-        {/* We attach the ref here so the DashboardMockup knows the bounds of this section */}
         <section ref={scrollSectionRef} className="relative bg-dark-bg">
           <div className="container mx-auto px-6">
-            <div className="flex flex-col lg:flex-row items-start">
+            {/* FIX: Removed 'items-start' so columns stretch to equal height */}
+            <div className="flex flex-col lg:flex-row">
               
-              {/* 
-                 LEFT COLUMN: Scrolling Text Steps
-                 We increase padding to ensure enough scroll distance.
-              */}
+              {/* LEFT COLUMN: Scrolling Text Steps */}
               <div className="lg:w-1/2 relative z-10 pb-32">
                 
                 {/* Step 1 */}
@@ -163,14 +154,10 @@ const HomePage = () => {
                 </div>
               </div>
 
-              {/* 
-                 RIGHT COLUMN: Sticky 3D Mockup 
-                 'sticky top-0 h-screen' ensures it stays pinned in the viewport 
-                 while the tall left column scrolls.
-              */}
+              {/* RIGHT COLUMN: Sticky 3D Mockup */}
               <div className="hidden lg:block lg:w-1/2 relative">
+                {/* Sticky container must be inside the tall flex item */}
                 <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
-                   {/* We pass the ref of the parent section to drive the animation */}
                    <DashboardMockup scrollContainerRef={scrollSectionRef} />
                 </div>
               </div>
@@ -179,12 +166,10 @@ const HomePage = () => {
           </div>
         </section>
 
-
         {/* --- 4. BENTO GRID --- */}
         <div className="relative overflow-hidden">
             <BentoGrid />
         </div>
-
 
         {/* --- 5. COMMUNITY SECTION --- */}
         <section className="py-24 bg-dark-card overflow-hidden">
@@ -220,7 +205,6 @@ const HomePage = () => {
             </div>
           </div>
         </section>
-
 
         {/* --- 6. FINALE --- */}
         <section className="py-32 bg-dark-bg text-center relative overflow-hidden">
