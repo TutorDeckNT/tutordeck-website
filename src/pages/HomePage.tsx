@@ -192,10 +192,10 @@ const HomePage = () => {
           
           <div className="flex gap-8 overflow-x-auto pb-12 px-6 snap-x snap-mandatory no-scrollbar">
             {[
-              { name: "Manav A.", role: "President", quote: "Building a legacy.", color: "bg-blue-500" },
-              { name: "Shaurya J.", role: "VP of Operations", quote: "Efficiency is key.", color: "bg-purple-500" },
-              { name: "Aakanksh R.", role: "VP of Outreach", quote: "Connecting minds.", color: "bg-green-500" },
-              { name: "Alwin John", role: "Richland Lead", quote: "Expanding horizons.", color: "bg-orange-500" },
+              { name: "Manav A.", role: "President of Internal Affairs", quote: "Building a legacy.", color: "bg-blue-500" },
+              { name: "Shaurya J.", role: "President of External Affairs", quote: "Efficiency is key.", color: "bg-purple-500" },
+              { name: "Aakanksh R.", role: "President of Student Academics", quote: "Connecting minds.", color: "bg-green-500" },
+              { name: "Alwin John", role: "Richland Head", quote: "Expanding horizons.", color: "bg-orange-500" },
             ].map((leader, idx) => (
               <div key={idx} className="snap-center flex-shrink-0 w-80 h-96 bg-gray-800 rounded-2xl relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300">
                 <div className={`absolute inset-0 opacity-20 ${leader.color}`}></div>
