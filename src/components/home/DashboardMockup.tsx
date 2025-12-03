@@ -1,5 +1,3 @@
---- START OF FILE DashboardMockup.tsx ---
-
 import React from 'react';
 import { 
   motion, 
