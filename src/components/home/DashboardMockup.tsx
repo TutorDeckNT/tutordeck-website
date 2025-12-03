@@ -29,14 +29,14 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
 
   // --- REVISED TIMELINE (USER REQUESTED ENDPOINTS) ---
   // 0.00 -> 0.30: STEP 1 (Log) - Modal exits at 0.30
-  // 0.30 -> 0.43: STEP 2 (Track) - Charts finish at 0.43
-  // 0.46 -> 0.56: STEP 3 (Verify) - Transcript finishes entering at 0.56
+  // 0.30 -> 0.40: STEP 2 (Track) - Charts finish at 0.40
+  // 0.42 -> 0.52: STEP 3 (Verify) - Transcript finishes entering at 0.52
 
   // --- 1. Camera Rig (Rotations & Scale) ---
-  // Keyframes align with the specific endpoints: 0.20, 0.30, 0.43, 0.56
+  // Keyframes align with the specific endpoints: 0.20, 0.30, 0.40, 0.52
   const rotateX = useTransform(
     smoothProgress, 
-    [0, 0.20, 0.30, 0.43, 0.56, 1], 
+    [0, 0.20, 0.30, 0.40, 0.52, 1], 
     isDesktop && !prefersReducedMotion 
       ? [5, 5, 5, 5, 0, 0]   
       : [0, 0, 0, 0, 0, 0]
@@ -44,7 +44,7 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   
   const rotateY = useTransform(
     smoothProgress, 
-    [0, 0.20, 0.30, 0.43, 0.56, 1], 
+    [0, 0.20, 0.30, 0.40, 0.52, 1], 
     isDesktop && !prefersReducedMotion 
       ? [-5, -5, -12, -12, 0, 0] 
       : [0, 0, 0, 0, 0, 0]
@@ -52,7 +52,7 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   
   const scale = useTransform(
     smoothProgress, 
-    [0, 0.20, 0.30, 0.43, 0.56, 1], 
+    [0, 0.20, 0.30, 0.40, 0.52, 1], 
     isDesktop 
       ? [1, 1, 1.1, 1.1, 1.05, 1.05] 
       : [1, 1, 1, 1, 1, 1]
@@ -60,7 +60,7 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
 
   const x = useTransform(
     smoothProgress,
-    [0, 0.20, 0.30, 0.43, 0.56, 1],
+    [0, 0.20, 0.30, 0.40, 0.52, 1],
     isDesktop 
       ? ["0%", "0%", "5%", "5%", "0%", "0%"]
       : ["0%", "0%", "0%", "0%", "0%", "0%"]
@@ -74,9 +74,9 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   const modalPointerEvents = useTransform(smoothProgress, (v: number) => v > 0.25 ? 'none' : 'auto');
 
   // --- 3. Scene 2: Charts (Gamified) ---
-  // Starts at 0.30, Finishes growing at 0.43
+  // Starts at 0.30, Finishes growing at 0.40
   const barStart = 0.30;
-  const barEnd = 0.43;
+  const barEnd = 0.40;
   
   const bar1Height = useTransform(smoothProgress, [barStart, barEnd], ["0%", "35%"]);
   const bar2Height = useTransform(smoothProgress, [barStart + 0.01, barEnd], ["0%", "55%"]);
@@ -90,14 +90,14 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   const chartGlowOpacity = useTransform(smoothProgress, [barStart, barEnd], [0, 0.6]);
 
   // --- 4. Scene 3: Document (Transcript) ---
-  // Starts entering at 0.46, Finishes entering at 0.56
-  const docY = useTransform(smoothProgress, [0.46, 0.56], ["120%", "0%"]);
-  const docRotateX = useTransform(smoothProgress, [0.46, 0.56], [45, 0]);
-  const docOpacity = useTransform(smoothProgress, [0.46, 0.51], [0, 1]);
+  // Starts entering at 0.42, Finishes entering at 0.52
+  const docY = useTransform(smoothProgress, [0.42, 0.52], ["120%", "0%"]);
+  const docRotateX = useTransform(smoothProgress, [0.42, 0.52], [45, 0]);
+  const docOpacity = useTransform(smoothProgress, [0.42, 0.47], [0, 1]);
   
   // Dashboard background blurs out exactly as Document enters
-  const dashboardBlur = useTransform(smoothProgress, [0.46, 0.56], ["0px", "4px"]);
-  const dashboardOpacity = useTransform(smoothProgress, [0.46, 0.56], [1, 0.4]);
+  const dashboardBlur = useTransform(smoothProgress, [0.42, 0.52], ["0px", "4px"]);
+  const dashboardOpacity = useTransform(smoothProgress, [0.42, 0.52], [1, 0.4]);
 
   return (
     <div className="w-full max-w-5xl mx-auto h-[600px] flex items-center justify-center perspective-1000" aria-hidden="true">
