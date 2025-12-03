@@ -17,7 +17,8 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
     "recharts": "^2.12.7",
-    "dropbox": "^10.34.0"
+    "dropbox": "^10.34.0",
+    "framer-motion": "^11.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
