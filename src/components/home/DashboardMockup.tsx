@@ -21,63 +21,62 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
     offset: ["start start", "end end"]
   });
 
+  // Tighter spring physics to prevent animation lag on fast scrolls
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 25,
+    stiffness: 200,
+    damping: 30,
     restDelta: 0.001
   });
 
-  // --- TIMELINE DEFINITION ---
-  // 0.00 -> 0.25: PHASE 1: LOG (Modal visible, Camera angled left)
-  // 0.25 -> 0.35: TRANSITION 1 (Modal exits, Camera centers)
-  // 0.35 -> 0.65: PHASE 2: TRACK (Charts grow, Dashboard clear)
-  // 0.65 -> 0.75: TRANSITION 2 (Dashboard blurs, Document enters)
-  // 0.75 -> 1.00: PHASE 3: VERIFY (Document fully visible)
+  // --- REVISED TIMELINE (Aligned to 3-step scroll section) ---
+  // 0.00 -> 0.33: STEP 1 (Log)
+  // 0.33 -> 0.66: STEP 2 (Track)
+  // 0.66 -> 1.00: STEP 3 (Verify)
 
   // --- 1. Camera Rig (Rotations & Scale) ---
   const rotateX = useTransform(
     smoothProgress, 
-    [0, 0.25, 0.35, 0.65, 0.75, 1], 
+    [0, 0.2, 0.3, 0.6, 0.7, 1], 
     isDesktop && !prefersReducedMotion 
-      ? [5, 5, 5, 5, 0, 0]   // Tilt stays consistent until Document phase
+      ? [5, 5, 5, 5, 0, 0]   
       : [0, 0, 0, 0, 0, 0]
   );
   
   const rotateY = useTransform(
     smoothProgress, 
-    [0, 0.25, 0.35, 0.65, 0.75, 1], 
+    [0, 0.2, 0.3, 0.6, 0.7, 1], 
     isDesktop && !prefersReducedMotion 
-      ? [-5, -5, -12, -12, 0, 0] // Log(-5) -> Track(-12) -> Verify(0)
+      ? [-5, -5, -12, -12, 0, 0] 
       : [0, 0, 0, 0, 0, 0]
   );
   
   const scale = useTransform(
     smoothProgress, 
-    [0, 0.25, 0.35, 0.65, 0.75, 1], 
+    [0, 0.2, 0.3, 0.6, 0.7, 1], 
     isDesktop 
-      ? [1, 1, 1.1, 1.1, 1.05, 1.05] // Zoom in for Charts, slight pull back for Doc
+      ? [1, 1, 1.1, 1.1, 1.05, 1.05] 
       : [1, 1, 1, 1, 1, 1]
   );
 
   const x = useTransform(
     smoothProgress,
-    [0, 0.25, 0.35, 0.65, 0.75, 1],
+    [0, 0.2, 0.3, 0.6, 0.7, 1],
     isDesktop 
-      ? ["0%", "0%", "5%", "5%", "0%", "0%"] // Shift right during Track phase to center charts
+      ? ["0%", "0%", "5%", "5%", "0%", "0%"]
       : ["0%", "0%", "0%", "0%", "0%", "0%"]
   );
 
   // --- 2. Scene 1: Log Modal ---
-  // Exits strictly during Transition 1
-  const modalOpacity = useTransform(smoothProgress, [0.25, 0.35], [1, 0]);
-  const modalY = useTransform(smoothProgress, [0.25, 0.35], ["-50%", "-60%"]);
-  const modalBlur = useTransform(smoothProgress, [0.25, 0.35], ["0px", "10px"]);
-  const modalPointerEvents = useTransform(smoothProgress, (v: number) => v > 0.3 ? 'none' : 'auto');
+  // Exits early (0.2 - 0.3) to clear stage for charts
+  const modalOpacity = useTransform(smoothProgress, [0.2, 0.3], [1, 0]);
+  const modalY = useTransform(smoothProgress, [0.2, 0.3], ["-50%", "-60%"]);
+  const modalBlur = useTransform(smoothProgress, [0.2, 0.3], ["0px", "10px"]);
+  const modalPointerEvents = useTransform(smoothProgress, (v: number) => v > 0.25 ? 'none' : 'auto');
 
-  // --- 3. Scene 2: Charts ---
-  // Grow during the early part of Phase 2
-  const barStart = 0.35;
-  const barEnd = 0.55;
+  // --- 3. Scene 2: Charts (Gamified) ---
+  // Start growing immediately as Step 2 begins (0.3) and finish by 0.5
+  const barStart = 0.3;
+  const barEnd = 0.5;
   
   const bar1Height = useTransform(smoothProgress, [barStart, barEnd], ["0%", "35%"]);
   const bar2Height = useTransform(smoothProgress, [barStart + 0.02, barEnd], ["0%", "55%"]);
@@ -88,17 +87,17 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   const bar7Height = useTransform(smoothProgress, [barStart + 0.12, barEnd], ["0%", "65%"]);
   const bar8Height = useTransform(smoothProgress, [barStart + 0.14, barEnd], ["0%", "85%"]);
   
-  const chartGlowOpacity = useTransform(smoothProgress, [barStart, barEnd], [0, 0.6]); // Reduced max opacity for clarity
+  const chartGlowOpacity = useTransform(smoothProgress, [barStart, barEnd], [0, 0.6]);
 
-  // --- 4. Scene 3: Document ---
-  // Enters during Transition 2
-  const docY = useTransform(smoothProgress, [0.65, 0.75], ["120%", "0%"]);
-  const docRotateX = useTransform(smoothProgress, [0.65, 0.75], [45, 0]);
-  const docOpacity = useTransform(smoothProgress, [0.65, 0.70], [0, 1]);
+  // --- 4. Scene 3: Document (Transcript) ---
+  // Enters EARLY (0.6 - 0.7) so it's visible as soon as Step 3 text appears
+  const docY = useTransform(smoothProgress, [0.6, 0.7], ["120%", "0%"]);
+  const docRotateX = useTransform(smoothProgress, [0.6, 0.7], [45, 0]);
+  const docOpacity = useTransform(smoothProgress, [0.6, 0.65], [0, 1]);
   
-  // Dashboard background blurs out ONLY when Document enters
-  const dashboardBlur = useTransform(smoothProgress, [0.65, 0.75], ["0px", "4px"]);
-  const dashboardOpacity = useTransform(smoothProgress, [0.65, 0.75], [1, 0.4]);
+  // Dashboard background blurs out exactly as Document enters
+  const dashboardBlur = useTransform(smoothProgress, [0.6, 0.7], ["0px", "4px"]);
+  const dashboardOpacity = useTransform(smoothProgress, [0.6, 0.7], [1, 0.4]);
 
   return (
     <div className="w-full max-w-5xl mx-auto h-[600px] flex items-center justify-center perspective-1000" aria-hidden="true">
@@ -200,10 +199,6 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
                <div className="absolute inset-x-6 bottom-6 h-32 flex items-end justify-between gap-3">
                   {[bar1Height, bar2Height, bar3Height, bar4Height, bar5Height, bar6Height, bar7Height, bar8Height].map((height, i) => (
                     <div key={i} className="w-full bg-white/5 rounded-t-sm relative h-full flex items-end">
-                       {/* 
-                          FIX: Render Glow FIRST so it sits BEHIND the solid bar. 
-                          This prevents the "blurred upper part" issue.
-                       */}
                        <motion.div 
                           className="absolute inset-x-0 bottom-0 bg-primary blur-md rounded-t-sm"
                           style={{ height, opacity: chartGlowOpacity }}
