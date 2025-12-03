@@ -9,18 +9,20 @@ const HomePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFeatureStep, setActiveFeatureStep] = useState(0);
   
-  // Refs for the sticky scroll section
+  // Refs for the sticky scroll text sections
   const step1Ref = useRef<HTMLDivElement>(null);
   const step2Ref = useRef<HTMLDivElement>(null);
   const step3Ref = useRef<HTMLDivElement>(null);
 
   // Intersection Observer for Sticky Scroll
   useEffect(() => {
-    // Adjusted threshold and margin for better detection
+    // "Center Slice" detection: 
+    // Triggers ONLY when the element hits the middle 20% of the screen.
+    // This creates that snappy "Apple-style" switch exactly when you read it.
     const options = { 
       root: null, 
-      threshold: 0.3, // Trigger when 30% of the element is visible
-      rootMargin: "-10% 0px -10% 0px" // Shrink the detection area slightly to focus on the center
+      threshold: 0, 
+      rootMargin: "-45% 0px -45% 0px" 
     };
     
     const observer = new IntersectionObserver((entries) => {
@@ -44,11 +46,16 @@ const HomePage = () => {
     <>
       <EventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       
-      <main className="bg-dark-bg overflow-x-hidden">
+      {/* 
+         CRITICAL FIX: Removed 'overflow-x-hidden' from main. 
+         This allows 'position: sticky' to work correctly in the children.
+      */}
+      <main className="bg-dark-bg">
         
-        {/* --- 1. HERO SECTION: The Spark --- */}
+        {/* --- 1. HERO SECTION --- */}
+        {/* Added overflow-hidden HERE instead to contain the video/gradients */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          {/* Video Background with Heavy Gradient */}
+          {/* Video Background */}
           <div className="absolute inset-0 z-0">
             <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-40">
               <source src="https://assets.mixkit.co/videos/preview/mixkit-students-in-a-classroom-2322-large.mp4" type="video/mp4" />
@@ -59,7 +66,6 @@ const HomePage = () => {
 
           {/* Content */}
           <div className="relative z-10 container mx-auto px-6 text-center">
-            {/* Floating Event Pill */}
             <Reveal variant="fade-up" className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 mb-8 cursor-pointer hover:bg-white/20 transition-colors" onClick={() => setIsModalOpen(true)}>
               <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
               <span className="text-xs font-bold text-white uppercase tracking-wider">Upcoming: 2025 Intro Event</span>
@@ -91,14 +97,13 @@ const HomePage = () => {
             </Reveal>
           </div>
 
-          {/* Scroll Indicator */}
           <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-gray-500">
             <i className="fas fa-chevron-down"></i>
           </div>
         </section>
 
 
-        {/* --- 2. MISSION: Kinetic Typography --- */}
+        {/* --- 2. MISSION SECTION --- */}
         <section id="mission" className="py-32 bg-dark-bg relative">
           <div className="container mx-auto px-6">
             <Reveal variant="fade-up" className="max-w-4xl mx-auto text-center">
@@ -112,69 +117,59 @@ const HomePage = () => {
         </section>
 
 
-        {/* --- 3. CENTERPIECE: The Dashboard Deep Dive (Sticky Scroll) --- */}
+        {/* --- 3. STICKY SCROLL EXPERIENCE --- */}
         <section className="relative bg-dark-bg">
           <div className="container mx-auto px-6">
-            <div className="flex flex-col lg:flex-row">
+            <div className="flex flex-col lg:flex-row items-start">
               
-              {/* Left Column: Scrolling Text Steps */}
-              <div className="lg:w-1/2">
+              {/* 
+                 LEFT COLUMN: Scrolling Text Steps
+                 We increase padding to ensure enough scroll distance.
+              */}
+              <div className="lg:w-1/2 relative z-10 pb-32">
+                
                 {/* Step 1 */}
-                <div ref={step1Ref} className="min-h-screen flex flex-col justify-center p-6 border-l-2 border-gray-800 pl-10">
-                  <div 
-                    className={`transition-all duration-700 ease-out transform ${
-                      activeFeatureStep === 0 
-                        ? 'opacity-100 translate-x-0 blur-0' 
-                        : 'opacity-20 -translate-x-4 blur-sm'
-                    }`}
-                  >
-                    <div className="text-primary font-mono text-sm mb-4">01. LOG</div>
-                    <h3 className="text-4xl font-bold text-white mb-4">Log with Ease.</h3>
-                    <p className="text-xl text-gray-400 leading-relaxed">
-                      Forget lost paper forms. Upload audio proof directly from your phone, select your activity, and log hours in seconds. Our Dropbox integration keeps everything secure.
+                <div ref={step1Ref} className="min-h-screen flex items-center p-6 border-l border-gray-800/50 pl-10">
+                  <div className={`transition-all duration-700 ease-out ${activeFeatureStep === 0 ? 'opacity-100 translate-x-0 blur-0' : 'opacity-20 -translate-x-8 blur-sm'}`}>
+                    <div className="inline-block px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary font-mono text-xs border border-primary/20">01. LOG</div>
+                    <h3 className="text-5xl font-bold text-white mb-6">Log with Ease.</h3>
+                    <p className="text-xl text-gray-400 leading-relaxed max-w-md">
+                      Forget lost paper forms. Upload audio proof directly from your phone, select your activity, and log hours in seconds.
                     </p>
                   </div>
                 </div>
 
                 {/* Step 2 */}
-                <div ref={step2Ref} className="min-h-screen flex flex-col justify-center p-6 border-l-2 border-gray-800 pl-10">
-                  <div 
-                    className={`transition-all duration-700 ease-out transform ${
-                      activeFeatureStep === 1 
-                        ? 'opacity-100 translate-x-0 blur-0' 
-                        : 'opacity-20 -translate-x-4 blur-sm'
-                    }`}
-                  >
-                    <div className="text-secondary font-mono text-sm mb-4">02. TRACK</div>
-                    <h3 className="text-4xl font-bold text-white mb-4">Gamified Impact.</h3>
-                    <p className="text-xl text-gray-400 leading-relaxed">
-                      Watch your hours grow. Our automated tier system unlocks Bronze, Silver, and Gold awards as you hit milestones, keeping you motivated and recognized.
+                <div ref={step2Ref} className="min-h-screen flex items-center p-6 border-l border-gray-800/50 pl-10">
+                  <div className={`transition-all duration-700 ease-out ${activeFeatureStep === 1 ? 'opacity-100 translate-x-0 blur-0' : 'opacity-20 -translate-x-8 blur-sm'}`}>
+                    <div className="inline-block px-3 py-1 mb-4 rounded-full bg-secondary/10 text-secondary font-mono text-xs border border-secondary/20">02. TRACK</div>
+                    <h3 className="text-5xl font-bold text-white mb-6">Gamified Impact.</h3>
+                    <p className="text-xl text-gray-400 leading-relaxed max-w-md">
+                      Watch your hours grow. Our automated tier system unlocks Bronze, Silver, and Gold awards as you hit milestones.
                     </p>
                   </div>
                 </div>
 
                 {/* Step 3 */}
-                <div ref={step3Ref} className="min-h-screen flex flex-col justify-center p-6 border-l-2 border-gray-800 pl-10">
-                  <div 
-                    className={`transition-all duration-700 ease-out transform ${
-                      activeFeatureStep === 2 
-                        ? 'opacity-100 translate-x-0 blur-0' 
-                        : 'opacity-20 -translate-x-4 blur-sm'
-                    }`}
-                  >
-                    <div className="text-green-400 font-mono text-sm mb-4">03. VERIFY</div>
-                    <h3 className="text-4xl font-bold text-white mb-4">Official Transcripts.</h3>
-                    <p className="text-xl text-gray-400 leading-relaxed">
-                      University-ready documentation at the click of a button. Generate verifiable PDF transcripts with unique QR codes that admissions officers can instantly validate.
+                <div ref={step3Ref} className="min-h-screen flex items-center p-6 border-l border-gray-800/50 pl-10">
+                  <div className={`transition-all duration-700 ease-out ${activeFeatureStep === 2 ? 'opacity-100 translate-x-0 blur-0' : 'opacity-20 -translate-x-8 blur-sm'}`}>
+                    <div className="inline-block px-3 py-1 mb-4 rounded-full bg-green-500/10 text-green-400 font-mono text-xs border border-green-500/20">03. VERIFY</div>
+                    <h3 className="text-5xl font-bold text-white mb-6">Official Transcripts.</h3>
+                    <p className="text-xl text-gray-400 leading-relaxed max-w-md">
+                      University-ready documentation at the click of a button. Generate verifiable PDF transcripts with unique QR codes.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Sticky 3D Mockup */}
+              {/* 
+                 RIGHT COLUMN: Sticky 3D Mockup 
+                 'sticky top-0 h-screen' ensures it stays pinned in the viewport 
+                 while the tall left column scrolls.
+              */}
               <div className="hidden lg:block lg:w-1/2 relative">
-                <div className="sticky top-0 h-screen flex items-center justify-center perspective-1000">
-                  <DashboardMockup activeStep={activeFeatureStep} />
+                <div className="sticky top-0 h-screen flex items-center justify-center">
+                   <DashboardMockup activeStep={activeFeatureStep} />
                 </div>
               </div>
 
@@ -183,11 +178,14 @@ const HomePage = () => {
         </section>
 
 
-        {/* --- 4. ECOSYSTEM: Bento Grid --- */}
-        <BentoGrid />
+        {/* --- 4. BENTO GRID --- */}
+        {/* Added overflow-hidden here to contain blobs */}
+        <div className="relative overflow-hidden">
+            <BentoGrid />
+        </div>
 
 
-        {/* --- 5. COMMUNITY: Horizontal Scroll --- */}
+        {/* --- 5. COMMUNITY SECTION --- */}
         <section className="py-24 bg-dark-card overflow-hidden">
           <div className="container mx-auto px-6 mb-12">
             <Reveal>
@@ -195,7 +193,6 @@ const HomePage = () => {
             </Reveal>
           </div>
           
-          {/* Horizontal Scroll Container */}
           <div className="flex gap-8 overflow-x-auto pb-12 px-6 snap-x snap-mandatory no-scrollbar">
             {[
               { name: "Manav A.", role: "President", quote: "Building a legacy.", color: "bg-blue-500" },
@@ -213,7 +210,6 @@ const HomePage = () => {
               </div>
             ))}
             
-            {/* Join Card */}
             <div className="snap-center flex-shrink-0 w-80 h-96 border-2 border-dashed border-gray-700 rounded-2xl flex flex-col items-center justify-center text-center p-6 hover:border-primary transition-colors cursor-pointer group">
               <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-black transition-colors">
                 <i className="fas fa-plus text-2xl"></i>
@@ -225,8 +221,8 @@ const HomePage = () => {
         </section>
 
 
-        {/* --- 6. FINALE: CTA --- */}
-        <section className="py-32 bg-dark-bg text-center relative">
+        {/* --- 6. FINALE --- */}
+        <section className="py-32 bg-dark-bg text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-dot-pattern opacity-30"></div>
           <Reveal variant="zoom-in" className="relative z-10 container mx-auto px-6">
             <h2 className="text-5xl md:text-7xl font-extrabold text-white mb-8">Ready to make a difference?</h2>
