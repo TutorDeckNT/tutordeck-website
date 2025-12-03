@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface DashboardMockupProps {
   activeStep: number; // 0: Log, 1: Track, 2: Verify
 }
