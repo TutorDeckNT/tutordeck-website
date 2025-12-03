@@ -16,16 +16,15 @@ const HomePage = () => {
   const step2Ref = useRef<HTMLDivElement>(null);
   const step3Ref = useRef<HTMLDivElement>(null);
 
-  // Ref for the entire scrollable container
-  const scrollSectionRef = useRef<HTMLElement>(null);
+  // Ref for the scroll container
+  const scrollSectionRef = useRef<HTMLDivElement>(null);
 
   // Intersection Observer to toggle text focus
   useEffect(() => {
     const options = { 
       root: null, 
-      threshold: 0, 
-      // This creates a "trigger zone" in the middle 10% of the screen
-      rootMargin: "-45% 0px -45% 0px" 
+      threshold: 0.5, // Trigger when 50% of the item is visible
+      rootMargin: "0px" 
     };
     
     const observer = new IntersectionObserver((entries) => {
@@ -112,10 +111,15 @@ const HomePage = () => {
         </section>
 
         {/* --- 3. STICKY SCROLL EXPERIENCE --- */}
-        <section ref={scrollSectionRef} className="relative bg-dark-bg">
+        {/* IMPORTANT: Do NOT add overflow-hidden here, it breaks sticky positioning */}
+        <section className="relative bg-dark-bg">
           <div className="container mx-auto px-6">
-            {/* FIX: Removed 'items-start' so columns stretch to equal height */}
-            <div className="flex flex-col lg:flex-row">
+            
+            {/* 
+               The Ref goes here on the wrapper. 
+               'items-stretch' (default) ensures the Right Column is as tall as the Left Column.
+            */}
+            <div ref={scrollSectionRef} className="flex flex-col lg:flex-row items-stretch">
               
               {/* LEFT COLUMN: Scrolling Text Steps */}
               <div className="lg:w-1/2 relative z-10 pb-32">
@@ -155,9 +159,16 @@ const HomePage = () => {
               </div>
 
               {/* RIGHT COLUMN: Sticky 3D Mockup */}
+              {/* This column stretches to match the left column's height (approx 300vh) */}
               <div className="hidden lg:block lg:w-1/2 relative">
-                {/* Sticky container must be inside the tall flex item */}
-                <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
+                {/* 
+                   Sticky Container:
+                   - sticky: Enables sticking
+                   - top-0: Sticks to the top of the viewport
+                   - h-screen: Occupies full viewport height
+                   - flex/items-center: Centers the mockup vertically
+                */}
+                <div className="sticky top-0 h-screen flex items-center justify-center">
                    <DashboardMockup scrollContainerRef={scrollSectionRef} />
                 </div>
               </div>
