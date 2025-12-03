@@ -16,7 +16,6 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   const prefersReducedMotion = useReducedMotion();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   
-  // We track the scroll progress of the ENTIRE section (approx 300vh height)
   const { scrollYProgress } = useScroll({
     target: scrollContainerRef,
     offset: ["start start", "end end"]
@@ -28,58 +27,73 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
     restDelta: 0.001
   });
 
-  // --- Animation Ranges ---
-  // 0.0 - 0.33: Step 1 (Log)
-  // 0.33 - 0.66: Step 2 (Track)
-  // 0.66 - 1.0: Step 3 (Verify)
+  // --- 1. Camera Rig (Rotations & Scale) ---
+  // We use 6 keyframes to create "holds" (plateaus) for each section.
+  // [0.0-0.3]: Hold Log View
+  // [0.3-0.4]: Transition
+  // [0.4-0.6]: Hold Track View
+  // [0.6-0.7]: Transition
+  // [0.7-1.0]: Hold Verify View
 
   const rotateX = useTransform(
     smoothProgress, 
-    [0, 0.3, 0.6, 1], 
-    isDesktop && !prefersReducedMotion ? [5, 5, 0, 0] : [0, 0, 0, 0]
+    [0, 0.3, 0.4, 0.6, 0.7, 1], 
+    isDesktop && !prefersReducedMotion 
+      ? [5, 5, 5, 5, 0, 0]   // Log(5) -> Track(5) -> Verify(0)
+      : [0, 0, 0, 0, 0, 0]
   );
   
   const rotateY = useTransform(
     smoothProgress, 
-    [0, 0.3, 0.6, 1], 
-    isDesktop && !prefersReducedMotion ? [-5, -12, 0, 0] : [0, 0, 0, 0]
+    [0, 0.3, 0.4, 0.6, 0.7, 1], 
+    isDesktop && !prefersReducedMotion 
+      ? [-5, -5, -12, -12, 0, 0] // Log(-5) -> Track(-12) -> Verify(0)
+      : [0, 0, 0, 0, 0, 0]
   );
   
   const scale = useTransform(
     smoothProgress, 
-    [0, 0.3, 0.6, 1], 
-    isDesktop ? [1, 1.1, 1.05, 1.05] : [1, 1, 1, 1]
+    [0, 0.3, 0.4, 0.6, 0.7, 1], 
+    isDesktop 
+      ? [1, 1, 1.1, 1.1, 1.05, 1.05] // Log(1) -> Track(1.1) -> Verify(1.05)
+      : [1, 1, 1, 1, 1, 1]
   );
 
   const x = useTransform(
     smoothProgress,
-    [0, 0.3, 0.6, 1],
-    isDesktop ? ["0%", "5%", "0%", "0%"] : ["0%", "0%", "0%", "0%"]
+    [0, 0.3, 0.4, 0.6, 0.7, 1],
+    isDesktop 
+      ? ["0%", "0%", "5%", "5%", "0%", "0%"] // Shift right during Track phase
+      : ["0%", "0%", "0%", "0%", "0%", "0%"]
   );
 
-  // Scene 1: Log Modal (Visible initially, fades out as we move to Step 2)
-  const modalOpacity = useTransform(smoothProgress, [0.25, 0.35], [1, 0]);
-  const modalY = useTransform(smoothProgress, [0, 0.35], ["-50%", "-60%"]);
-  const modalBlur = useTransform(smoothProgress, [0.25, 0.35], ["0px", "10px"]);
-  const modalPointerEvents = useTransform(smoothProgress, (v: number) => v > 0.3 ? 'none' : 'auto');
+  // --- 2. Scene 1: Log Modal ---
+  // Stays visible until 0.3, then fades out quickly by 0.38
+  const modalOpacity = useTransform(smoothProgress, [0.3, 0.38], [1, 0]);
+  const modalY = useTransform(smoothProgress, [0.3, 0.38], ["-50%", "-60%"]);
+  const modalBlur = useTransform(smoothProgress, [0.3, 0.38], ["0px", "10px"]);
+  const modalPointerEvents = useTransform(smoothProgress, (v: number) => v > 0.35 ? 'none' : 'auto');
 
-  // Scene 2: Charts (Bars grow as we enter Step 2)
-  const bar1Height = useTransform(smoothProgress, [0.30, 0.40], ["0%", "35%"]);
-  const bar2Height = useTransform(smoothProgress, [0.32, 0.42], ["0%", "55%"]);
-  const bar3Height = useTransform(smoothProgress, [0.34, 0.44], ["0%", "40%"]);
-  const bar4Height = useTransform(smoothProgress, [0.36, 0.46], ["0%", "70%"]);
-  const bar5Height = useTransform(smoothProgress, [0.38, 0.48], ["0%", "45%"]);
-  const bar6Height = useTransform(smoothProgress, [0.40, 0.50], ["0%", "90%"]);
-  const bar7Height = useTransform(smoothProgress, [0.42, 0.52], ["0%", "65%"]);
-  const bar8Height = useTransform(smoothProgress, [0.44, 0.54], ["0%", "85%"]);
+  // --- 3. Scene 2: Charts ---
+  // Bars start growing at 0.35 (mid-transition) and finish by 0.45 (start of Track section)
+  const bar1Height = useTransform(smoothProgress, [0.35, 0.45], ["0%", "35%"]);
+  const bar2Height = useTransform(smoothProgress, [0.37, 0.47], ["0%", "55%"]);
+  const bar3Height = useTransform(smoothProgress, [0.39, 0.49], ["0%", "40%"]);
+  const bar4Height = useTransform(smoothProgress, [0.41, 0.51], ["0%", "70%"]);
+  const bar5Height = useTransform(smoothProgress, [0.43, 0.53], ["0%", "45%"]);
+  const bar6Height = useTransform(smoothProgress, [0.45, 0.55], ["0%", "90%"]);
+  const bar7Height = useTransform(smoothProgress, [0.47, 0.57], ["0%", "65%"]);
+  const bar8Height = useTransform(smoothProgress, [0.49, 0.59], ["0%", "85%"]);
   
-  const chartGlowOpacity = useTransform(smoothProgress, [0.4, 0.5], [0, 1]);
+  const chartGlowOpacity = useTransform(smoothProgress, [0.45, 0.55], [0, 1]);
 
-  // Scene 3: Document (Slides up as we enter Step 3)
-  const docY = useTransform(smoothProgress, [0.6, 0.75], ["120%", "0%"]);
-  const docRotateX = useTransform(smoothProgress, [0.6, 0.75], [45, 0]);
-  const docOpacity = useTransform(smoothProgress, [0.6, 0.7], [0, 1]);
+  // --- 4. Scene 3: Document ---
+  // Enters between 0.6 and 0.7 (transition to Verify)
+  const docY = useTransform(smoothProgress, [0.6, 0.7], ["120%", "0%"]);
+  const docRotateX = useTransform(smoothProgress, [0.6, 0.7], [45, 0]);
+  const docOpacity = useTransform(smoothProgress, [0.6, 0.65], [0, 1]);
   
+  // Background blurs out as document enters
   const dashboardBlur = useTransform(smoothProgress, [0.6, 0.7], ["0px", "4px"]);
   const dashboardOpacity = useTransform(smoothProgress, [0.6, 0.7], [1, 0.4]);
 
