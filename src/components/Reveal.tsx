@@ -1,18 +1,20 @@
-import { useEffect, useRef, ReactNode, ElementType, HTMLAttributes } from 'react';
+import { useEffect, useRef, ReactNode, ElementType, ComponentPropsWithoutRef } from 'react';
 
 type RevealVariant = 'fade-up' | 'fade-in' | 'slide-left' | 'zoom-in' | 'blur-in';
 
-interface RevealProps<C extends ElementType = 'div'> {
+// Define props specific to Reveal
+type RevealOwnProps<C extends ElementType> = {
+  as?: C;
   children: ReactNode;
   className?: string;
-  as?: C;
   variant?: RevealVariant;
   delay?: number; // Delay in seconds
   threshold?: number;
-}
+};
 
-type Props<C extends ElementType> = RevealProps<C> &
-  Omit<HTMLAttributes<C>, keyof RevealProps<C>>;
+// Combine with the props of the component C, omitting duplicates
+type RevealProps<C extends ElementType> = RevealOwnProps<C> & 
+  Omit<ComponentPropsWithoutRef<C>, keyof RevealOwnProps<C>>;
 
 const Reveal = <C extends ElementType = 'div'>({
   children,
@@ -23,17 +25,16 @@ const Reveal = <C extends ElementType = 'div'>({
   threshold = 0.1,
   style,
   ...props
-}: Props<C>) => {
+}: RevealProps<C>) => {
   const Component = as || 'div';
-  // Using any for the ref here avoids complex polymorphic type issues 
-  // while still allowing IntersectionObserver to work correctly.
+  
+  // Use 'any' for ref to avoid complex polymorphic type conflicts with IntersectionObserver
   const ref = useRef<any>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          // Add a small timeout for the delay if specified
           setTimeout(() => {
             entry.target.classList.add('visible');
           }, delay * 1000);
@@ -60,7 +61,7 @@ const Reveal = <C extends ElementType = 'div'>({
       ref={ref} 
       className={`reveal ${variant} ${className}`} 
       style={style}
-      {...props}
+      {...props as any}
     >
       {children}
     </Component>
