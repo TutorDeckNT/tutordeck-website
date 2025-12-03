@@ -25,7 +25,9 @@ const Reveal = <C extends ElementType = 'div'>({
   ...props
 }: Props<C>) => {
   const Component = as || 'div';
-  const ref = useRef<HTMLElement>(null);
+  // Using any for the ref here avoids complex polymorphic type issues 
+  // while still allowing IntersectionObserver to work correctly.
+  const ref = useRef<any>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
