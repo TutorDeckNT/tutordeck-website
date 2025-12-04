@@ -122,6 +122,7 @@ const MobileDock = () => {
             <button 
               onClick={toggleMenu}
               className={`relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${isMenuOpen ? 'bg-white/20' : 'hover:bg-white/10'}`}
+              aria-label="User Menu"
             >
               {user ? (
                 <img src={user.photoURL || '/mascot.svg'} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
@@ -143,6 +144,7 @@ const MobileDock = () => {
 const DockIcon = ({ to, icon, label }: { to: string, icon: string, label: string }) => (
   <NavLink 
     to={to} 
+    aria-label={label}
     className={({ isActive }) => `flex flex-col items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 ${isActive ? 'text-primary -translate-y-1' : 'text-gray-400 hover:text-gray-200'}`}
   >
     {({ isActive }) => (
