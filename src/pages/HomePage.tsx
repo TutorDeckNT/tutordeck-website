@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import Reveal from '../components/Reveal';
 import EventModal from '../components/EventModal';
 import DashboardMockup from '../components/home/DashboardMockup';
@@ -8,41 +9,37 @@ import BentoGrid from '../components/home/BentoGrid';
 const HomePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  // State for the text transitions on the left
-  const [activeFeatureStep, setActiveFeatureStep] = useState(0);
+  // --- SCROLL ANIMATION LOGIC ---
+  const scrollRef = useRef<HTMLDivElement>(null);
   
-  // Refs for the text steps
-  const step1Ref = useRef<HTMLDivElement>(null);
-  const step2Ref = useRef<HTMLDivElement>(null);
-  const step3Ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: scrollRef,
+    offset: ["start start", "end end"]
+  });
 
-  // Ref for the scroll container
-  const scrollSectionRef = useRef<HTMLDivElement>(null);
+  // Smooth out the scroll progress for a weighty, "Apple-like" feel
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
-  // Intersection Observer to toggle text focus
-  useEffect(() => {
-    const options = { 
-      root: null, 
-      threshold: 0.5, // Trigger when 50% of the item is visible
-      rootMargin: "0px" 
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          if (entry.target === step1Ref.current) setActiveFeatureStep(0);
-          if (entry.target === step2Ref.current) setActiveFeatureStep(1);
-          if (entry.target === step3Ref.current) setActiveFeatureStep(2);
-        }
-      });
-    }, options);
+  // --- TEXT STACK TRANSFORMS ---
+  // We map the scroll progress to Opacity, Y-position, and Blur for each text block.
+  // Act 1: Log (0.00 - 0.33)
+  const text1Opacity = useTransform(smoothProgress, [0, 0.1, 0.25, 0.33], [0, 1, 1, 0]);
+  const text1Y = useTransform(smoothProgress, [0, 0.1, 0.25, 0.33], [20, 0, 0, -20]);
+  const text1Blur = useTransform(smoothProgress, [0.25, 0.33], ["0px", "10px"]);
 
-    if (step1Ref.current) observer.observe(step1Ref.current);
-    if (step2Ref.current) observer.observe(step2Ref.current);
-    if (step3Ref.current) observer.observe(step3Ref.current);
+  // Act 2: Track (0.33 - 0.66)
+  const text2Opacity = useTransform(smoothProgress, [0.33, 0.43, 0.58, 0.66], [0, 1, 1, 0]);
+  const text2Y = useTransform(smoothProgress, [0.33, 0.43, 0.58, 0.66], [20, 0, 0, -20]);
+  const text2Blur = useTransform(smoothProgress, [0.58, 0.66], ["0px", "10px"]);
 
-    return () => observer.disconnect();
-  }, []);
+  // Act 3: Verify (0.66 - 1.00)
+  const text3Opacity = useTransform(smoothProgress, [0.66, 0.76, 0.9, 1.0], [0, 1, 1, 0]);
+  const text3Y = useTransform(smoothProgress, [0.66, 0.76, 0.9, 1.0], [20, 0, 0, -20]);
+  const text3Blur = useTransform(smoothProgress, [0.9, 1.0], ["0px", "10px"]);
 
   return (
     <>
@@ -110,72 +107,65 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* --- 3. STICKY SCROLL EXPERIENCE --- */}
-        {/* IMPORTANT: Do NOT add overflow-hidden here, it breaks sticky positioning */}
-        <section className="relative bg-dark-bg">
-          <div className="container mx-auto px-6">
+        {/* --- 3. SCROLL TUNNEL EXPERIENCE --- */}
+        {/* 
+            This container is 400vh tall to create the scroll track.
+            The content inside is sticky.
+        */}
+        <div ref={scrollRef} className="relative h-[400vh] bg-dark-bg">
+          <div className="sticky top-0 h-screen overflow-hidden flex flex-col lg:flex-row items-center justify-center container mx-auto px-6">
             
-            {/* 
-               The Ref goes here on the wrapper. 
-               'items-stretch' (default) ensures the Right Column is as tall as the Left Column.
-            */}
-            <div ref={scrollSectionRef} className="flex flex-col lg:flex-row items-stretch">
-              
-              {/* LEFT COLUMN: Scrolling Text Steps */}
-              <div className="lg:w-1/2 relative z-10 pb-32">
+            {/* LEFT COLUMN: Text Stack */}
+            <div className="w-full lg:w-1/2 flex items-center justify-center lg:justify-start relative z-20 h-full pointer-events-none">
+              <div className="relative w-full max-w-lg h-64">
                 
-                {/* Step 1 */}
-                <div ref={step1Ref} className="min-h-screen flex items-center p-6 border-l border-gray-800/50 pl-10">
-                  <div className={`transition-all duration-700 ease-out ${activeFeatureStep === 0 ? 'opacity-100 translate-x-0 blur-0' : 'opacity-20 -translate-x-8 blur-sm'}`}>
-                    <div className="inline-block px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary font-mono text-xs border border-primary/20">01. LOG</div>
-                    <h3 className="text-5xl font-bold text-white mb-6">Log with Ease.</h3>
-                    <p className="text-xl text-gray-400 leading-relaxed max-w-md">
-                      Forget lost paper forms. Upload audio proof directly from your phone, select your activity, and log hours in seconds.
-                    </p>
-                  </div>
-                </div>
+                {/* Text Block 1: Log */}
+                <motion.div 
+                  className="absolute inset-0 flex flex-col justify-center"
+                  style={{ opacity: text1Opacity, y: text1Y, filter: useTransform(text1Blur, v => `blur(${v})`) }}
+                >
+                  <div className="inline-block px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary font-mono text-xs border border-primary/20 w-fit">01. LOG</div>
+                  <h3 className="text-5xl font-bold text-white mb-6">Log with Ease.</h3>
+                  <p className="text-xl text-gray-400 leading-relaxed">
+                    Forget lost paper forms. Upload audio proof directly from your phone, select your activity, and log hours in seconds.
+                  </p>
+                </motion.div>
 
-                {/* Step 2 */}
-                <div ref={step2Ref} className="min-h-screen flex items-center p-6 border-l border-gray-800/50 pl-10">
-                  <div className={`transition-all duration-700 ease-out ${activeFeatureStep === 1 ? 'opacity-100 translate-x-0 blur-0' : 'opacity-20 -translate-x-8 blur-sm'}`}>
-                    <div className="inline-block px-3 py-1 mb-4 rounded-full bg-secondary/10 text-secondary font-mono text-xs border border-secondary/20">02. TRACK</div>
-                    <h3 className="text-5xl font-bold text-white mb-6">Gamified Impact.</h3>
-                    <p className="text-xl text-gray-400 leading-relaxed max-w-md">
-                      Watch your hours grow. Our automated tier system unlocks Bronze, Silver, and Gold awards as you hit milestones.
-                    </p>
-                  </div>
-                </div>
+                {/* Text Block 2: Track */}
+                <motion.div 
+                  className="absolute inset-0 flex flex-col justify-center"
+                  style={{ opacity: text2Opacity, y: text2Y, filter: useTransform(text2Blur, v => `blur(${v})`) }}
+                >
+                  <div className="inline-block px-3 py-1 mb-4 rounded-full bg-secondary/10 text-secondary font-mono text-xs border border-secondary/20 w-fit">02. TRACK</div>
+                  <h3 className="text-5xl font-bold text-white mb-6">Gamified Impact.</h3>
+                  <p className="text-xl text-gray-400 leading-relaxed">
+                    Watch your hours grow. Our automated tier system unlocks Bronze, Silver, and Gold awards as you hit milestones.
+                  </p>
+                </motion.div>
 
-                {/* Step 3 */}
-                <div ref={step3Ref} className="min-h-screen flex items-center p-6 border-l border-gray-800/50 pl-10">
-                  <div className={`transition-all duration-700 ease-out ${activeFeatureStep === 2 ? 'opacity-100 translate-x-0 blur-0' : 'opacity-20 -translate-x-8 blur-sm'}`}>
-                    <div className="inline-block px-3 py-1 mb-4 rounded-full bg-green-500/10 text-green-400 font-mono text-xs border border-green-500/20">03. VERIFY</div>
-                    <h3 className="text-5xl font-bold text-white mb-6">Official Transcripts.</h3>
-                    <p className="text-xl text-gray-400 leading-relaxed max-w-md">
-                      University-ready documentation at the click of a button. Generate verifiable PDF transcripts with unique QR codes.
-                    </p>
-                  </div>
-                </div>
+                {/* Text Block 3: Verify */}
+                <motion.div 
+                  className="absolute inset-0 flex flex-col justify-center"
+                  style={{ opacity: text3Opacity, y: text3Y, filter: useTransform(text3Blur, v => `blur(${v})`) }}
+                >
+                  <div className="inline-block px-3 py-1 mb-4 rounded-full bg-green-500/10 text-green-400 font-mono text-xs border border-green-500/20 w-fit">03. VERIFY</div>
+                  <h3 className="text-5xl font-bold text-white mb-6">Official Transcripts.</h3>
+                  <p className="text-xl text-gray-400 leading-relaxed">
+                    University-ready documentation at the click of a button. Generate verifiable PDF transcripts with unique QR codes.
+                  </p>
+                </motion.div>
+
               </div>
-
-              {/* RIGHT COLUMN: Sticky 3D Mockup */}
-              {/* This column stretches to match the left column's height (approx 300vh) */}
-              <div className="hidden lg:block lg:w-1/2 relative">
-                {/* 
-                   Sticky Container:
-                   - sticky: Enables sticking
-                   - top-0: Sticks to the top of the viewport
-                   - h-screen: Occupies full viewport height
-                   - flex/items-center: Centers the mockup vertically
-                */}
-                <div className="sticky top-0 h-screen flex items-center justify-center">
-                   <DashboardMockup scrollContainerRef={scrollSectionRef} />
-                </div>
-              </div>
-
             </div>
+
+            {/* RIGHT COLUMN: Reactive Mockup */}
+            <div className="w-full lg:w-1/2 h-full flex items-center justify-center relative z-10">
+               {/* We pass the smoothProgress down so the mockup can sync perfectly */}
+               <DashboardMockup smoothProgress={smoothProgress} />
+            </div>
+
           </div>
-        </section>
+        </div>
 
         {/* --- 4. BENTO GRID --- */}
         <div className="relative overflow-hidden">
