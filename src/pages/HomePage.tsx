@@ -60,7 +60,7 @@ const HomePage = () => {
           <div className="relative z-10 container mx-auto px-6 text-center">
             <Reveal variant="fade-up" className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 mb-8 cursor-pointer hover:bg-white/20 transition-colors" onClick={() => setIsModalOpen(true)}>
               <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-              <span className="text-xs font-bold text-white uppercase tracking-wider">Upcoming: 2025 Intro Event</span>
+              <span className="text-xs font-bold text-white uppercase tracking-wider">Upcoming: Student Outreach Program</span>
               <i className="fas fa-chevron-right text-xs text-gray-400"></i>
             </Reveal>
 
