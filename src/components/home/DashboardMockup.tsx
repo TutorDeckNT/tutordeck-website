@@ -1,82 +1,62 @@
 import React from 'react';
 import { 
   motion, 
-  useScroll, 
   useTransform, 
-  useSpring, 
+  MotionValue,
   useReducedMotion
 } from 'framer-motion';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 interface DashboardMockupProps {
-  scrollContainerRef: React.RefObject<HTMLElement>;
+  smoothProgress: MotionValue<number>;
 }
 
-const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
+const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
   const prefersReducedMotion = useReducedMotion();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
-  
-  const { scrollYProgress } = useScroll({
-    target: scrollContainerRef,
-    offset: ["start start", "end end"]
-  });
 
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 200,
-    damping: 30,
-    restDelta: 0.001
-  });
-
-  // --- REVISED TIMELINE (USER REQUESTED ENDPOINTS) ---
-  // 0.00 -> 0.30: STEP 1 (Log) - Modal exits at 0.30
-  // 0.30 -> 0.40: STEP 2 (Track) - Charts finish at 0.40
-  // 0.42 -> 0.52: STEP 3 (Verify) - Transcript finishes entering at 0.52
+  // --- TIMELINE DEFINITION ---
+  // Act 1: Log (0.00 - 0.33)
+  // Act 2: Track (0.33 - 0.66)
+  // Act 3: Verify (0.66 - 1.00)
 
   // --- 1. Camera Rig (Rotations & Scale) ---
-  // Keyframes align with the specific endpoints: 0.20, 0.30, 0.40, 0.52
   const rotateX = useTransform(
     smoothProgress, 
-    [0, 0.20, 0.30, 0.40, 0.52, 1], 
+    [0, 0.15, 0.33, 0.5, 0.66, 0.85, 1], 
     isDesktop && !prefersReducedMotion 
-      ? [5, 5, 5, 5, 0, 0]   
-      : [0, 0, 0, 0, 0, 0]
+      ? [0, 5, 5, 5, 5, 0, 0]   
+      : [0, 0, 0, 0, 0, 0, 0]
   );
   
   const rotateY = useTransform(
     smoothProgress, 
-    [0, 0.20, 0.30, 0.40, 0.52, 1], 
+    [0, 0.15, 0.33, 0.5, 0.66, 0.85, 1], 
     isDesktop && !prefersReducedMotion 
-      ? [-5, -5, -12, -12, 0, 0] 
-      : [0, 0, 0, 0, 0, 0]
+      ? [0, -5, -5, -12, -12, 0, 0] 
+      : [0, 0, 0, 0, 0, 0, 0]
   );
   
   const scale = useTransform(
     smoothProgress, 
-    [0, 0.20, 0.30, 0.40, 0.52, 1], 
+    [0, 0.15, 0.33, 0.5, 0.66, 0.85, 1], 
     isDesktop 
-      ? [1, 1, 1.1, 1.1, 1.05, 1.05] 
-      : [1, 1, 1, 1, 1, 1]
+      ? [0.9, 1, 1, 1.1, 1.1, 1.05, 1.05] 
+      : [1, 1, 1, 1, 1, 1, 1]
   );
 
-  const x = useTransform(
-    smoothProgress,
-    [0, 0.20, 0.30, 0.40, 0.52, 1],
-    isDesktop 
-      ? ["0%", "0%", "5%", "5%", "0%", "0%"]
-      : ["0%", "0%", "0%", "0%", "0%", "0%"]
-  );
+  // --- 2. Scene 1: Log Modal (Act 1) ---
+  // Enters early, Exits by 0.33
+  const modalOpacity = useTransform(smoothProgress, [0.05, 0.15, 0.28, 0.33], [0, 1, 1, 0]);
+  const modalY = useTransform(smoothProgress, [0.05, 0.33], ["-40%", "-60%"]);
+  const modalScale = useTransform(smoothProgress, [0.05, 0.15], [0.8, 1]);
+  const modalBlur = useTransform(smoothProgress, [0.28, 0.33], ["0px", "10px"]);
+  const modalPointerEvents = useTransform(smoothProgress, (v: number) => (v > 0.05 && v < 0.33) ? 'auto' : 'none');
 
-  // --- 2. Scene 1: Log Modal ---
-  // Finishes exiting at 0.30
-  const modalOpacity = useTransform(smoothProgress, [0.20, 0.30], [1, 0]);
-  const modalY = useTransform(smoothProgress, [0.20, 0.30], ["-50%", "-60%"]);
-  const modalBlur = useTransform(smoothProgress, [0.20, 0.30], ["0px", "10px"]);
-  const modalPointerEvents = useTransform(smoothProgress, (v: number) => v > 0.25 ? 'none' : 'auto');
-
-  // --- 3. Scene 2: Charts (Gamified) ---
-  // Starts at 0.30, Finishes growing at 0.40
-  const barStart = 0.30;
-  const barEnd = 0.40;
+  // --- 3. Scene 2: Charts (Act 2) ---
+  // Grow between 0.35 and 0.60
+  const barStart = 0.35;
+  const barEnd = 0.60;
   
   const bar1Height = useTransform(smoothProgress, [barStart, barEnd], ["0%", "35%"]);
   const bar2Height = useTransform(smoothProgress, [barStart + 0.01, barEnd], ["0%", "55%"]);
@@ -89,32 +69,33 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
   
   const chartGlowOpacity = useTransform(smoothProgress, [barStart, barEnd], [0, 0.6]);
 
-  // --- 4. Scene 3: Document (Transcript) ---
-  // Starts entering at 0.42, Finishes entering at 0.52
-  const docY = useTransform(smoothProgress, [0.42, 0.52], ["120%", "0%"]);
-  const docRotateX = useTransform(smoothProgress, [0.42, 0.52], [45, 0]);
-  const docOpacity = useTransform(smoothProgress, [0.42, 0.47], [0, 1]);
+  // --- 4. Scene 3: Document (Act 3) ---
+  // Enters at 0.66, Fully visible by 0.75, Stays till end
+  const docY = useTransform(smoothProgress, [0.66, 0.75], ["120%", "0%"]);
+  const docRotateX = useTransform(smoothProgress, [0.66, 0.75], [45, 0]);
+  const docOpacity = useTransform(smoothProgress, [0.66, 0.70], [0, 1]);
   
-  // Dashboard background blurs out exactly as Document enters
-  const dashboardBlur = useTransform(smoothProgress, [0.42, 0.52], ["0px", "4px"]);
-  const dashboardOpacity = useTransform(smoothProgress, [0.42, 0.52], [1, 0.4]);
+  // Dashboard blurs out as Document enters
+  const dashboardBlur = useTransform(smoothProgress, [0.66, 0.75], ["0px", "4px"]);
+  const dashboardOpacity = useTransform(smoothProgress, [0.66, 0.75], [1, 0.4]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto h-[600px] flex items-center justify-center perspective-1000" aria-hidden="true">
+    <div className="w-full h-full flex items-center justify-center perspective-1000" aria-hidden="true">
+      {/* Ambient Background Glow */}
       <motion.div 
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full blur-[120px]"
         style={{
           backgroundColor: useTransform(
             smoothProgress, 
-            [0, 0.6, 1], 
-            ["rgba(52, 211, 153, 0.2)", "rgba(52, 211, 153, 0.2)", "rgba(37, 99, 235, 0.2)"]
+            [0, 0.5, 1], 
+            ["rgba(52, 211, 153, 0.2)", "rgba(59, 130, 246, 0.2)", "rgba(251, 191, 36, 0.2)"]
           )
         }} 
       />
 
       <motion.div 
         className="relative w-full max-w-4xl bg-dark-card/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden transform-style-3d will-change-transform"
-        style={{ rotateX, rotateY, scale, x }}
+        style={{ rotateX, rotateY, scale }}
       >
         {/* Browser Header */}
         <div className="h-10 bg-white/5 border-b border-white/10 flex items-center px-4 gap-2 backface-hidden">
@@ -221,6 +202,7 @@ const DashboardMockup = ({ scrollContainerRef }: DashboardMockupProps) => {
             opacity: modalOpacity, 
             y: modalY, 
             x: "-50%",
+            scale: modalScale,
             filter: useTransform(modalBlur, (v: string) => `blur(${v})`),
             pointerEvents: modalPointerEvents
           }}
