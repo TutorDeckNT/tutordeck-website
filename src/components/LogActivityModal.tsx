@@ -1,6 +1,7 @@
 // src/components/LogActivityModal.tsx
 
 import { useState, FormEvent, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useProofLinkHistory } from '../hooks/useProofLinkHistory';
 import TutorDeckStudioModal from './TutorDeckStudioModal';
@@ -24,11 +25,35 @@ interface LogActivityModalProps {
     onActivityAdded: (newActivity: VolunteerActivity) => void;
 }
 
+// Animation Variants
+const slideVariants = {
+    enter: (direction: number) => ({
+        y: direction > 0 ? 50 : -50,
+        opacity: 0,
+        scale: 0.95
+    }),
+    center: {
+        zIndex: 1,
+        y: 0,
+        opacity: 1,
+        scale: 1
+    },
+    exit: (direction: number) => ({
+        zIndex: 0,
+        y: direction < 0 ? 50 : -50,
+        opacity: 0,
+        scale: 0.95
+    })
+};
+
 const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModalProps) => {
     const { user } = useAuth();
-    const [currentStep, setCurrentStep] = useState(0);
     
-    // Form State
+    // --- State ---
+    const [currentStep, setCurrentStep] = useState(0);
+    const [direction, setDirection] = useState(0);
+    
+    // Form Data
     const [activityType, setActivityType] = useState<'Peer Tutoring' | 'Mentorship' | ''>('');
     const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
     const [hours, setHours] = useState('');
@@ -36,32 +61,34 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     const [detectedDuration, setDetectedDuration] = useState<number | null>(null); // In seconds
     const [justification, setJustification] = useState('');
     
-    // Validation State
-    const [isStepValid, setIsStepValid] = useState(false);
+    // UI State
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [isShaking, setIsShaking] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [apiError, setApiError] = useState<string | null>(null);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [linkError, setLinkError] = useState<string | null>(null);
     const [isStudioOpen, setIsStudioOpen] = useState(false);
 
     const { isDuplicate, addLinkToHistory } = useProofLinkHistory();
 
+    // Refs
     const dateInputRef = useRef<HTMLInputElement>(null);
     const hoursInputRef = useRef<HTMLInputElement>(null);
-    const proofInputRef = useRef<HTMLInputElement>(null);
+    const justificationRef = useRef<HTMLTextAreaElement>(null);
     const flatpickrInstance = useRef<any>(null);
 
-    // --- REORDERED STEPS ---
-    const steps = [
-        { id: 'type', title: 'Activity Type', icon: 'fa-tags' },
-        { id: 'date', title: 'Date', icon: 'fa-calendar-alt' },
-        { id: 'proof', title: 'Proof', icon: 'fa-link' }, // Moved Up
-        { id: 'hours', title: 'Hours', icon: 'fa-clock' }, // Moved Down
-        { id: 'review', title: 'Review', icon: 'fa-check-double' }
-    ];
-    const totalSteps = steps.length;
+    // --- Steps Configuration ---
+    // We determine total steps dynamically based on if justification is needed
+    const needsJustification = (() => {
+        const numHours = parseFloat(hours);
+        if (isNaN(numHours) || detectedDuration === null) return false;
+        const claimedSeconds = numHours * 3600;
+        return claimedSeconds > detectedDuration;
+    })();
 
-    // --- HELPERS ---
+    // 0: Type, 1: Date, 2: Proof, 3: Hours, 4: Justification (Optional), 5: Review
+    const totalSteps = needsJustification ? 6 : 5;
+
+    // --- Helpers ---
     const formatDuration = (seconds: number) => {
         const m = Math.floor(seconds / 60);
         const s = Math.floor(seconds % 60);
@@ -69,108 +96,165 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     };
 
     const countValidSentences = (text: string) => {
-        // Split by sentence terminators (. ? !)
-        // Filter segments that have at least 3 words to be considered a real sentence
-        const segments = text.split(/[.?!]+/).filter(seg => seg.trim().split(/\s+/).length >= 3);
-        return segments.length;
+        return text.split(/[.?!]+/).filter(seg => seg.trim().split(/\s+/).length >= 3).length;
     };
 
-    const validateProofLink = (link: string) => {
-        if (!link) {
-            setLinkError(null);
-            return false;
+    // --- Validation Logic ---
+    const validateStep = (step: number): boolean => {
+        setErrorMsg(null);
+        switch (step) {
+            case 0: // Type
+                if (!activityType) { setErrorMsg("Please select an activity type."); return false; }
+                return true;
+            case 1: // Date
+                if (!activityDate) { setErrorMsg("Please select a date."); return false; }
+                return true;
+            case 2: // Proof
+                if (!proofLink) { 
+                    // Optional: allow skip if they promise to upload later? No, strictly require it for this app.
+                    // Actually, for better UX let's be strict.
+                    setErrorMsg("Proof is required. Please upload or record audio.");
+                    return false;
+                }
+                if (!proofLink.startsWith('https://www.dropbox.com/')) {
+                    setErrorMsg("Only Dropbox links are accepted.");
+                    return false;
+                }
+                if (isDuplicate(proofLink)) {
+                    setErrorMsg("This link has already been used.");
+                    return false;
+                }
+                return true;
+            case 3: // Hours
+                const h = parseFloat(hours);
+                if (!hours || isNaN(h) || h <= 0) { setErrorMsg("Please enter a valid number of hours."); return false; }
+                if (h > 8) { setErrorMsg("Please log less than 8 hours at a time."); return false; }
+                return true;
+            case 4: // Justification (Only if we are on this step)
+                 // Note: If needsJustification is false, this step index is actually "Review", so we handle logic inside navigation
+                 if (needsJustification && currentStep === 4) {
+                    if (countValidSentences(justification) < 2) {
+                        setErrorMsg("Please provide at least 2 full sentences explaining the discrepancy.");
+                        return false;
+                    }
+                 }
+                 return true;
+            default: return true;
         }
-        if (!link.startsWith('https://www.dropbox.com/')) {
-            setLinkError("Validation Error: Only Dropbox share links are accepted.");
-            return false;
-        }
-        if (isDuplicate(link)) {
-            setLinkError("Validation Error: This link has already been submitted as proof.");
-            return false;
-        }
-        setLinkError(null);
-        return true;
     };
 
-    // --- EFFECTS ---
+    // --- Navigation ---
+    const handleNext = () => {
+        if (!validateStep(currentStep)) {
+            triggerShake();
+            return;
+        }
+
+        let nextIndex = currentStep + 1;
+
+        // Skip Justification step if not needed
+        if (currentStep === 3 && !needsJustification) {
+            nextIndex = 5; // Skip to Review (Index 5 is review in 0-indexed max flow)
+        } 
+        // If we are at Review (Index 5 usually, or 4 if skipped), do nothing, handled by submit
+        
+        if (nextIndex < 6) { // 6 is technically "Success" or Out of bounds
+            setDirection(1);
+            setCurrentStep(nextIndex);
+        }
+    };
+
+    const handleBack = () => {
+        let prevIndex = currentStep - 1;
+        
+        // Skip Justification going back
+        if (currentStep === 5 && !needsJustification) {
+            prevIndex = 3;
+        }
+
+        if (prevIndex >= 0) {
+            setDirection(-1);
+            setCurrentStep(prevIndex);
+        }
+    };
+
+    const triggerShake = () => {
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 500);
+    };
+
+    // --- Reset & Effects ---
     useEffect(() => {
         if (isOpen) {
             setCurrentStep(0);
+            setDirection(0);
             setActivityType('');
             setActivityDate(new Date().toISOString().split('T')[0]);
             setHours('');
             setProofLink('');
             setDetectedDuration(null);
             setJustification('');
-            setApiError(null);
-            setSubmitting(false);
             setIsSuccess(false);
-            setLinkError(null);
+            setSubmitting(false);
+            setErrorMsg(null);
         }
     }, [isOpen]);
 
+    // Keyboard Listeners
     useEffect(() => {
-        const validate = () => {
-            switch (currentStep) {
-                case 0: return !!activityType;
-                case 1: return !!activityDate;
-                case 2: // Proof Step
-                    return validateProofLink(proofLink);
-                case 3: // Hours Step
-                    const numHours = parseFloat(hours);
-                    if (isNaN(numHours) || numHours <= 0 || numHours > 8) return false;
-                    
-                    // Check for discrepancy
-                    if (detectedDuration !== null) {
-                        const claimedSeconds = numHours * 3600;
-                        if (claimedSeconds > detectedDuration) {
-                            // Require 2 sentences
-                            return countValidSentences(justification) >= 2;
-                        }
-                    }
-                    return true;
-                default: return true;
+        if (!isOpen) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                // Prevent Enter on textarea to allow multiline
+                if (document.activeElement?.tagName === 'TEXTAREA') return;
+                
+                // Allow Submit on Enter if on Review step
+                if ((currentStep === 5) || (currentStep === 4 && !needsJustification && currentStep === totalSteps - 1)) {
+                    handleSubmit(e as any);
+                } else if (!isSuccess) {
+                    handleNext();
+                }
+            }
+            if (e.key === 'Escape') {
+                // Optional: Confirm close
+                onClose();
             }
         };
-        setIsStepValid(validate());
-    }, [currentStep, activityType, activityDate, hours, proofLink, detectedDuration, justification, isDuplicate]);
 
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, currentStep, needsJustification, activityType, activityDate, hours, proofLink, justification, isSuccess]);
+
+    // Auto-focus Logic
+    useEffect(() => {
+        setTimeout(() => {
+            if (currentStep === 1) dateInputRef.current?.focus();
+            if (currentStep === 3) hoursInputRef.current?.focus();
+            if (currentStep === 4 && needsJustification) justificationRef.current?.focus();
+        }, 500); // Wait for animation
+    }, [currentStep, needsJustification]);
+
+    // Flatpickr
     useEffect(() => {
         if (isOpen && currentStep === 1 && dateInputRef.current) {
             flatpickrInstance.current = flatpickr(dateInputRef.current, {
-                dateFormat: "Y-m-d", defaultDate: activityDate, maxDate: new Date(), clickOpens: false,
+                dateFormat: "Y-m-d", defaultDate: activityDate, maxDate: new Date(),
                 onChange: (selectedDates: Date[]) => { if (selectedDates[0]) setActivityDate(selectedDates[0].toISOString().split('T')[0]); },
             });
         }
-        return () => { if (flatpickrInstance.current) { flatpickrInstance.current.destroy(); flatpickrInstance.current = null; } };
-    }, [isOpen, currentStep, activityDate]);
+        return () => { if (flatpickrInstance.current) flatpickrInstance.current.destroy(); };
+    }, [isOpen, currentStep]);
 
-    useEffect(() => {
-        if (currentStep === 3) hoursInputRef.current?.focus();
-        if (currentStep === 2) proofInputRef.current?.focus();
-    }, [currentStep]);
 
-    // --- HANDLERS ---
-    const handleNext = () => { if (isStepValid && currentStep < totalSteps - 1) setCurrentStep(prev => prev + 1); };
-    const handleBack = () => { if (currentStep > 0) setCurrentStep(prev => prev - 1); };
-    const handleSelectActivityType = (type: 'Peer Tutoring' | 'Mentorship') => { setActivityType(type); setTimeout(() => setCurrentStep(1), 200); };
-
-    const handleProofSuccess = (link: string, duration: number) => {
-        setProofLink(link);
-        setDetectedDuration(duration);
-    };
-
+    // --- Submission ---
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        if (!isStepValid) return;
-        setApiError(null);
-        if (!user) { setApiError("You must be logged in."); return; }
+        if (!user) return;
         
         setSubmitting(true);
         try {
             const token = await user.getIdToken();
-            
-            // Append measured time to justification if it exists
             let finalJustification = justification;
             if (detectedDuration !== null && justification) {
                 finalJustification = `${justification} (Measured: ${formatDuration(detectedDuration)})`;
@@ -191,190 +275,337 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             });
 
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "An unknown error occurred.");
+            if (!response.ok) throw new Error(data.message || "Error submitting.");
             
             addLinkToHistory(proofLink);
             onActivityAdded(data);
             setIsSuccess(true);
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to submit activity.";
-            setApiError(errorMessage.includes('Failed to fetch') ? 'Network Error: Could not connect to the server.' : errorMessage);
+            setErrorMsg(err instanceof Error ? err.message : "Submission failed.");
+            triggerShake();
         } finally {
             setSubmitting(false);
         }
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && currentStep !== 3 && currentStep < totalSteps - 1) { e.preventDefault(); handleNext(); } };
-
-    const handleCloseAll = () => {
-        setIsStudioOpen(false);
-        onClose();
+    const handleProofSuccess = (link: string, duration: number) => {
+        setProofLink(link);
+        setDetectedDuration(duration);
+        // Auto advance after upload if valid
+        setTimeout(handleNext, 1000);
     };
 
-    if (!isOpen) return null;
+    // --- Renderers for Steps ---
 
-    // --- RENDER HELPERS ---
-    const renderStepContent = () => {
-        if (isSuccess) {
-            return (
-                <div className="text-center flex flex-col items-center justify-center h-full p-8">
-                    <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mb-6"><i className="fas fa-check-circle text-5xl text-primary"></i></div>
-                    <h2 className="text-3xl font-bold text-dark-heading mb-2">Activity Logged!</h2>
-                    <p className="text-dark-text mb-8">Your contribution has been recorded. Thank you!</p>
-                    <button onClick={handleCloseAll} className="cta-button bg-primary text-dark-bg font-semibold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors">Close</button>
-                </div>
-            );
-        }
+    const renderTypeStep = () => (
+        <div className="flex flex-col md:flex-row gap-6 w-full max-w-4xl">
+            {['Peer Tutoring', 'Mentorship'].map((type, idx) => (
+                <button
+                    key={type}
+                    onClick={() => { setActivityType(type as any); setTimeout(handleNext, 100); }}
+                    className={`flex-1 group relative p-8 md:p-12 rounded-2xl border-2 text-left transition-all duration-300 hover:scale-[1.02] ${activityType === type ? 'bg-primary text-dark-bg border-primary' : 'bg-white/5 border-white/10 hover:border-primary/50'}`}
+                >
+                    <div className="text-sm font-bold opacity-60 mb-4 uppercase tracking-wider">Option {idx + 1}</div>
+                    <i className={`fas ${type === 'Peer Tutoring' ? 'fa-book-reader' : 'fa-user-friends'} text-5xl mb-6 ${activityType === type ? 'text-dark-bg' : 'text-primary'}`}></i>
+                    <h3 className="text-3xl md:text-4xl font-bold">{type}</h3>
+                    <div className={`mt-4 text-sm ${activityType === type ? 'text-dark-bg/80' : 'text-gray-400'}`}>
+                        {type === 'Peer Tutoring' ? 'Helping students with academic coursework.' : 'Guiding peers in personal or leadership growth.'}
+                    </div>
+                    <div className="absolute top-4 right-4 font-mono text-xs opacity-50 border border-current px-2 py-1 rounded">Key: {idx + 1}</div>
+                </button>
+            ))}
+        </div>
+    );
 
-        const stepDetails = [
-            { title: 'Select Activity Type', description: 'Choose the category that best fits your volunteer work.' },
-            { title: 'Select the Date', description: 'When did this activity take place? Use the calendar to select a date.' },
-            { title: 'Provide Proof of Activity', description: 'Upload an audio file or record one as evidence for this session.' },
-            { title: 'Log Your Hours', description: 'Enter the number of hours you volunteered for this session.' },
-            { title: 'Review & Submit', description: 'Please confirm the details below are correct before submitting.' }
-        ];
+    const renderDateStep = () => (
+        <div className="w-full max-w-2xl text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-12">When did you volunteer?</h2>
+            <div className="relative inline-block w-full">
+                <input
+                    ref={dateInputRef}
+                    type="text"
+                    value={activityDate}
+                    onChange={(e) => setActivityDate(e.target.value)}
+                    className="w-full bg-transparent text-center text-5xl md:text-7xl font-bold text-primary placeholder-gray-700 focus:outline-none border-b-2 border-white/20 focus:border-primary pb-4 transition-colors font-mono"
+                    placeholder="YYYY-MM-DD"
+                />
+                <i className="fas fa-calendar-alt absolute right-4 bottom-8 text-2xl text-gray-500 pointer-events-none"></i>
+            </div>
+            <div className="flex justify-center gap-3 mt-8">
+                <button onClick={() => setActivityDate(new Date().toISOString().split('T')[0])} className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full text-sm font-semibold transition-colors">Today</button>
+                <button onClick={() => {const d = new Date(); d.setDate(d.getDate() - 1); setActivityDate(d.toISOString().split('T')[0])}} className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full text-sm font-semibold transition-colors">Yesterday</button>
+            </div>
+        </div>
+    );
 
-        // Logic for Step 3 (Hours) Discrepancy
-        const claimedSeconds = parseFloat(hours || '0') * 3600;
-        const hasDiscrepancy = detectedDuration !== null && claimedSeconds > detectedDuration;
-        const sentenceCount = countValidSentences(justification);
-        const isJustificationValid = sentenceCount >= 2;
+    const renderProofStep = () => (
+        <div className="w-full max-w-2xl text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">Evidence Required</h2>
+            <p className="text-xl text-gray-400 mb-10">Upload audio proof to verify your session.</p>
+            
+            <div className={`relative border-2 border-dashed rounded-3xl p-10 transition-colors ${proofLink ? 'border-green-500 bg-green-500/10' : 'border-white/20 bg-white/5 hover:border-primary/50'}`}>
+                {proofLink ? (
+                    <div className="flex flex-col items-center animate-in zoom-in duration-300">
+                        <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-green-500/30">
+                            <i className="fas fa-check text-3xl text-dark-bg"></i>
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-1">Evidence Secured</h3>
+                        <p className="text-green-400 font-mono text-sm break-all max-w-md">{proofLink}</p>
+                        {detectedDuration !== null && (
+                            <div className="mt-4 px-4 py-2 bg-black/40 rounded-lg border border-white/10">
+                                <span className="text-gray-400 text-sm">Analyzed Duration: </span>
+                                <span className="text-primary font-bold font-mono">{formatDuration(detectedDuration)}</span>
+                            </div>
+                        )}
+                        <button onClick={() => { setProofLink(''); setDetectedDuration(null); }} className="mt-6 text-sm text-gray-400 hover:text-white underline">Remove & Upload Different File</button>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        <div className="flex justify-center">
+                            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary animate-pulse">
+                                <i className="fas fa-cloud-upload-alt text-4xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <DirectUploader onUploadSuccess={handleProofSuccess} />
+                        </div>
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
+                            <div className="relative flex justify-center text-sm"><span className="px-2 bg-dark-bg text-gray-500">OR</span></div>
+                        </div>
+                        <button onClick={() => setIsStudioOpen(true)} className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white font-bold flex items-center justify-center gap-3 transition-all hover:scale-[1.02]">
+                            <i className="fas fa-microphone text-red-500"></i> Record Audio Directly
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 
+    const renderHoursStep = () => (
+        <div className="w-full max-w-3xl text-center">
+             <h2 className="text-3xl md:text-5xl font-bold text-white mb-12 leading-tight">
+                I volunteered for <br/>
+                <span className="relative inline-block mt-4">
+                    <input
+                        ref={hoursInputRef}
+                        type="number"
+                        min="0"
+                        max="8"
+                        step="0.1"
+                        value={hours}
+                        onChange={(e) => setHours(e.target.value)}
+                        className="w-48 bg-transparent text-center text-7xl md:text-8xl font-bold text-primary placeholder-gray-700 focus:outline-none border-b-4 border-white/20 focus:border-primary pb-2 transition-colors font-mono"
+                        placeholder="0.0"
+                    />
+                    <span className="text-2xl md:text-4xl text-gray-500 ml-4 font-normal">hours</span>
+                </span>
+             </h2>
+             <p className="text-gray-400 text-lg">Enter the total duration of your session.</p>
+        </div>
+    );
+
+    const renderJustificationStep = () => {
+        const sentences = countValidSentences(justification);
+        const isValid = sentences >= 2;
+        
         return (
-            <div className="flex flex-col h-full">
-                <div className="p-8 md:p-10 flex-grow overflow-y-auto" onKeyDown={handleKeyPress}>
-                    <h2 className="text-3xl font-bold text-dark-heading mb-2">{stepDetails[currentStep].title}</h2>
-                    <p className="text-dark-text mb-8">{stepDetails[currentStep].description}</p>
-                    
-                    <div className="relative min-h-[220px]">
-                        
-                        {/* Step 0: Type */}
-                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}><div className="flex flex-col sm:flex-row gap-4"><button onClick={() => handleSelectActivityType('Peer Tutoring')} className="p-6 flex-1 bg-white/5 border-2 border-white/10 hover:border-primary rounded-xl text-left transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary"><i className="fas fa-book-reader text-2xl text-primary mb-2"></i><h3 className="text-lg font-bold text-dark-heading">Peer Tutoring</h3></button><button onClick={() => handleSelectActivityType('Mentorship')} className="p-6 flex-1 bg-white/5 border-2 border-white/10 hover:border-secondary rounded-xl text-left transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-secondary"><i className="fas fa-user-friends text-2xl text-secondary mb-2"></i><h3 className="text-lg font-bold text-dark-heading">Mentorship</h3></button></div></div>
-                        
-                        {/* Step 1: Date */}
-                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 1 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}><div className="relative"><input ref={dateInputRef} id="activityDate" type="text" placeholder="YYYY-MM-DD" className="w-full bg-black/30 border border-white/20 rounded-lg py-2 px-3 pr-10 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" /><button type="button" onClick={() => flatpickrInstance.current?.open()} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-primary transition-colors" aria-label="Open calendar"><i className="fas fa-calendar-alt"></i></button></div></div>
-                        
-                        {/* Step 2: Proof (Moved Up) */}
-                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 2 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                            <label htmlFor="proofLink" className="block text-sm font-medium text-dark-text mb-2">Dropbox Share Link</label>
-                            <input ref={proofInputRef} id="proofLink" type="url" value={proofLink} onChange={e => setProofLink(e.target.value)} placeholder="Link will be auto-filled after upload..." className={`w-full bg-black/30 border rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 ${linkError ? 'border-red-500 focus:ring-red-500' : 'border-white/20 focus:ring-primary'}`} />
-                            {linkError && <p className="text-red-400 text-xs mt-2">{linkError}</p>}
-                            
-                            {detectedDuration !== null && (
-                                <div className="mt-4 p-3 bg-primary/10 border border-primary/30 rounded-lg flex items-center gap-3">
-                                    <i className="fas fa-stopwatch text-primary text-xl"></i>
-                                    <div>
-                                        <p className="text-sm font-bold text-primary">Evidence Analyzed</p>
-                                        <p className="text-xs text-dark-text">Measured Duration: <span className="text-white font-mono">{formatDuration(detectedDuration)}</span></p>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <DirectUploader onUploadSuccess={handleProofSuccess} />
-                                    <button type="button" onClick={() => setIsStudioOpen(true)} className="w-full p-3 bg-white/5 border border-white/10 hover:border-primary rounded-xl text-center transition-colors"><i className="fas fa-microphone mr-2 text-primary"></i>Record Audio</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Step 3: Hours (Moved Down & Enhanced) */}
-                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 3 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                            <label htmlFor="hours" className="block text-sm font-medium text-dark-text mb-2">Hours Volunteered</label>
-                            <input ref={hoursInputRef} id="hours" type="number" value={hours} onChange={e => setHours(e.target.value)} min="0.1" max="8" step="0.1" placeholder="e.g., 1.5" className="w-full bg-black/30 border border-white/20 rounded-lg py-2 px-3 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary" />
-                            
-                            {/* Justification Panel */}
-                            <div className={`mt-6 transition-all duration-500 ease-in-out overflow-hidden ${hasDiscrepancy ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-xl p-4">
-                                    <div className="flex items-start gap-3 mb-3">
-                                        <i className="fas fa-exclamation-triangle text-yellow-500 mt-1"></i>
-                                        <div>
-                                            <h4 className="font-bold text-yellow-500 text-sm">Time Discrepancy Detected</h4>
-                                            <p className="text-xs text-gray-300 mt-1">
-                                                You are claiming <strong>{parseFloat(hours || '0').toFixed(1)} hrs</strong>, but your evidence is only <strong>{formatDuration(detectedDuration || 0)}</strong>.
-                                            </p>
-                                            <p className="text-xs text-gray-400 mt-2 italic">
-                                                "We do not expect you to record the entire session, but we would like the majority for verification purposes."
-                                            </p>
-                                        </div>
-                                    </div>
-                                    
-                                    <label className="block text-xs font-bold text-gray-300 mb-2 uppercase tracking-wide">
-                                        Justification Required (Min. 2 Sentences)
-                                    </label>
-                                    <textarea
-                                        value={justification}
-                                        onChange={(e) => setJustification(e.target.value)}
-                                        placeholder="Please explain the discrepancy to go up to 1.5x of your measured time..."
-                                        className={`w-full bg-black/40 border rounded-lg p-3 text-sm text-white focus:outline-none focus:ring-2 transition-colors h-24 resize-none ${isJustificationValid ? 'border-green-500/50 focus:ring-green-500' : 'border-red-500/50 focus:ring-red-500'}`}
-                                    ></textarea>
-                                    <div className="flex justify-end mt-2">
-                                        <span className={`text-xs font-bold ${isJustificationValid ? 'text-green-400' : 'text-red-400'}`}>
-                                            {sentenceCount} / 2 Sentences
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Step 4: Review */}
-                        <div className={`absolute inset-0 transition-opacity duration-300 ${currentStep === 4 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                            <div className="bg-black/20 border border-white/20 rounded-xl p-4 space-y-2 text-sm">
-                                <div className="flex justify-between"><span className="font-semibold text-dark-text">Type:</span><span className="text-dark-heading font-bold">{activityType}</span></div>
-                                <div className="flex justify-between"><span className="font-semibold text-dark-text">Date:</span><span className="text-dark-heading font-bold">{new Date(activityDate + 'T00:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span></div>
-                                <div className="flex justify-between"><span className="font-semibold text-dark-text">Hours:</span><span className="text-dark-heading font-bold">{parseFloat(hours || '0').toFixed(1)}</span></div>
-                                {detectedDuration !== null && (
-                                    <div className="flex justify-between"><span className="font-semibold text-dark-text">Evidence:</span><span className="text-gray-400 font-mono">{formatDuration(detectedDuration)}</span></div>
-                                )}
-                                {justification && (
-                                    <div className="pt-2 mt-2 border-t border-white/10">
-                                        <span className="font-semibold text-dark-text block mb-1">Justification:</span>
-                                        <p className="text-xs text-gray-400 italic">"{justification}"</p>
-                                    </div>
-                                )}
-                            </div>
-                            {apiError && <p className="text-red-400 text-xs text-center pt-2">{apiError}</p>}
-                        </div>
+            <div className="w-full max-w-2xl">
+                <div className="flex items-center gap-4 mb-8 text-yellow-500 bg-yellow-500/10 p-4 rounded-xl border border-yellow-500/20">
+                    <i className="fas fa-exclamation-triangle text-2xl"></i>
+                    <div>
+                        <h3 className="font-bold text-lg">Time Discrepancy Detected</h3>
+                        <p className="text-sm opacity-90">You logged <strong>{hours} hours</strong>, but the evidence is only <strong>{formatDuration(detectedDuration || 0)}</strong>.</p>
                     </div>
                 </div>
-                <div className="flex-shrink-0 p-6 bg-black/20 border-t border-white/10 rounded-b-lg flex items-center justify-between">
-                    <button onClick={handleBack} disabled={currentStep === 0 || submitting} className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Back</button>
-                    {currentStep < totalSteps - 1 ? (<button onClick={handleNext} disabled={!isStepValid} className="px-8 py-2 rounded-lg bg-primary text-dark-bg font-semibold hover:bg-primary-dark transition-colors disabled:bg-gray-500/40 disabled:text-gray-400 disabled:cursor-not-allowed">Next</button>) : (<button onClick={handleSubmit} disabled={submitting || !isStepValid} className="px-8 py-2 rounded-lg bg-secondary text-white font-semibold hover:bg-secondary-dark transition-colors disabled:bg-gray-500/40 disabled:text-gray-400 disabled:cursor-wait flex items-center gap-2">{submitting ? <><i className="fas fa-spinner fa-spin"></i> Submitting...</> : 'Submit Activity'}</button>)}
+                
+                <h2 className="text-3xl font-bold text-white mb-6">Care to explain?</h2>
+                <p className="text-gray-400 mb-4">Please provide context (e.g., "Forgot to record start," "Prep time"). Min 2 sentences.</p>
+                
+                <textarea
+                    ref={justificationRef}
+                    value={justification}
+                    onChange={(e) => setJustification(e.target.value)}
+                    className="w-full h-48 bg-white/5 border border-white/20 rounded-xl p-6 text-xl text-white focus:outline-none focus:ring-2 focus:ring-primary transition-all resize-none"
+                    placeholder="Type your explanation here..."
+                ></textarea>
+                
+                <div className="flex justify-end mt-2">
+                    <span className={`text-sm font-bold transition-colors ${isValid ? 'text-green-400' : 'text-gray-500'}`}>
+                        {sentences} / 2 Sentences
+                    </span>
                 </div>
             </div>
         );
     };
 
+    const renderReviewStep = () => (
+        <div className="w-full max-w-md">
+            <div className="bg-white text-black p-8 rounded-xl shadow-2xl relative overflow-hidden transform rotate-1 hover:rotate-0 transition-transform duration-500">
+                {/* Receipt visual elements */}
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+                
+                <div className="text-center border-b-2 border-dashed border-gray-300 pb-6 mb-6">
+                    <h2 className="text-2xl font-black uppercase tracking-widest">Receipt</h2>
+                    <p className="text-xs text-gray-500 font-mono mt-1">{new Date().toLocaleTimeString()}</p>
+                </div>
+
+                <div className="space-y-4 font-mono text-sm">
+                    <div className="flex justify-between">
+                        <span className="text-gray-500">Activity</span>
+                        <span className="font-bold">{activityType}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-gray-500">Date</span>
+                        <span className="font-bold">{activityDate}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <span className="text-gray-500">Evidence</span>
+                        <span className="text-xs bg-gray-200 px-2 py-1 rounded truncate max-w-[150px]">{proofLink ? 'Uploaded' : 'Missing'}</span>
+                    </div>
+                    {needsJustification && (
+                        <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
+                            <span className="text-gray-500">Note</span>
+                            <span className="text-xs text-right max-w-[60%] italic">"{justification.substring(0, 30)}..."</span>
+                        </div>
+                    )}
+                </div>
+
+                <div className="border-t-2 border-black pt-4 mt-6 flex justify-between items-end">
+                    <span className="font-bold text-xl">Total</span>
+                    <span className="font-black text-4xl">{hours} <span className="text-sm font-normal text-gray-600">hrs</span></span>
+                </div>
+            </div>
+
+            <button 
+                onClick={handleSubmit} 
+                disabled={submitting}
+                className="w-full mt-8 bg-primary hover:bg-primary-dark text-dark-bg font-black text-xl py-4 rounded-xl shadow-lg shadow-primary/20 transform hover:scale-105 transition-all flex items-center justify-center gap-3"
+            >
+                {submitting ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-paper-plane"></i>}
+                <span>Submit Activity</span>
+            </button>
+        </div>
+    );
+
+    const renderSuccessStep = () => (
+        <div className="text-center">
+            <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center text-4xl text-white mb-6 mx-auto animate-bounce">
+                <i className="fas fa-check"></i>
+            </div>
+            <h2 className="text-4xl font-bold text-white mb-4">Logged Successfully!</h2>
+            <p className="text-gray-400 mb-8">Your hours have been recorded and are pending verification.</p>
+            <button onClick={onClose} className="px-8 py-3 bg-white/10 hover:bg-white/20 rounded-full text-white font-bold transition-colors">
+                Close
+            </button>
+        </div>
+    );
+
+    if (!isOpen) return null;
+
     return (
         <>
             <TutorDeckStudioModal isOpen={isStudioOpen} onClose={() => setIsStudioOpen(false)} onSuccess={handleProofSuccess} />
+            
             <Portal>
-                <div 
-                    className={`fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${isStudioOpen ? 'opacity-60 pointer-events-none' : ''}`} 
-                    onClick={handleCloseAll}
-                >
-                    <div className="bg-dark-card/80 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-4xl flex overflow-hidden" onClick={e => e.stopPropagation()}>
-                        <div className="w-1/3 bg-black/20 p-8 border-r border-white/10 hidden md:block">
-                            <h3 className="font-bold text-dark-heading text-xl mb-8">Log New Activity</h3>
-                            <ul className="space-y-4">
-                                {steps.map((step, index) => {
-                                    const isCompleted = currentStep > index;
-                                    const isActive = currentStep === index;
-                                    return (
-                                        <li key={step.id} className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-300 ${isActive ? 'bg-primary/20' : ''}`}>
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${isCompleted ? 'bg-primary text-dark-bg' : isActive ? 'bg-primary text-dark-bg ring-4 ring-primary/30' : 'bg-white/10 text-dark-text'}`}>
-                                                {isCompleted ? <i className="fas fa-check"></i> : <i className={`fas ${step.icon}`}></i>}
-                                            </div>
-                                            <span className={`font-semibold ${isCompleted ? 'text-dark-text' : isActive ? 'text-primary' : 'text-gray-500'}`}>{step.title}</span>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </div>
-                        <div className="w-full md:w-2/3">
-                            {renderStepContent()}
-                        </div>
+                <div className="fixed inset-0 z-50 flex flex-col bg-dark-bg/95 backdrop-blur-xl">
+                    
+                    {/* Progress Bar */}
+                    <div className="w-full h-1.5 bg-white/5">
+                        <motion.div 
+                            className="h-full bg-primary"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(((currentStep + 1) / totalSteps) * 100, 100)}%` }}
+                            transition={{ duration: 0.5 }}
+                        />
                     </div>
+
+                    {/* Controls Header */}
+                    <div className="absolute top-6 right-6 z-50">
+                        <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
+                            <i className="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    {/* Step Counter */}
+                    <div className="absolute top-6 left-6 z-40 font-mono text-xs text-gray-500 uppercase tracking-widest">
+                        {isSuccess ? 'Complete' : `Step ${currentStep + 1} of ${totalSteps}`}
+                    </div>
+
+                    {/* Main Stage */}
+                    <div className="flex-1 flex flex-col items-center justify-center relative overflow-hidden px-4 md:px-0">
+                        <AnimatePresence initial={false} mode="wait" custom={direction}>
+                            {isSuccess ? (
+                                <motion.div key="success" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-0 flex items-center justify-center p-4">
+                                    {renderSuccessStep()}
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key={currentStep}
+                                    custom={direction}
+                                    variants={slideVariants}
+                                    initial="enter"
+                                    animate={isShaking ? { x: [-10, 10, -10, 10, 0] } : "center"}
+                                    exit="exit"
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                    className="absolute w-full flex justify-center"
+                                >
+                                    {currentStep === 0 && renderTypeStep()}
+                                    {currentStep === 1 && renderDateStep()}
+                                    {currentStep === 2 && renderProofStep()}
+                                    {currentStep === 3 && renderHoursStep()}
+                                    {currentStep === 4 && needsJustification && renderJustificationStep()}
+                                    {/* Handle Review Logic: index 5, or 4 if skipping justification */}
+                                    {((currentStep === 5) || (currentStep === 4 && !needsJustification)) && renderReviewStep()}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Error Toast */}
+                        <AnimatePresence>
+                            {errorMsg && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 20 }} 
+                                    animate={{ opacity: 1, y: 0 }} 
+                                    exit={{ opacity: 0, y: 20 }}
+                                    className="absolute bottom-24 bg-red-500 text-white px-6 py-3 rounded-xl shadow-xl flex items-center gap-3 font-semibold"
+                                >
+                                    <i className="fas fa-exclamation-circle"></i>
+                                    {errorMsg}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Navigation Footer */}
+                    {!isSuccess && (
+                        <div className="h-24 border-t border-white/10 flex items-center justify-between px-6 md:px-12 bg-dark-bg/50 backdrop-blur-md">
+                            <button 
+                                onClick={handleBack} 
+                                disabled={currentStep === 0}
+                                className={`text-lg font-bold flex items-center gap-2 transition-colors ${currentStep === 0 ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-white'}`}
+                            >
+                                <i className="fas fa-arrow-left"></i> Back
+                            </button>
+                            
+                            <div className="flex items-center gap-4">
+                                <span className="hidden md:inline-block text-xs text-gray-500 uppercase font-bold tracking-wider mr-4">
+                                    Press <span className="bg-white/10 px-1.5 py-0.5 rounded text-gray-300">Enter ↵</span>
+                                </span>
+                                {((currentStep === 5) || (currentStep === 4 && !needsJustification)) ? (
+                                    // Submit Button is inside renderReviewStep for visual hierarchy, but we keep a dummy here or hide it
+                                    <div className="w-0"></div>
+                                ) : (
+                                    <button 
+                                        onClick={handleNext}
+                                        className="bg-primary hover:bg-primary-dark text-dark-bg px-8 py-3 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 transition-all transform hover:scale-105 flex items-center gap-2"
+                                    >
+                                        Next <i className="fas fa-arrow-right"></i>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </Portal>
         </>
