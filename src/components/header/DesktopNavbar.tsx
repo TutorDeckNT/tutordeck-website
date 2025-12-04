@@ -46,11 +46,10 @@ const DesktopNavbar = () => {
   const logoGap = useTransform(scrollY, [0, 50], ['12px', '0px']);
 
   // --- Contextual Accent Colors (The "Chameleon") ---
-  // Simulating section detection based on scroll position ranges
   const accentColor = useTransform(
     scrollY,
     [0, 800, 1600, 2400], 
-    ['#ffffff', '#34d399', '#3b82f6', '#fbbf24'] // White -> Primary -> Secondary -> Gold
+    ['#ffffff', '#34d399', '#3b82f6', '#fbbf24'] 
   );
 
   // --- Handlers ---
@@ -71,7 +70,6 @@ const DesktopNavbar = () => {
   };
 
   const handleQuickLog = () => {
-    // In a real app, this would open the global modal context
     navigate('/dashboard?action=log');
   };
 
@@ -79,39 +77,44 @@ const DesktopNavbar = () => {
     <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none perspective-1000">
       <motion.nav
         onMouseMove={handleMouseMove}
-        style={{ 
-          width, 
-          backgroundColor: useTransform(bgOpacity, o => `rgba(17, 24, 39, ${o})`),
-          backdropFilter: useTransform(backdropBlur, b => `blur(${b})`),
-        }}
+        style={{ width }}
         layout
         transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-        className="pointer-events-auto h-16 rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex items-center justify-between px-2 pl-4 relative overflow-hidden group/nav"
+        className="pointer-events-auto h-16 relative flex items-center justify-between px-2 pl-4 group/nav z-50"
       >
-        {/* --- 1. The "Prism" Spotlight Effect --- */}
-        <motion.div
-          className="absolute inset-0 pointer-events-none opacity-0 group-hover/nav:opacity-100 transition-opacity duration-500"
-          style={{
-            background: useMotionTemplate`
-              radial-gradient(
-                600px circle at ${mouseX}px ${mouseY}px,
-                rgba(255, 255, 255, 0.06),
-                transparent 40%
-              )
-            `,
-          }}
-        />
-        
-        {/* --- 2. Noise Texture Overlay --- */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-
-        {/* --- 3. Scroll Progress Bar --- */}
+        {/* === SKIN LAYER (Handles Visuals & Clipping) === */}
+        {/* This layer is absolute and handles the glass effect, borders, and clipping. */}
         <motion.div 
-          className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent"
-          style={{ width: useTransform(smoothProgress, (v) => `${v * 100}%`) }}
-        />
+            className="absolute inset-0 rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden"
+            style={{
+                backgroundColor: useTransform(bgOpacity, o => `rgba(17, 24, 39, ${o})`),
+                backdropFilter: useTransform(backdropBlur, b => `blur(${b})`),
+            }}
+        >
+            {/* Spotlight */}
+            <motion.div
+              className="absolute inset-0 pointer-events-none opacity-0 group-hover/nav:opacity-100 transition-opacity duration-500"
+              style={{
+                background: useMotionTemplate`
+                  radial-gradient(
+                    600px circle at ${mouseX}px ${mouseY}px,
+                    rgba(255, 255, 255, 0.06),
+                    transparent 40%
+                  )
+                `,
+              }}
+            />
+            {/* Noise */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+            {/* Progress Bar */}
+            <motion.div 
+              className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent"
+              style={{ width: useTransform(smoothProgress, (v) => `${v * 100}%`) }}
+            />
+        </motion.div>
 
-        {/* ================= CONTENT LAYER ================= */}
+        {/* === CONTENT LAYER (Allows Overflow) === */}
+        {/* This layer sits on top and allows the dropdown to spill out. */}
         
         {/* LEFT: Logo (Collapsible) */}
         <Link to="/" className="flex items-center relative z-10 group mr-4 flex-shrink-0">
@@ -142,7 +145,7 @@ const DesktopNavbar = () => {
                     <motion.div
                       layoutId="active-pill"
                       className="absolute inset-0 bg-white/5 rounded-full border border-white/5"
-                      style={{ borderColor: accentColor }} // The Chameleon Effect
+                      style={{ borderColor: accentColor }}
                       transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                     />
                   )}
@@ -157,7 +160,6 @@ const DesktopNavbar = () => {
 
         {/* RIGHT: Auth HUD */}
         <div className="ml-4 relative z-10 flex items-center gap-3">
-          
           {user ? (
             <div className="flex items-center gap-3 pl-3 border-l border-white/10">
               
