@@ -233,9 +233,6 @@ const DesktopNavbar = () => {
                         <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors">
                           <i className="fas fa-columns w-4 text-center"></i> Dashboard
                         </Link>
-                        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors text-left">
-                          <i className="fas fa-cog w-4 text-center"></i> Settings
-                        </button>
                       </div>
                       <div className="border-t border-white/5 p-2">
                         <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10 transition-colors text-left">
