@@ -111,8 +111,6 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                 return true;
             case 2: // Proof
                 if (!proofLink) { 
-                    // Optional: allow skip if they promise to upload later? No, strictly require it for this app.
-                    // Actually, for better UX let's be strict.
                     setErrorMsg("Proof is required. Please upload or record audio.");
                     return false;
                 }
@@ -131,7 +129,6 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                 if (h > 8) { setErrorMsg("Please log less than 8 hours at a time."); return false; }
                 return true;
             case 4: // Justification (Only if we are on this step)
-                 // Note: If needsJustification is false, this step index is actually "Review", so we handle logic inside navigation
                  if (needsJustification && currentStep === 4) {
                     if (countValidSentences(justification) < 2) {
                         setErrorMsg("Please provide at least 2 full sentences explaining the discrepancy.");
@@ -144,6 +141,16 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     };
 
     // --- Navigation ---
+    
+    // Direct selection handler to fix the "Works only on second click" bug.
+    // This bypasses the async state check by assuming the button click itself is valid.
+    const handleTypeSelection = (type: 'Peer Tutoring' | 'Mentorship') => {
+        setActivityType(type);
+        setDirection(1);
+        setCurrentStep(prev => prev + 1);
+        setErrorMsg(null);
+    };
+
     const handleNext = () => {
         if (!validateStep(currentStep)) {
             triggerShake();
@@ -154,11 +161,10 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
 
         // Skip Justification step if not needed
         if (currentStep === 3 && !needsJustification) {
-            nextIndex = 5; // Skip to Review (Index 5 is review in 0-indexed max flow)
+            nextIndex = 5; // Skip to Review
         } 
-        // If we are at Review (Index 5 usually, or 4 if skipped), do nothing, handled by submit
         
-        if (nextIndex < 6) { // 6 is technically "Success" or Out of bounds
+        if (nextIndex < 6) { 
             setDirection(1);
             setCurrentStep(nextIndex);
         }
@@ -217,7 +223,6 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                 }
             }
             if (e.key === 'Escape') {
-                // Optional: Confirm close
                 onClose();
             }
         };
@@ -291,8 +296,12 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     const handleProofSuccess = (link: string, duration: number) => {
         setProofLink(link);
         setDetectedDuration(duration);
-        // Auto advance after upload if valid
-        setTimeout(handleNext, 1000);
+        setErrorMsg(null);
+        // Manually advance to avoid stale state closure in handleNext
+        setTimeout(() => {
+            setDirection(1);
+            setCurrentStep(prev => prev + 1);
+        }, 1000);
     };
 
     // --- Renderers for Steps ---
@@ -302,7 +311,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             {['Peer Tutoring', 'Mentorship'].map((type, idx) => (
                 <button
                     key={type}
-                    onClick={() => { setActivityType(type as any); setTimeout(handleNext, 100); }}
+                    onClick={() => handleTypeSelection(type as any)}
                     className={`flex-1 group relative p-8 md:p-12 rounded-2xl border-2 text-left transition-all duration-300 hover:scale-[1.02] ${activityType === type ? 'bg-primary text-dark-bg border-primary' : 'bg-white/5 border-white/10 hover:border-primary/50'}`}
                 >
                     <div className="text-sm font-bold opacity-60 mb-4 uppercase tracking-wider">Option {idx + 1}</div>
@@ -593,7 +602,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                                     Press <span className="bg-white/10 px-1.5 py-0.5 rounded text-gray-300">Enter ↵</span>
                                 </span>
                                 {((currentStep === 5) || (currentStep === 4 && !needsJustification)) ? (
-                                    // Submit Button is inside renderReviewStep for visual hierarchy, but we keep a dummy here or hide it
+                                    // Submit Button is inside renderReviewStep for visual hierarchy
                                     <div className="w-0"></div>
                                 ) : (
                                     <button 
