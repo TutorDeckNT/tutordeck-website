@@ -1,4 +1,6 @@
-import { useState, useRef, MouseEvent } from 'react';
+// src/components/Footer.tsx
+
+import { useState, MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useMotionTemplate, useMotionValue, AnimatePresence } from 'framer-motion';
 import LegalModal from './LegalModal';
