@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   motion, 
@@ -27,6 +27,7 @@ const DesktopNavbar = () => {
   // --- State ---
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [totalHours, setTotalHours] = useState<number>(0);
 
   // --- Physics & Motion Values ---
   const mouseX = useMotionValue(0);
@@ -51,6 +52,32 @@ const DesktopNavbar = () => {
     [0, 800, 1600, 2400], 
     ['#ffffff', '#34d399', '#3b82f6', '#fbbf24'] 
   );
+
+  // --- Effect: Load Hours from LocalStorage ---
+  useEffect(() => {
+    const calculateHours = () => {
+      try {
+        const cached = localStorage.getItem('cachedActivities');
+        if (cached) {
+          const data = JSON.parse(cached);
+          if (data.activities && Array.isArray(data.activities)) {
+            const sum = data.activities.reduce((acc: number, curr: any) => acc + (curr.hours || 0), 0);
+            setTotalHours(sum);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to read cached hours", e);
+      }
+    };
+
+    // Calculate immediately
+    calculateHours();
+
+    // Check every 2 seconds for updates (in case user logs hours in Dashboard)
+    const interval = setInterval(calculateHours, 2000);
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   // --- Handlers ---
   const handleMouseMove = ({ currentTarget, clientX, clientY }: React.MouseEvent) => {
@@ -83,7 +110,6 @@ const DesktopNavbar = () => {
         className="pointer-events-auto h-16 relative flex items-center justify-between px-2 pl-4 group/nav z-50"
       >
         {/* === SKIN LAYER (Handles Visuals & Clipping) === */}
-        {/* This layer is absolute and handles the glass effect, borders, and clipping. */}
         <motion.div 
             className="absolute inset-0 rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden"
             style={{
@@ -114,7 +140,6 @@ const DesktopNavbar = () => {
         </motion.div>
 
         {/* === CONTENT LAYER (Allows Overflow) === */}
-        {/* This layer sits on top and allows the dropdown to spill out. */}
         
         {/* LEFT: Logo (Collapsible) */}
         <Link to="/" className="flex items-center relative z-10 group mr-4 flex-shrink-0">
@@ -166,7 +191,9 @@ const DesktopNavbar = () => {
               {/* Volunteer HUD: Ticker */}
               <div className="hidden xl:flex flex-col items-end mr-1 group cursor-default">
                 <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold group-hover:text-primary transition-colors">Hours Logged</span>
-                <span className="text-sm font-mono font-bold text-white leading-none">124.5</span>
+                <span className="text-sm font-mono font-bold text-white leading-none">
+                  {totalHours > 0 ? totalHours.toFixed(1) : '0.0'}
+                </span>
               </div>
 
               {/* Quick Log Action */}
