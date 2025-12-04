@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   motion, 
@@ -27,9 +27,6 @@ const DesktopNavbar = () => {
   // --- State ---
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // --- Physics & Motion Values ---
   const mouseX = useMotionValue(0);
@@ -39,7 +36,7 @@ const DesktopNavbar = () => {
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   // Dynamic Dimensions based on Scroll
-  const width = useTransform(scrollY, [0, 100], ['52rem', '46rem']);
+  const width = useTransform(scrollY, [0, 100], ['48rem', '42rem']);
   const bgOpacity = useTransform(scrollY, [0, 100], [0.5, 0.75]);
   const backdropBlur = useTransform(scrollY, [0, 100], ['12px', '24px']);
   
@@ -64,17 +61,12 @@ const DesktopNavbar = () => {
   };
 
   const handleLogout = async () => {
-    await logout();
-    setIsProfileOpen(false);
-    navigate('/');
-  };
-
-  const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
-    if (!isSearchOpen) {
-      setTimeout(() => searchInputRef.current?.focus(), 100);
-    } else {
-      setSearchQuery('');
+    try {
+      await logout();
+      setIsProfileOpen(false);
+      navigate('/');
+    } catch (error) {
+      console.error("Logout failed", error);
     }
   };
 
@@ -88,7 +80,7 @@ const DesktopNavbar = () => {
       <motion.nav
         onMouseMove={handleMouseMove}
         style={{ 
-          width: isSearchOpen ? '40rem' : width, // Morph width when searching
+          width, 
           backgroundColor: useTransform(bgOpacity, o => `rgba(17, 24, 39, ${o})`),
           backdropFilter: useTransform(backdropBlur, b => `blur(${b})`),
         }}
@@ -134,81 +126,38 @@ const DesktopNavbar = () => {
           </motion.div>
         </Link>
 
-        {/* CENTER: Morphing Area (Links <-> Search) */}
-        <div className="flex-1 flex items-center justify-center relative z-10 h-full">
-          <AnimatePresence mode="wait">
-            {isSearchOpen ? (
-              <motion.div
-                key="search-bar"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="w-full max-w-md flex items-center"
-              >
-                <i className="fas fa-search text-gray-400 mr-3"></i>
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search chapters, awards, or help..."
-                  className="bg-transparent border-none outline-none text-white placeholder-gray-500 w-full h-full font-medium"
-                  onKeyDown={(e) => e.key === 'Escape' && toggleSearch()}
-                />
-                <div className="flex gap-2 ml-2">
-                    <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-gray-400 border border-white/5">ESC</span>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="nav-links"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-1"
-              >
-                {navLinks.map((link) => {
-                  const isActive = location.pathname === link.path;
-                  return (
-                    <Link
-                      key={link.path}
-                      to={link.path}
-                      onMouseEnter={() => setHoveredTab(link.path)}
-                      onMouseLeave={() => setHoveredTab(null)}
-                      className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 hover:text-gray-200'}`}
-                    >
-                      {hoveredTab === link.path && (
-                        <motion.div
-                          layoutId="active-pill"
-                          className="absolute inset-0 bg-white/5 rounded-full border border-white/5"
-                          style={{ borderColor: accentColor }} // The Chameleon Effect
-                          transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                        />
-                      )}
-                      <span className="relative z-10 flex items-center gap-2">
-                        {link.name}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {/* CENTER: Navigation Links */}
+        <div className="flex-1 flex items-center justify-center relative z-10 h-full" onMouseLeave={() => setHoveredTab(null)}>
+          <div className="flex items-center gap-1">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onMouseEnter={() => setHoveredTab(link.path)}
+                  className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 hover:text-gray-200'}`}
+                >
+                  {hoveredTab === link.path && (
+                    <motion.div
+                      layoutId="active-pill"
+                      className="absolute inset-0 bg-white/5 rounded-full border border-white/5"
+                      style={{ borderColor: accentColor }} // The Chameleon Effect
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-2">
+                    {link.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
-        {/* RIGHT: Actions (Search Trigger + Auth HUD) */}
+        {/* RIGHT: Auth HUD */}
         <div className="ml-4 relative z-10 flex items-center gap-3">
           
-          {/* Search Trigger */}
-          <button 
-            onClick={toggleSearch}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${isSearchOpen ? 'bg-white/20 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
-            aria-label="Search"
-          >
-            <i className={`fas ${isSearchOpen ? 'fa-times' : 'fa-search'}`}></i>
-          </button>
-
-          {/* Auth HUD */}
           {user ? (
             <div className="flex items-center gap-3 pl-3 border-l border-white/10">
               
