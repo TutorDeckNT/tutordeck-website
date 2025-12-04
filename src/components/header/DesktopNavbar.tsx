@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
@@ -79,7 +79,6 @@ const DesktopNavbar = () => {
                   />
                 )}
                 <span className="relative z-10 flex items-center gap-2">
-                  {/* Only show icon on hover or active to keep it clean, or always? Let's do text only for clean look, icon on hover maybe? Plan said Icon + Text. */}
                   <i className={`fas ${link.icon} text-xs opacity-70`}></i>
                   {link.name}
                 </span>
