@@ -1,3 +1,5 @@
+// src/contexts/DropboxContext.tsx
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Dropbox, DropboxAuth } from 'dropbox';
 
@@ -17,32 +19,47 @@ export const DropboxProvider = ({ children }: { children: ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [dbx, setDbx] = useState<Dropbox | null>(null);
 
-  // 1. Check for token in storage or URL hash on mount
   useEffect(() => {
-    // Check URL hash for incoming OAuth redirect
+    // --- 1. POPUP HANDLING (If this window is the popup) ---
     const hash = window.location.hash;
-    if (hash.includes('access_token') && hash.includes('token_type')) {
-      const params = new URLSearchParams(hash.substring(1)); // remove the #
-      const token = params.get('access_token');
-      if (token) {
-        sessionStorage.setItem('dropbox_token', token);
-        setAccessToken(token);
-        // Clean the URL so the router doesn't get confused
-        window.location.hash = ''; 
-      }
-    } else {
-      // Check storage
-      const storedToken = sessionStorage.getItem('dropbox_token');
-      if (storedToken) {
-        setAccessToken(storedToken);
-      }
+    if (window.opener && hash.includes('access_token') && hash.includes('token_type')) {
+        const params = new URLSearchParams(hash.substring(1)); // remove the #
+        const token = params.get('access_token');
+        if (token) {
+            // Send token back to main window
+            window.opener.postMessage({ type: 'DROPBOX_TOKEN', token }, window.location.origin);
+            // Close this popup
+            window.close();
+        }
+        return;
     }
+
+    // --- 2. MAIN WINDOW HANDLING ---
+    // Check local storage for existing session
+    const storedToken = sessionStorage.getItem('dropbox_token');
+    if (storedToken) {
+        setAccessToken(storedToken);
+    }
+
+    // Listen for the token message from the popup
+    const handleMessage = (event: MessageEvent) => {
+        // Security check: ensure message comes from same origin
+        if (event.origin !== window.location.origin) return;
+        
+        if (event.data?.type === 'DROPBOX_TOKEN' && event.data.token) {
+            const token = event.data.token;
+            sessionStorage.setItem('dropbox_token', token);
+            setAccessToken(token);
+        }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  // 2. Initialize Dropbox Client when token exists
+  // Initialize Dropbox Client when token exists
   useEffect(() => {
     if (accessToken) {
-      // The Dropbox class is used for making API calls (upload, share)
       const dropbox = new Dropbox({ accessToken });
       setDbx(dropbox);
     } else {
@@ -56,18 +73,25 @@ export const DropboxProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     
-    // Use DropboxAuth specifically for the authentication flow
     const dbxAuth = new DropboxAuth({ clientId: CLIENT_ID });
     
-    // Redirect to Dropbox Auth page. 
-    // We use the current window location as the redirect URI.
+    // Redirect URI matches the current page
     const redirectUri = window.location.origin + window.location.pathname;
     
     dbxAuth.getAuthenticationUrl(redirectUri)
       .then((authUrl: any) => {
-        // authUrl can be a string or an object depending on SDK version/options, 
-        // but for this flow it is the URL string.
-        window.location.href = authUrl;
+        // Calculate center position for the popup
+        const width = 600;
+        const height = 700;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+
+        // Open the auth URL in a popup
+        window.open(
+            authUrl, 
+            'Dropbox Authentication', 
+            `toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no, copyhistory=no, width=${width}, height=${height}, top=${top}, left=${left}`
+        );
       })
       .catch((error: any) => {
         console.error("Error getting Dropbox auth URL:", error);
