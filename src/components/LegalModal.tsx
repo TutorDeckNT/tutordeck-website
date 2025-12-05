@@ -1,6 +1,6 @@
 // src/components/LegalModal.tsx
 
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import Portal from './Portal';
 import { LegalDocumentData } from '../lib/legal';
