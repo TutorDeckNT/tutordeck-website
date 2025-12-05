@@ -1,264 +1,225 @@
 // src/components/Footer.tsx
 
-import { useState, MouseEvent } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useMotionTemplate, useMotionValue, AnimatePresence } from 'framer-motion';
+import { motion, useMotionTemplate, useMotionValue, animate } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
 import LegalModal from './LegalModal';
 import { termsOfServiceContent, privacyPolicyContent } from '../lib/legal';
 
-// --- Types ---
-type ModalContentType = {
-    title: string;
-    content: React.ReactNode;
-}
+// --- UTILITY COMPONENTS ---
 
-// --- Helper Components ---
+/**
+ * ScrambleText: Decodes text on hover for a "cyber" effect.
+ */
+const ScrambleText = ({ text, className = "" }: { text: string, className?: string }) => {
+    const [display, setDisplay] = useState(text);
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+    
+    const scramble = () => {
+        let iteration = 0;
+        const interval = setInterval(() => {
+            setDisplay(prev => 
+                text.split("").map((letter, index) => {
+                    if (index < iteration) return text[index];
+                    return chars[Math.floor(Math.random() * chars.length)];
+                }).join("")
+            );
+            if (iteration >= text.length) clearInterval(interval);
+            iteration += 1 / 3;
+        }, 30);
+    };
 
-const FooterHeader = ({ children }: { children: React.ReactNode }) => (
-    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6 select-none">
-        {children}
-    </h4>
-);
-
-const FooterLink = ({ to, children }: { to: string, children: React.ReactNode }) => {
     return (
-        <Link to={to} className="group flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-300 w-fit">
-            <motion.span 
-                initial={{ x: -10, opacity: 0 }}
-                whileHover={{ x: 0, opacity: 1 }}
-                className="text-primary text-xs"
-            >
-                <i className="fas fa-arrow-right"></i>
-            </motion.span>
-            <span className="group-hover:translate-x-1 transition-transform duration-300">
-                {children}
-            </span>
-        </Link>
+        <span onMouseEnter={scramble} className={`inline-block cursor-default ${className}`}>
+            {display}
+        </span>
     );
 };
 
-const SocialButton = ({ href, icon, label }: { href: string, icon: string, label: string }) => (
-    <motion.a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        whileHover={{ y: -3, scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:bg-white hover:text-black hover:border-white transition-all duration-300 group relative"
-        aria-label={label}
-    >
-        <i className={`fab ${icon}`}></i>
-        {/* Tooltip */}
-        <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-            {label}
-        </span>
-    </motion.a>
-);
-
-// --- Main Component ---
-
-const Footer = () => {
-    const [modalContent, setModalContent] = useState<ModalContentType | null>(null);
-    const [email, setEmail] = useState('');
-    
-    // Spotlight Logic
+/**
+ * SpotlightCard: A container that illuminates based on mouse position.
+ */
+const SpotlightCard = ({ children, className = "", onClick }: { children: React.ReactNode, className?: string, onClick?: () => void }) => {
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
 
-    const handleMouseMove = ({ currentTarget, clientX, clientY }: MouseEvent) => {
+    const handleMouseMove = ({ currentTarget, clientX, clientY }: React.MouseEvent) => {
         const { left, top } = currentTarget.getBoundingClientRect();
         mouseX.set(clientX - left);
         mouseY.set(clientY - top);
     };
 
-    const openModal = (type: 'terms' | 'privacy') => {
-        if (type === 'terms') {
-            setModalContent({ title: 'Terms of Service', content: termsOfServiceContent });
-        } else {
-            setModalContent({ title: 'Privacy Policy', content: privacyPolicyContent });
-        }
-    };
+    return (
+        <div 
+            className={`relative group border border-white/10 bg-dark-card/30 overflow-hidden ${className}`}
+            onMouseMove={handleMouseMove}
+            onClick={onClick}
+        >
+            <motion.div
+                className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 group-hover:opacity-100"
+                style={{
+                    background: useMotionTemplate`
+                        radial-gradient(
+                            650px circle at ${mouseX}px ${mouseY}px,
+                            rgba(52, 211, 153, 0.15),
+                            transparent 80%
+                        )
+                    `,
+                }}
+            />
+            <div className="relative h-full">{children}</div>
+        </div>
+    );
+};
 
-    const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+// --- MAIN FOOTER COMPONENT ---
+
+type ModalContentType = { title: string; content: React.ReactNode; };
+
+const Footer = () => {
+    const { user } = useAuth();
+    const [modalContent, setModalContent] = useState<ModalContentType | null>(null);
+
+    const openModal = (type: 'terms' | 'privacy') => {
+        setModalContent({
+            title: type === 'terms' ? 'Terms of Service' : 'Privacy Policy',
+            content: type === 'terms' ? termsOfServiceContent : privacyPolicyContent
+        });
     };
 
     return (
         <>
-            <LegalModal 
-                isOpen={!!modalContent} 
-                onClose={() => setModalContent(null)} 
-                title={modalContent?.title || ''}
-            >
+            <LegalModal isOpen={!!modalContent} onClose={() => setModalContent(null)} title={modalContent?.title || ''}>
                 {modalContent?.content}
             </LegalModal>
 
-            {/* --- 1. THE BRIDGE (Pre-Footer CTA) --- */}
-            <section className="relative py-24 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-dark-bg to-secondary/20 opacity-50"></div>
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+            <footer className="relative bg-[#020617] text-white pt-20 pb-10 overflow-hidden">
                 
-                <div className="container mx-auto px-6 relative z-10 text-center">
-                    <motion.h2 
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="text-5xl md:text-7xl font-extrabold text-white mb-8 tracking-tight"
-                    >
-                        Don't just watch. <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Lead.</span>
-                    </motion.h2>
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.1 }}
-                    >
-                        <Link 
-                            to="/get-involved" 
-                            className="inline-flex items-center gap-3 bg-white text-black font-bold text-lg px-8 py-4 rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all duration-300"
-                        >
-                            Start a Chapter <i className="fas fa-arrow-right"></i>
-                        </Link>
-                    </motion.div>
-                </div>
-            </section>
+                {/* 1. THE LIGHT HORIZON (Top Separator) */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50"></div>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-24 bg-primary/5 blur-[100px] pointer-events-none"></div>
 
-            {/* --- 2. THE TERMINAL (Main Footer) --- */}
-            <footer 
-                className="relative bg-black text-white overflow-hidden group"
-                onMouseMove={handleMouseMove}
-            >
-                {/* Spotlight Effect */}
-                <motion.div
-                    className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-300 group-hover:opacity-100"
-                    style={{
-                        background: useMotionTemplate`
-                            radial-gradient(
-                                650px circle at ${mouseX}px ${mouseY}px,
-                                rgba(255, 255, 255, 0.1),
-                                transparent 80%
-                            )
-                        `,
-                    }}
-                />
-
-                {/* Grain Texture */}
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none"></div>
-
-                <div className="container mx-auto px-6 pt-20 pb-12 relative z-10">
+                <div className="container mx-auto px-6 relative z-10">
                     
-                    {/* Asymmetric Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 border-b border-white/10 pb-16">
+                    {/* 2. THE BENTO GRID (Main Modules) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-16">
                         
-                        {/* Column 1: Brand & Legacy (Span 4) */}
-                        <div className="lg:col-span-4 space-y-8">
-                            <Link to="/" className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center text-black font-bold text-xl">
-                                    T
-                                </div>
-                                <span className="text-2xl font-bold tracking-tight">TutorDeck</span>
+                        {/* MODULE A: BRAND IDENTITY (Left - 5 Cols) */}
+                        <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
+                            <div>
+                                <Link to="/" className="flex items-center gap-3 mb-6 group w-fit">
+                                    <div className="relative w-12 h-12 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl group-hover:border-primary/50 transition-colors">
+                                        <img src="/mascot.svg" alt="Mascot" className="w-8 h-8 opacity-90 group-hover:scale-110 transition-transform duration-300" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-2xl font-black tracking-tight text-white group-hover:text-primary transition-colors">TUTORDECK</span>
+                                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Est. 2022 • Texas</span>
+                                    </div>
+                                </Link>
+                                <p className="text-gray-400 max-w-sm leading-relaxed text-lg">
+                                    Redefining peer education through a student-led, tech-forward initiative. <span className="text-gray-500">We build leaders, not just scholars.</span>
+                                </p>
+                            </div>
+                            
+                            {/* Mission Pill */}
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 w-fit">
+                                <span className="relative flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                </span>
+                                <span className="text-xs font-mono text-gray-300">System Status: Operational</span>
+                            </div>
+                        </div>
+
+                        {/* MODULE B: NAVIGATION STACK (Center - 4 Cols) */}
+                        <div className="lg:col-span-4">
+                            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                <i className="fas fa-layer-group"></i> Navigation
+                            </h4>
+                            <div className="flex flex-wrap gap-3">
+                                {[
+                                    { name: 'Home', path: '/' },
+                                    { name: 'About Mission', path: '/about' },
+                                    { name: 'Find Chapters', path: '/chapters' },
+                                    { name: 'Get Involved', path: '/get-involved' },
+                                    user ? { name: 'Dashboard', path: '/dashboard', highlight: true } : { name: 'Login Portal', path: '/login' }
+                                ].map((link) => (
+                                    <Link key={link.path} to={link.path}>
+                                        <SpotlightCard className={`rounded-lg px-5 py-3 transition-transform active:scale-95 ${link.highlight ? 'bg-primary/10 border-primary/30' : ''}`}>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-sm font-semibold ${link.highlight ? 'text-primary' : 'text-gray-300'}`}>
+                                                    <ScrambleText text={link.name} />
+                                                </span>
+                                                {link.highlight && <i className="fas fa-arrow-right text-xs text-primary -rotate-45"></i>}
+                                            </div>
+                                        </SpotlightCard>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* MODULE C: ACTION SECTOR (Right - 3 Cols) */}
+                        <div className="lg:col-span-3 flex flex-col gap-4">
+                            {/* Magnetic CTA Card */}
+                            <Link to="/get-involved" className="block h-full">
+                                <SpotlightCard className="rounded-2xl p-6 h-full flex flex-col justify-between min-h-[180px] bg-gradient-to-b from-white/5 to-transparent hover:border-primary/50 transition-colors">
+                                    <div>
+                                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary mb-4">
+                                            <i className="fas fa-rocket"></i>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-white leading-tight mb-1">Start a Chapter</h3>
+                                        <p className="text-xs text-gray-400">Launch TutorDeck at your school.</p>
+                                    </div>
+                                    <div className="flex justify-end mt-4">
+                                        <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center">
+                                            <i className="fas fa-chevron-right text-xs"></i>
+                                        </div>
+                                    </div>
+                                </SpotlightCard>
                             </Link>
                             
-                            <p className="text-gray-400 leading-relaxed max-w-sm">
-                                A student-led non-profit redefining peer education. We build the tools, you build the legacy.
-                            </p>
-
-                            <div className="flex items-center gap-3">
-                                <span className="relative flex h-3 w-3">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                                </span>
-                                <span className="text-xs font-mono text-green-400 uppercase tracking-widest">Recruiting Chapters</span>
-                            </div>
-                        </div>
-
-                        {/* Column 2: Explore (Span 2) */}
-                        <div className="lg:col-span-2 flex flex-col gap-4">
-                            <FooterHeader>Explore</FooterHeader>
-                            <FooterLink to="/">Home</FooterLink>
-                            <FooterLink to="/about">Our Story</FooterLink>
-                            <FooterLink to="/chapters">Chapters</FooterLink>
-                            <FooterLink to="/dashboard">Dashboard</FooterLink>
-                        </div>
-
-                        {/* Column 3: Resources (Span 2) */}
-                        <div className="lg:col-span-2 flex flex-col gap-4">
-                            <FooterHeader>Resources</FooterHeader>
-                            <FooterLink to="/get-involved">Start a Club</FooterLink>
-                            <FooterLink to="/login">Volunteer Login</FooterLink>
-                            <a href="#" className="group flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-300 w-fit">
-                                <span className="group-hover:translate-x-1 transition-transform duration-300">Verify Docs</span>
-                            </a>
-                            <a href="mailto:join@tutordeck.org" className="group flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-300 w-fit">
-                                <span className="group-hover:translate-x-1 transition-transform duration-300">Contact Support</span>
-                            </a>
-                        </div>
-
-                        {/* Column 4: The Loop (Span 4) */}
-                        <div className="lg:col-span-4">
-                            <FooterHeader>Stay in the Loop</FooterHeader>
-                            
-                            {/* Newsletter Input */}
-                            <div className="relative mb-8">
-                                <input 
-                                    type="email" 
-                                    placeholder="Enter your email" 
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-transparent border-b border-white/20 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-primary transition-colors pr-10"
-                                />
-                                <AnimatePresence>
-                                    {email.length > 0 && (
-                                        <motion.button
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, x: -10 }}
-                                            className="absolute right-0 top-3 text-primary hover:text-white transition-colors"
-                                        >
-                                            <i className="fas fa-arrow-right"></i>
-                                        </motion.button>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-
-                            <div className="flex gap-4">
-                                <SocialButton href="#" icon="fa-twitter" label="Twitter" />
-                                <SocialButton href="https://www.instagram.com/tutordeck___/" icon="fa-instagram" label="Instagram" />
-                                <SocialButton href="#" icon="fa-linkedin" label="LinkedIn" />
-                                <SocialButton href="#" icon="fa-discord" label="Discord" />
+                            {/* Social Magnetic Strip */}
+                            <div className="grid grid-cols-3 gap-2">
+                                {[
+                                    { icon: 'twitter', url: '#' },
+                                    { icon: 'instagram', url: 'https://www.instagram.com/tutordeck___/' },
+                                    { icon: 'linkedin', url: '#' }
+                                ].map((social, idx) => (
+                                    <a 
+                                        key={idx} 
+                                        href={social.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="bg-white/5 border border-white/10 rounded-lg h-12 flex items-center justify-center hover:bg-white/10 hover:text-primary transition-all duration-300"
+                                    >
+                                        <i className={`fab fa-${social.icon}`}></i>
+                                    </a>
+                                ))}
                             </div>
                         </div>
                     </div>
 
-                    {/* --- 3. SUB-FOOTER (Utility Bar) --- */}
-                    <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+                    {/* 3. THE SYSTEM BAR (Bottom) */}
+                    <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 font-mono">
                         
-                        {/* Copyright */}
-                        <div className="text-xs text-gray-600 font-mono">
-                            &copy; {new Date().getFullYear()} TutorDeck Initiative. <span className="hidden sm:inline">Made with <i className="fas fa-heart text-red-900"></i> in Texas.</span>
+                        <div className="flex items-center gap-2">
+                            <span>© 2025 TutorDeck Initiative.</span>
+                            <span className="hidden md:inline text-gray-700">|</span>
+                            <span className="hidden md:inline">Built by Students, for Students.</span>
                         </div>
 
-                        {/* Legal Links */}
-                        <div className="flex gap-6 text-xs text-gray-500 font-medium">
-                            <button onClick={() => openModal('terms')} className="hover:text-white transition-colors">Terms</button>
-                            <button onClick={() => openModal('privacy')} className="hover:text-white transition-colors">Privacy</button>
-                            <span className="opacity-20">|</span>
-                            <span className="hover:text-white transition-colors cursor-pointer">Sitemap</span>
+                        <div className="flex items-center gap-6">
+                            <button onClick={() => openModal('terms')} className="hover:text-primary transition-colors uppercase tracking-wider">Terms</button>
+                            <button onClick={() => openModal('privacy')} className="hover:text-primary transition-colors uppercase tracking-wider">Privacy</button>
+                            <a href="mailto:join@tutordeck.org" className="hover:text-primary transition-colors uppercase tracking-wider">Contact</a>
                         </div>
 
-                        {/* Back to Top */}
-                        <button 
-                            onClick={scrollToTop}
-                            className="group flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-primary transition-colors uppercase tracking-widest"
-                        >
-                            Back to Top
-                            <span className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/10 transition-all">
-                                <i className="fas fa-arrow-up transform group-hover:-translate-y-0.5 transition-transform"></i>
-                            </span>
-                        </button>
                     </div>
                 </div>
+
+                {/* Background Noise Texture */}
+                <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
             </footer>
         </>
     );
