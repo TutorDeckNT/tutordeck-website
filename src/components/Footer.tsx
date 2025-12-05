@@ -1,8 +1,8 @@
 // src/components/Footer.tsx
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useMotionTemplate, useMotionValue, animate } from 'framer-motion';
+import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import LegalModal from './LegalModal';
 import { termsOfServiceContent, privacyPolicyContent } from '../lib/legal';
@@ -19,8 +19,8 @@ const ScrambleText = ({ text, className = "" }: { text: string, className?: stri
     const scramble = () => {
         let iteration = 0;
         const interval = setInterval(() => {
-            setDisplay(prev => 
-                text.split("").map((letter, index) => {
+            setDisplay(() => 
+                text.split("").map((_, index) => {
                     if (index < iteration) return text[index];
                     return chars[Math.floor(Math.random() * chars.length)];
                 }).join("")
