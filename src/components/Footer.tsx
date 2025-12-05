@@ -5,13 +5,13 @@ import { Link } from 'react-router-dom';
 import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import LegalModal from './LegalModal';
-import { termsOfServiceContent, privacyPolicyContent } from '../lib/legal';
+import { termsOfServiceData, privacyPolicyData, LegalDocumentData } from '../lib/legal';
 
 // --- UTILITY COMPONENTS ---
 
 /**
  * ShiftText: A precision mechanical slide effect. 
- * Replaces the buggy ScrambleText.
+ * Replaces chaotic scrambles with a smooth elevator transition.
  */
 const ShiftText = ({ text, isActive = false }: { text: string, isActive?: boolean }) => {
     return (
@@ -75,24 +75,22 @@ const SpotlightCard = ({ children, className = "", onClick }: { children: React.
 
 // --- MAIN FOOTER COMPONENT ---
 
-type ModalContentType = { title: string; content: React.ReactNode; };
-
 const Footer = () => {
     const { user } = useAuth();
-    const [modalContent, setModalContent] = useState<ModalContentType | null>(null);
+    // State holds the structured data object for the Legal Terminal
+    const [currentDoc, setCurrentDoc] = useState<LegalDocumentData | null>(null);
 
     const openModal = (type: 'terms' | 'privacy') => {
-        setModalContent({
-            title: type === 'terms' ? 'Terms of Service' : 'Privacy Policy',
-            content: type === 'terms' ? termsOfServiceContent : privacyPolicyContent
-        });
+        setCurrentDoc(type === 'terms' ? termsOfServiceData : privacyPolicyData);
     };
 
     return (
         <>
-            <LegalModal isOpen={!!modalContent} onClose={() => setModalContent(null)} title={modalContent?.title || ''}>
-                {modalContent?.content}
-            </LegalModal>
+            <LegalModal 
+                isOpen={!!currentDoc} 
+                onClose={() => setCurrentDoc(null)} 
+                data={currentDoc} 
+            />
 
             <footer className="relative bg-[#020617] text-white pt-20 pb-10 overflow-hidden">
                 
@@ -148,7 +146,7 @@ const Footer = () => {
                                     <Link key={link.path} to={link.path}>
                                         <SpotlightCard className={`rounded-lg px-6 py-3 transition-all duration-300 active:scale-95 ${link.highlight ? 'bg-primary/5 border-primary/20' : ''}`}>
                                             <div className="flex items-center gap-3">
-                                                {/* Replaced ScrambleText with ShiftText */}
+                                                {/* ShiftText Component for smooth hover effect */}
                                                 <ShiftText text={link.name} isActive={!!link.highlight} />
                                                 
                                                 {link.highlight && (
