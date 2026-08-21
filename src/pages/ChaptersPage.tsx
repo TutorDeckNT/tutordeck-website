@@ -17,6 +17,30 @@ const chapterData = [
         lead: 'Alwin John SV', 
         img: '/richlandhs.avif' 
     },
+    // --------------------------
+    { 
+        name: 'Ranchview High School', 
+        location: 'TBD', // TODO: add city, state
+        advisor: 'TBD', // TODO: add faculty advisor name
+        lead: 'Arnav Chugh', 
+        img: '/ranchviewhs.avif' // TODO: add/confirm image path
+    },
+    // --------------------------
+    { 
+        name: 'Eaton High School', 
+        location: 'TBD', // TODO: add city, state
+        advisor: 'TBD', // TODO: add faculty advisor name
+        lead: 'Sreedatta Gudapudi', 
+        img: '/eatonhs.avif' // TODO: add/confirm image path
+    },
+    // --------------------------
+    { 
+        name: 'Mansfield High School', 
+        location: 'Mansfield, TX', 
+        advisor: 'TBD', // TODO: add faculty advisor name
+        lead: 'Jeet Bhandhari', 
+        img: '/mansfieldhs.avif' // TODO: add/confirm image path
+    },
 ];
 
 const ChapterCard = ({ chapter }: { chapter: typeof chapterData[0] }) => (
