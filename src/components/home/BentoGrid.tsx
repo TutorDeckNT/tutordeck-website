@@ -9,58 +9,130 @@ const BentoGrid = () => {
 
       <div className="container mx-auto px-6 relative z-10">
         <Reveal className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-dark-heading mb-4">The Ecosystem</h2>
-          <p className="text-gray-400 max-w-2xl mx-auto">More than just a club. A complete platform for student success.</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-dark-heading mb-4">
+            The Ecosystem
+          </h2>
+          <p className="text-gray-400 max-w-2xl mx-auto">
+            More than just a club. A complete platform for student success.
+          </p>
         </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          
-          {/* Large Cell: Live Impact */}
-          <Reveal variant="zoom-in" className="md:col-span-2 bg-dark-card/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col justify-between min-h-[300px] relative overflow-hidden group">
+          {/* Large Cell: Tutoring Impact */}
+          <Reveal
+            variant="zoom-in"
+            className="md:col-span-2 bg-dark-card/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col justify-between min-h-[300px] relative overflow-hidden group"
+          >
             <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
               <i className="fas fa-users text-9xl"></i>
             </div>
+
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                <span className="text-sm font-mono text-red-400 uppercase tracking-widest">Live Impact</span>
+                <span className="text-sm font-mono text-red-400 uppercase tracking-widest">
+                  Live Impact
+                </span>
               </div>
-              <h3 className="text-2xl font-bold text-white">Students Helped</h3>
+              <h3 className="text-2xl font-bold text-white">
+                Tutors Who Have Made a Difference
+              </h3>
             </div>
-            <div className="mt-8">
-              <AnimatedStat to="500" />
-              <p className="text-gray-400 mt-2">Across all active chapters, our tutors are making a daily difference in academic performance.</p>
+
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <AnimatedStat to="1,100" />
+                <p className="text-gray-400 mt-2">
+                  Tutors creating meaningful academic support every day.
+                </p>
+              </div>
+
+              <div className="sm:border-l sm:border-white/10 sm:pl-6">
+                <AnimatedStat to="3,500" />
+                <p className="text-gray-400 mt-2">
+                  Hours of tutoring delivered across our active chapters.
+                </p>
+              </div>
             </div>
           </Reveal>
 
-          {/* Medium Cell: Map Visualization */}
-          <Reveal variant="fade-up" delay={0.2} className="bg-dark-card/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col relative overflow-hidden">
-            <h3 className="text-xl font-bold text-white mb-4 z-10 relative">Active Chapters</h3>
+          {/* Medium Cell: Chapter Visualization */}
+          <Reveal
+            variant="fade-up"
+            delay={0.2}
+            className="bg-dark-card/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col relative overflow-hidden"
+          >
+            <div className="flex items-baseline justify-between gap-3 mb-4 z-10 relative">
+              <h3 className="text-xl font-bold text-white">Active Chapters</h3>
+              <span className="text-3xl font-extrabold text-primary">5</span>
+            </div>
+
             <div className="flex-1 relative min-h-[200px] bg-gray-900/50 rounded-xl border border-white/5">
-              {/* Stylized Map Dots */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full">
                 {/* Prosper */}
-                <div className="absolute top-[40%] left-[45%] group cursor-pointer">
+                <div className="absolute top-[30%] left-[45%] group cursor-pointer">
                   <div className="w-3 h-3 bg-primary rounded-full animate-radar"></div>
-                  <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/80 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Prosper High</div>
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/80 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    Prosper High
+                  </div>
                 </div>
+
                 {/* Richland */}
                 <div className="absolute top-[45%] left-[55%] group cursor-pointer">
-                  <div className="w-3 h-3 bg-secondary rounded-full animate-radar" style={{ animationDelay: '1s' }}></div>
-                  <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/80 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Richland High</div>
+                  <div
+                    className="w-3 h-3 bg-secondary rounded-full animate-radar"
+                    style={{ animationDelay: '1s' }}
+                  ></div>
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/80 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    Richland High
+                  </div>
+                </div>
+
+                {/* Additional Chapters */}
+                <div className="absolute top-[55%] left-[35%]">
+                  <div
+                    className="w-3 h-3 bg-primary rounded-full animate-radar"
+                    style={{ animationDelay: '2s' }}
+                  ></div>
+                </div>
+
+                <div className="absolute top-[65%] left-[65%]">
+                  <div
+                    className="w-3 h-3 bg-secondary rounded-full animate-radar"
+                    style={{ animationDelay: '3s' }}
+                  ></div>
+                </div>
+
+                <div className="absolute top-[25%] left-[68%]">
+                  <div
+                    className="w-3 h-3 bg-primary rounded-full animate-radar"
+                    style={{ animationDelay: '4s' }}
+                  ></div>
                 </div>
               </div>
             </div>
+
+            <p className="text-sm text-gray-400 mt-4">
+              Five chapters expanding access to peer-led academic support.
+            </p>
           </Reveal>
 
           {/* Medium Cell: Testimonial */}
-          <Reveal variant="fade-up" delay={0.3} className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-3xl p-8 flex flex-col justify-center relative">
+          <Reveal
+            variant="fade-up"
+            delay={0.3}
+            className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-3xl p-8 flex flex-col justify-center relative"
+          >
             <i className="fas fa-quote-left text-4xl text-primary/20 absolute top-6 left-6"></i>
             <p className="text-lg text-gray-300 italic relative z-10 pt-6">
-              "TutorDeck didn't just improve my grades, it gave me the confidence to ask questions. I realized I wasn't alone."
+              &quot;TutorDeck didn&apos;t just improve my grades, it gave me the
+              confidence to ask questions. I realized I wasn&apos;t alone.&quot;
             </p>
+
             <div className="mt-6 flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-xs font-bold">RB</div>
+              <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-xs font-bold">
+                RB
+              </div>
               <div>
                 <p className="font-bold text-white text-sm">Ricky B.</p>
                 <p className="text-xs text-gray-500">11th Grade Student</p>
@@ -69,16 +141,28 @@ const BentoGrid = () => {
           </Reveal>
 
           {/* Wide Cell: Call to Action */}
-          <Reveal variant="slide-left" delay={0.4} className="md:col-span-3 bg-gradient-to-r from-primary/20 to-secondary/20 border border-white/10 rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <Reveal
+            variant="slide-left"
+            delay={0.4}
+            className="md:col-span-3 bg-gradient-to-r from-primary/20 to-secondary/20 border border-white/10 rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6"
+          >
             <div>
-              <h3 className="text-2xl font-bold text-white">Start Your Own Chapter</h3>
-              <p className="text-gray-300">We provide the platform, the resources, and the mentorship. You provide the leadership.</p>
+              <h3 className="text-2xl font-bold text-white">
+                Start Your Own Chapter
+              </h3>
+              <p className="text-gray-300">
+                We provide the platform, the resources, and the mentorship. You
+                provide the leadership.
+              </p>
             </div>
-            <a href="#/get-involved" className="bg-white text-black font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+
+            <a
+              href="#/get-involved"
+              className="bg-white text-black font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+            >
               Launch Now
             </a>
           </Reveal>
-
         </div>
       </div>
     </section>
