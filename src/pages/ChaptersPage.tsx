@@ -20,18 +20,18 @@ const chapterData = [
     // --------------------------
     { 
         name: 'Ranchview High School', 
-        location: 'TBD', // TODO: add city, state
+        location: 'Irving, TX', 
         advisor: 'TBD', // TODO: add faculty advisor name
         lead: 'Arnav Chugh', 
-        img: '/ranchviewhs.avif' // TODO: add/confirm image path
+        img: 'https://imagescdn.homes.com/i2/EnJzfV7ZPfxmCX6g8_jX6CtM8KfZ8yB0I_yrLw6EGIQ/113/ranchview-high-school-irving-tx-primaryphoto.jpg?p=1'
     },
     // --------------------------
     { 
-        name: 'Eaton High School', 
-        location: 'TBD', // TODO: add city, state
+        name: 'V.R. Eaton High School', 
+        location: 'Fort Worth, TX', 
         advisor: 'TBD', // TODO: add faculty advisor name
         lead: 'Sreedatta Gudapudi', 
-        img: '/eatonhs.avif' // TODO: add/confirm image path
+        img: 'https://imagescdn.homes.com/i2/svWi2HQReSEV1TrYc4mcQHqkfWsGvsYIvAUV4g8iXZk/116/v-r-eaton-high-school-fort-worth-tx-4-schoolphoto.jpg?p=1'
     },
     // --------------------------
     { 
@@ -39,7 +39,7 @@ const chapterData = [
         location: 'Mansfield, TX', 
         advisor: 'TBD', // TODO: add faculty advisor name
         lead: 'Jeet Bhandhari', 
-        img: '/mansfieldhs.avif' // TODO: add/confirm image path
+        img: 'https://www.mansfieldtexas.gov/ImageRepository/Document?documentId=4695'
     },
 ];
 
