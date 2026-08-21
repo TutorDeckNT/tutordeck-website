@@ -1,35 +1,68 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-const AnimatedStat = ({ to }: { to: string }) => {
-    const [count, setCount] = useState(0);
-    const ref = useRef<HTMLParagraphElement>(null);
-    const isNumeric = !isNaN(parseInt(to));
+type AnimatedStatProps = {
+  to: number | string;
+};
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) {
-                if (!isNumeric) { setCount(Number(to)); return; }
-                let start = 0; const end = parseInt(to); if (start === end) return;
-                let duration = 1500; let startTimestamp: number | null = null;
-                const step = (timestamp: number) => {
-                    if (!startTimestamp) startTimestamp = timestamp;
-                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                    setCount(Math.floor(progress * end));
-                    if (progress < 1) window.requestAnimationFrame(step);
-                };
-                window.requestAnimationFrame(step);
-                if (ref.current) observer.unobserve(ref.current);
-            }
-        }, { threshold: 0.5 });
+const AnimatedStat = ({ to }: AnimatedStatProps) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLParagraphElement>(null);
 
-        if (ref.current) {
-            observer.observe(ref.current);
-        }
+  const numericValue =
+    typeof to === 'number'
+      ? to
+      : Number(to.replace(/,/g, ''));
 
-        return () => observer.disconnect();
-    }, [to, isNumeric]);
+  const isNumeric = Number.isFinite(numericValue);
 
-    return <p ref={ref} className="text-5xl font-bold text-secondary mb-2">{count}{isNumeric ? '+' : ''}</p>;
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || !isNumeric) return;
+
+        const end = numericValue;
+        const duration = 1500;
+        let startTimestamp: number | null = null;
+        let animationFrameId: number;
+
+        const step = (timestamp: number) => {
+          if (startTimestamp === null) {
+            startTimestamp = timestamp;
+          }
+
+          const progress = Math.min(
+            (timestamp - startTimestamp) / duration,
+            1
+          );
+
+          setCount(Math.floor(progress * end));
+
+          if (progress < 1) {
+            animationFrameId = window.requestAnimationFrame(step);
+          }
+        };
+
+        animationFrameId = window.requestAnimationFrame(step);
+        observer.disconnect();
+      },
+      { threshold: 0.5 }
+    );
+
+    const element = ref.current;
+
+    if (element) {
+      observer.observe(element);
+    }
+
+    return () => observer.disconnect();
+  }, [isNumeric, numericValue]);
+
+  return (
+    <p ref={ref} className="text-5xl font-bold text-secondary mb-2">
+      {isNumeric ? count.toLocaleString() : String(to)}
+      {isNumeric ? '+' : ''}
+    </p>
+  );
 };
 
 export default AnimatedStat;
