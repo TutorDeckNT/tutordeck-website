@@ -23,7 +23,6 @@ const AnimatedStat = ({ to }: AnimatedStatProps) => {
         const end = numericValue;
         const duration = 1500;
         let startTimestamp: number | null = null;
-        let animationFrameId: number;
 
         const step = (timestamp: number) => {
           if (startTimestamp === null) {
@@ -38,11 +37,11 @@ const AnimatedStat = ({ to }: AnimatedStatProps) => {
           setCount(Math.floor(progress * end));
 
           if (progress < 1) {
-            animationFrameId = window.requestAnimationFrame(step);
+            window.requestAnimationFrame(step);
           }
         };
 
-        animationFrameId = window.requestAnimationFrame(step);
+        window.requestAnimationFrame(step);
         observer.disconnect();
       },
       { threshold: 0.5 }
