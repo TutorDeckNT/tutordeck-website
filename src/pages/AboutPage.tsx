@@ -24,6 +24,18 @@ const AboutPage = () => {
             </Reveal>
 
             <Reveal as="section" className="mb-24 text-center">
+                <h2 className="text-4xl font-bold text-dark-heading mb-8">Our Founders</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                    {['Manav', 'Shaurya', 'Alwin', 'Aakanksh'].map((founder) => (
+                        <div key={founder} className="bg-dark-card p-6 rounded-lg border border-white/10">
+                            <i className="fas fa-user-graduate text-3xl text-primary mb-3" aria-hidden="true"></i>
+                            <h3 className="text-xl font-bold text-dark-heading">{founder}</h3>
+                        </div>
+                    ))}
+                </div>
+            </Reveal>
+
+            <Reveal as="section" className="mb-24 text-center">
                 <h2 className="text-4xl font-bold text-dark-heading mb-12">Our Core Values</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                     <div className="bg-dark-card p-6 rounded-lg"><i className="fas fa-universal-access text-3xl text-primary mb-3"></i><h3 className="text-xl font-bold">Accessibility</h3><p className="text-sm">Breaking down barriers to learning for everyone.</p></div>

@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import ChaptersPage from './pages/ChaptersPage';
+import PartnershipsPage from './pages/PartnershipsPage';
 import GetInvolvedPage from './pages/GetInvolvedPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
@@ -46,6 +47,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/chapters" element={<ChaptersPage />} />
+        <Route path="/partnerships" element={<PartnershipsPage />} />
         <Route path="/get-involved" element={<GetInvolvedPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/verify/:transcriptId" element={<VerificationPage />} />

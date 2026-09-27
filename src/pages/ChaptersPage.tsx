@@ -5,15 +5,13 @@ const chapterData = [
     { 
         name: 'Prosper High School', 
         location: 'Prosper, TX', 
-        advisor: 'Mrs. Ballard', 
-        lead: 'Manav A, Shaurya J, and Aakanksh R', 
+        lead: 'Manav A, Shaurya J, Aakanksh R, and Arnav Shah',
         img: '/Prosper_High_School.avif' 
     },
     // --------------------------
     { 
         name: 'Richland High School', 
         location: 'Prosper, TX', 
-        advisor: 'Mrs. Bedell', 
         lead: 'Alwin John SV', 
         img: '/richlandhs.avif' 
     },
@@ -21,7 +19,6 @@ const chapterData = [
     { 
         name: 'Ranchview High School', 
         location: 'Irving, TX', 
-        advisor: 'TBD', // TODO: add faculty advisor name
         lead: 'Arnav Chugh', 
         img: 'https://imagescdn.homes.com/i2/EnJzfV7ZPfxmCX6g8_jX6CtM8KfZ8yB0I_yrLw6EGIQ/113/ranchview-high-school-irving-tx-primaryphoto.jpg?p=1'
     },
@@ -29,7 +26,6 @@ const chapterData = [
     { 
         name: 'V.R. Eaton High School', 
         location: 'Fort Worth, TX', 
-        advisor: 'TBD', // TODO: add faculty advisor name
         lead: 'Sreedatta Gudapudi', 
         img: 'https://imagescdn.homes.com/i2/svWi2HQReSEV1TrYc4mcQHqkfWsGvsYIvAUV4g8iXZk/116/v-r-eaton-high-school-fort-worth-tx-4-schoolphoto.jpg?p=1'
     },
@@ -37,9 +33,14 @@ const chapterData = [
     { 
         name: 'Mansfield High School', 
         location: 'Mansfield, TX', 
-        advisor: 'TBD', // TODO: add faculty advisor name
         lead: 'Jeet Bhandhari', 
         img: 'https://www.mansfieldtexas.gov/ImageRepository/Document?documentId=4695'
+    },
+    {
+        name: 'Bridgeland High School',
+        location: 'Cypress, TX',
+        lead: 'Rishit Shinkar',
+        img: 'https://www.bridgeland.com/wp-content/uploads/2025/04/schools-grid-bridgeland-high.webp'
     },
 ];
 
@@ -50,7 +51,6 @@ const ChapterCard = ({ chapter }: { chapter: typeof chapterData[0] }) => (
             <h3 className="text-2xl font-bold text-dark-heading">{chapter.name}</h3>
             <p className="text-primary font-semibold">{chapter.location}</p>
             <div className="mt-4 text-sm">
-                <p><strong className="text-dark-text">Faculty Advisor:</strong> {chapter.advisor}</p>
                 <p><strong className="text-dark-text">Student Lead:</strong> {chapter.lead}</p>
             </div>
         </div>
