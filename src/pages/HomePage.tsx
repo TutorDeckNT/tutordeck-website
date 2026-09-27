@@ -182,10 +182,10 @@ const HomePage = () => {
           
           <div className="flex gap-8 overflow-x-auto pb-12 px-6 snap-x snap-mandatory no-scrollbar">
             {[
-              { name: "Manav A.", role: "President · Prosper High School", quote: "Building a legacy.", color: "bg-blue-500" },
-              { name: "Shaurya J.", role: "President · Prosper High School", quote: "Efficiency is key.", color: "bg-purple-500" },
-              { name: "Aakanksh R.", role: "President · Prosper High School", quote: "Connecting minds.", color: "bg-green-500" },
-              { name: "Alwin John SV", role: "President · Richland High School", quote: "Expanding horizons.", color: "bg-orange-500" },
+              { name: "Manav A.", role: "Co-Founder & Overall Chair", chapter: "President · Prosper High School", quote: "Building a legacy.", color: "bg-blue-500" },
+              { name: "Shaurya J.", role: "Co-Founder & Overall Chair", chapter: "President · Prosper High School", quote: "Efficiency is key.", color: "bg-purple-500" },
+              { name: "Aakanksh R.", role: "Co-Founder & Overall Chair", chapter: "President · Prosper High School", quote: "Connecting minds.", color: "bg-green-500" },
+              { name: "Alwin John SV", role: "Co-Founder & Overall Chair", chapter: "President · Richland High School", quote: "Expanding horizons.", color: "bg-orange-500" },
               { name: "Arnav Shah", role: "President of Growth and Expansion · Prosper High School", quote: "Connection is absolute.", color: "bg-blue-500" },
               { name: "Arnav Chugh", role: "President · Ranchview High School", quote: "Learning grows through community.", color: "bg-purple-500" },
               { name: "Sreedatta Gudapudi", role: "President · V.R. Eaton High School", quote: "Helping students thrive.", color: "bg-green-500" },
@@ -199,6 +199,7 @@ const HomePage = () => {
                   <p className="text-gray-300 italic mb-2">"{leader.quote}"</p>
                   <h3 className="text-2xl font-bold text-white">{leader.name}</h3>
                   <p className={`text-sm font-bold uppercase tracking-wider ${leader.color.replace('bg-', 'text-')}`}>{leader.role}</p>
+                  {leader.chapter && <p className="text-xs font-semibold uppercase tracking-wide text-gray-300 mt-1">{leader.chapter}</p>}
                 </div>
               </div>
             ))}
