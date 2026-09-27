@@ -26,10 +26,16 @@ const AboutPage = () => {
             <Reveal as="section" className="mb-24 text-center">
                 <h2 className="text-4xl font-bold text-dark-heading mb-8">Our Founders</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-                    {['Manav', 'Shaurya', 'Alwin', 'Aakanksh'].map((founder) => (
+                    {[
+                        'Manav A.',
+                        'Shaurya J.',
+                        'Alwin John SV',
+                        'Aakanksh R.',
+                    ].map((founder) => (
                         <div key={founder} className="bg-dark-card p-6 rounded-lg border border-white/10">
                             <i className="fas fa-user-graduate text-3xl text-primary mb-3" aria-hidden="true"></i>
                             <h3 className="text-xl font-bold text-dark-heading">{founder}</h3>
+                            <p className="text-sm text-primary mt-2">Co-Founder &amp; Overall Chair</p>
                         </div>
                     ))}
                 </div>
