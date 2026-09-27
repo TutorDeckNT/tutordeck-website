@@ -37,20 +37,20 @@ const BentoGrid = () => {
               </div>
 
               <h3 className="text-2xl font-bold text-white">
-                Tutors Who Have Made a Difference
+                TutorDeck Impact
               </h3>
             </div>
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <AnimatedStat to={1100} />
+                <AnimatedStat to="1.3k" />
                 <p className="text-gray-400 mt-2">
-                  Tutors creating meaningful academic support every day.
+                  Members supporting students through peer-led learning.
                 </p>
               </div>
 
               <div className="sm:border-l sm:border-white/10 sm:pl-6">
-                <AnimatedStat to={3500} />
+                <AnimatedStat to="4.2k" />
                 <p className="text-gray-400 mt-2">
                   Hours of tutoring delivered across our active chapters.
                 </p>
@@ -68,7 +68,7 @@ const BentoGrid = () => {
               <h3 className="text-xl font-bold text-white">
                 Active Chapters
               </h3>
-              <span className="text-3xl font-extrabold text-primary">5</span>
+              <span className="text-3xl font-extrabold text-primary">6</span>
             </div>
 
             <div className="flex-1 relative min-h-[200px] bg-gray-900/50 rounded-xl border border-white/5">
@@ -113,11 +113,18 @@ const BentoGrid = () => {
                     style={{ animationDelay: '4s' }}
                   />
                 </div>
+
+                <div className="absolute top-[38%] left-[25%]">
+                  <div
+                    className="w-3 h-3 bg-secondary rounded-full animate-radar"
+                    style={{ animationDelay: '5s' }}
+                  />
+                </div>
               </div>
             </div>
 
             <p className="text-sm text-gray-400 mt-4">
-              Five chapters expanding access to peer-led academic support.
+              Six chapters expanding access to peer-led academic support.
             </p>
           </Reveal>
 

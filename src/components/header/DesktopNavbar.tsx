@@ -15,6 +15,7 @@ const navLinks = [
   { name: 'Home', path: '/', icon: 'fa-home' },
   { name: 'About', path: '/about', icon: 'fa-info-circle' },
   { name: 'Chapters', path: '/chapters', icon: 'fa-building' },
+  { name: 'Partnerships', path: '/partnerships', icon: 'fa-handshake' },
   { name: 'Get Involved', path: '/get-involved', icon: 'fa-hand-holding-heart' },
 ];
 

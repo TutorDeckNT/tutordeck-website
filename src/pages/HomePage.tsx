@@ -182,11 +182,15 @@ const HomePage = () => {
           
           <div className="flex gap-8 overflow-x-auto pb-12 px-6 snap-x snap-mandatory no-scrollbar">
             {[
-              { name: "Manav A.", role: "President of Internal Affairs", quote: "Building a legacy.", color: "bg-blue-500" },
-              { name: "Shaurya J.", role: "President of External Partnerships", quote: "Efficiency is key.", color: "bg-purple-500" },
-              { name: "Aakanksh R.", role: "President of Student Academics", quote: "Connecting minds.", color: "bg-green-500" },
-              { name: "Alwin John", role: "Richland Head", quote: "Expanding horizons.", color: "bg-orange-500" },
-              { name: "Arnav S.", role: "President of Growth and Expansion", quote: "Connection is absolute.", color: "bg-blue-500" },
+              { name: "Manav A.", role: "President · Prosper High School", quote: "Building a legacy.", color: "bg-blue-500" },
+              { name: "Shaurya J.", role: "President · Prosper High School", quote: "Efficiency is key.", color: "bg-purple-500" },
+              { name: "Aakanksh R.", role: "President · Prosper High School", quote: "Connecting minds.", color: "bg-green-500" },
+              { name: "Alwin John SV", role: "President · Richland High School", quote: "Expanding horizons.", color: "bg-orange-500" },
+              { name: "Arnav Shah", role: "President of Growth and Expansion · Prosper High School", quote: "Connection is absolute.", color: "bg-blue-500" },
+              { name: "Arnav Chugh", role: "President · Ranchview High School", quote: "Learning grows through community.", color: "bg-purple-500" },
+              { name: "Sreedatta Gudapudi", role: "President · V.R. Eaton High School", quote: "Helping students thrive.", color: "bg-green-500" },
+              { name: "Jeet Bhandhari", role: "President · Mansfield High School", quote: "Making support accessible.", color: "bg-orange-500" },
+              { name: "Rishit Shinkar", role: "President · Bridgeland High School", quote: "Building a stronger school community.", color: "bg-blue-500" },
               { name: "Yohaan M.", role: "Vice President of Chapter Analytics", quote: "Unity is Key", color: "bg-purple-500" },
             ].map((leader, idx) => (
               <div key={idx} className="snap-center flex-shrink-0 w-80 h-96 bg-gray-800 rounded-2xl relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300">

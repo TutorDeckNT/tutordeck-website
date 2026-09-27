@@ -115,6 +115,7 @@ const MobileDock = () => {
             <DockIcon to="/" icon="fa-home" label="Home" />
             <DockIcon to="/about" icon="fa-info-circle" label="About" />
             <DockIcon to="/chapters" icon="fa-building" label="Chapters" />
+            <DockIcon to="/partnerships" icon="fa-handshake" label="Partnerships" />
             <DockIcon to="/get-involved" icon="fa-hand-holding-heart" label="Join" />
             
             {/* Profile Trigger */}
