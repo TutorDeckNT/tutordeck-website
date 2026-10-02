@@ -187,6 +187,7 @@ const HomePage = () => {
               { name: "Aakanksh R.", role: "Co-Founder & Overall Chair", chapter: "President · Prosper High School", quote: "Connecting minds.", color: "bg-green-500" },
               { name: "Alwin John SV", role: "Co-Founder & Overall Chair", chapter: "President · Richland High School", quote: "Expanding horizons.", color: "bg-orange-500" },
               { name: "Arnav Shah", role: "President of Growth and Expansion · Prosper High School", quote: "Connection is absolute.", color: "bg-blue-500" },
+              { name: "Aumik Mehra", role: "VP of Next Generation Leaders", chapter: "Prosper High School", quote: "Empowering the next generation.", color: "bg-purple-500" },
               { name: "Arnav Chugh", role: "President · Ranchview High School", quote: "Learning grows through community.", color: "bg-purple-500" },
               { name: "Sreedatta Gudapudi", role: "President · V.R. Eaton High School", quote: "Helping students thrive.", color: "bg-green-500" },
               { name: "Jeet Bhandhari", role: "President · Mansfield High School", quote: "Making support accessible.", color: "bg-orange-500" },
