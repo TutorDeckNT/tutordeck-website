@@ -182,7 +182,7 @@ const HomePage = () => {
           
           <div className="flex gap-8 overflow-x-auto pb-12 px-6 snap-x snap-mandatory no-scrollbar">
             {[
-              { name: "Manav A.", role: "Co-Founder & Overall Chair", chapter: "President · Prosper High School", quote: "Building a legacy.", color: "bg-blue-500" },
+              { name: "Manav A.", role: "Co-Founder & Overall Chair · Tech Lead & Architecture Developer", chapter: "President · Prosper High School", quote: "Building a legacy.", color: "bg-blue-500" },
               { name: "Shaurya J.", role: "Co-Founder & Overall Chair", chapter: "President · Prosper High School", quote: "Efficiency is key.", color: "bg-purple-500" },
               { name: "Aakanksh R.", role: "Co-Founder & Overall Chair", chapter: "President · Prosper High School", quote: "Connecting minds.", color: "bg-green-500" },
               { name: "Alwin John SV", role: "Co-Founder & Overall Chair", chapter: "President · Richland High School", quote: "Expanding horizons.", color: "bg-orange-500" },
@@ -193,11 +193,12 @@ const HomePage = () => {
               { name: "Jeet Bhandhari", role: "President · Mansfield High School", quote: "Making support accessible.", color: "bg-orange-500" },
               { name: "Rishit Shinkar", role: "President · Bridgeland High School", quote: "Building a stronger school community.", color: "bg-blue-500" },
               { name: "Yohaan M.", role: "Vice President of Chapter Analytics", quote: "Unity is Key", color: "bg-purple-500" },
+              { name: "Amulya Singh", role: "Multi-campus Attendance Analyst & Designer", color: "bg-green-500" },
             ].map((leader, idx) => (
               <div key={idx} className="snap-center flex-shrink-0 w-80 h-96 bg-gray-800 rounded-2xl relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300">
                 <div className={`absolute inset-0 opacity-20 ${leader.color}`}></div>
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black to-transparent">
-                  <p className="text-gray-300 italic mb-2">"{leader.quote}"</p>
+                  {leader.quote && <p className="text-gray-300 italic mb-2">"{leader.quote}"</p>}
                   <h3 className="text-2xl font-bold text-white">{leader.name}</h3>
                   <p className={`text-sm font-bold uppercase tracking-wider ${leader.color.replace('bg-', 'text-')}`}>{leader.role}</p>
                   {leader.chapter && <p className="text-xs font-semibold uppercase tracking-wide text-gray-300 mt-1">{leader.chapter}</p>}
