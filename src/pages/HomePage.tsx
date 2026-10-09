@@ -6,7 +6,7 @@ import EventModal from '../components/EventModal';
 import DashboardMockup from '../components/home/DashboardMockup';
 import BentoGrid from '../components/home/BentoGrid';
 import LeaderCard from '../components/LeaderCard';
-import { prosperLeaders } from '../data/leaders';
+import { featuredLeaders } from '../data/leaders';
 
 const HomePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -184,7 +184,7 @@ const HomePage = () => {
           </div>
           
           <div className="flex gap-8 overflow-x-auto pb-12 px-6 snap-x snap-mandatory no-scrollbar">
-            {prosperLeaders.map(leader => (
+            {featuredLeaders.map(leader => (
               <LeaderCard key={leader.name} leader={leader} className="snap-center flex-shrink-0 w-80" />
             ))}
             
