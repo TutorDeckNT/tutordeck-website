@@ -193,7 +193,7 @@ const HomePage = () => {
               { name: "Jeet Bhandhari", role: "President · Mansfield High School", quote: "Making support accessible.", color: "bg-orange-500" },
               { name: "Rishit Shinkar", role: "President · Bridgeland High School", quote: "Building a stronger school community.", color: "bg-blue-500" },
               { name: "Yohaan M.", role: "Vice President of Chapter Analytics", chapter: "Prosper High School", quote: "Unity is Key", color: "bg-purple-500" },
-              { name: "Amulya Singh", role: "Multi-campus Attendance Analyst & Designer", chapter: "Prosper High School", color: "bg-green-500" },
+              { name: "Amulya Singh", role: "Multi-campus Attendance Analyst & Engineer", chapter: "Prosper High School", color: "bg-green-500" },
             ].map((leader, idx) => (
               <div key={idx} className="snap-center flex-shrink-0 w-80 h-96 bg-gray-800 rounded-2xl relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300">
                 <div className={`absolute inset-0 opacity-20 ${leader.color}`}></div>
