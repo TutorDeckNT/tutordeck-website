@@ -11,7 +11,7 @@ export const featuredLeaders: Leader[] = [
   { name: "Shaurya J.", role: "Co-Founder & Overall Chair", chapter: "President · Prosper High School", quote: "Efficiency is key.", color: "bg-purple-500" },
   { name: "Aakanksh R.", role: "Co-Founder & Overall Chair", chapter: "President · Prosper High School", quote: "Connecting minds.", color: "bg-green-500" },
   { name: "Alwin John SV", role: "Co-Founder & Overall Chair", chapter: "President · Richland High School", quote: "Expanding horizons.", color: "bg-orange-500" },
-  { name: "Arnav Shah", role: "President of Growth and Expansion · Prosper High School", quote: "Connection is absolute.", color: "bg-blue-500" },
+  { name: "Arnav Shah", role: "Co-Founder & President of Growth and Expansion · Prosper High School", quote: "Connection is absolute.", color: "bg-blue-500" },
 ];
 
 export const registrarLeaders: Leader[] = [
