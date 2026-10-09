@@ -5,6 +5,8 @@ import Reveal from '../components/Reveal';
 import EventModal from '../components/EventModal';
 import DashboardMockup from '../components/home/DashboardMockup';
 import BentoGrid from '../components/home/BentoGrid';
+import LeaderCard from '../components/LeaderCard';
+import { prosperLeaders } from '../data/leaders';
 
 const HomePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -175,35 +177,15 @@ const HomePage = () => {
         {/* --- 5. COMMUNITY SECTION --- */}
         <section className="py-24 bg-dark-card overflow-hidden">
           <div className="container mx-auto px-6 mb-12">
-            <Reveal>
+            <Reveal className="flex flex-wrap items-center justify-between gap-6">
               <h2 className="text-4xl font-bold text-white">Our Leaders</h2>
+              <Link to="/leadership-registrar" className="text-primary font-semibold rounded-lg px-4 py-2 border border-primary/40 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">View more <span aria-hidden="true">→</span></Link>
             </Reveal>
           </div>
           
           <div className="flex gap-8 overflow-x-auto pb-12 px-6 snap-x snap-mandatory no-scrollbar">
-            {[
-              { name: "Manav A.", role: "Co-Founder & Overall Chair · Tech Lead & Architecture Developer", chapter: "President · Prosper High School", quote: "Building a legacy.", color: "bg-blue-500" },
-              { name: "Shaurya J.", role: "Co-Founder & Overall Chair", chapter: "President · Prosper High School", quote: "Efficiency is key.", color: "bg-purple-500" },
-              { name: "Aakanksh R.", role: "Co-Founder & Overall Chair", chapter: "President · Prosper High School", quote: "Connecting minds.", color: "bg-green-500" },
-              { name: "Alwin John SV", role: "Co-Founder & Overall Chair", chapter: "President · Richland High School", quote: "Expanding horizons.", color: "bg-orange-500" },
-              { name: "Arnav Shah", role: "President of Growth and Expansion · Prosper High School", quote: "Connection is absolute.", color: "bg-blue-500" },
-              { name: "Aumik Mehra", role: "VP of Next Generation Leaders", chapter: "Prosper High School", quote: "Empowering the next generation.", color: "bg-purple-500" },
-              { name: "Arnav Chugh", role: "President · Ranchview High School", quote: "Learning grows through community.", color: "bg-purple-500" },
-              { name: "Sreedatta Gudapudi", role: "President · V.R. Eaton High School", quote: "Helping students thrive.", color: "bg-green-500" },
-              { name: "Jeet Bhandhari", role: "President · Mansfield High School", quote: "Making support accessible.", color: "bg-orange-500" },
-              { name: "Rishit Shinkar", role: "President · Bridgeland High School", quote: "Building a stronger school community.", color: "bg-blue-500" },
-              { name: "Yohaan M.", role: "Vice President of Chapter Analytics", chapter: "Prosper High School", quote: "Unity is Key", color: "bg-purple-500" },
-              { name: "Amulya Singh", role: "Multi-campus Attendance Analyst & Engineer", chapter: "Prosper High School", color: "bg-green-500" },
-            ].map((leader, idx) => (
-              <div key={idx} className="snap-center flex-shrink-0 w-80 h-96 bg-gray-800 rounded-2xl relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300">
-                <div className={`absolute inset-0 opacity-20 ${leader.color}`}></div>
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black to-transparent">
-                  {leader.quote && <p className="text-gray-300 italic mb-2">"{leader.quote}"</p>}
-                  <h3 className="text-2xl font-bold text-white">{leader.name}</h3>
-                  <p className={`text-sm font-bold uppercase tracking-wider ${leader.color.replace('bg-', 'text-')}`}>{leader.role}</p>
-                  {leader.chapter && <p className="text-xs font-semibold uppercase tracking-wide text-gray-300 mt-1">{leader.chapter}</p>}
-                </div>
-              </div>
+            {prosperLeaders.map(leader => (
+              <LeaderCard key={leader.name} leader={leader} className="snap-center flex-shrink-0 w-80" />
             ))}
             
             <div className="snap-center flex-shrink-0 w-80 h-96 border-2 border-dashed border-gray-700 rounded-2xl flex flex-col items-center justify-center text-center p-6 hover:border-primary transition-colors cursor-pointer group">
