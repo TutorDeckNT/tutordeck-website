@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { useStaticPage } from '../seo/StaticPageContext';
+
 type AnimatedStatProps = {
   to: number | string;
 };
 
 const AnimatedStat = ({ to }: AnimatedStatProps) => {
+  const staticPage = useStaticPage();
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLParagraphElement>(null);
 
@@ -16,6 +19,7 @@ const AnimatedStat = ({ to }: AnimatedStatProps) => {
   const isNumeric = Number.isFinite(numericValue);
 
   useEffect(() => {
+    if (staticPage) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting || !isNumeric) return;
@@ -54,11 +58,11 @@ const AnimatedStat = ({ to }: AnimatedStatProps) => {
     }
 
     return () => observer.disconnect();
-  }, [isNumeric, numericValue]);
+  }, [isNumeric, numericValue, staticPage]);
 
   return (
     <p ref={ref} className="text-5xl font-bold text-secondary mb-2">
-      {isNumeric ? count.toLocaleString() : String(to)}
+      {isNumeric ? (staticPage ? numericValue : count).toLocaleString() : String(to)}
       {isNumeric ? '+' : ''}
     </p>
   );

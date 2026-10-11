@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import Reveal from '../Reveal';
 import AnimatedStat from '../AnimatedStat';
 
@@ -172,12 +173,12 @@ const BentoGrid = () => {
               </p>
             </div>
 
-            <a
-              href="#/get-involved"
+            <Link
+              to="/get-involved"
               className="bg-white text-black font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.3)]"
             >
               Launch Now
-            </a>
+            </Link>
           </Reveal>
         </div>
       </div>

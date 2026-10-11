@@ -7,4 +7,5 @@ export default defineConfig({
   // It must match your repository name.
   base: '/', 
   plugins: [react()],
+  ssr: { noExternal: true },
 })

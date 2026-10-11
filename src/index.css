@@ -177,3 +177,17 @@
 .animate-radar {
   animation: radar 2s infinite;
 }
+
+/* Build-time public pages and homepage fallback; never applies to the hash app. */
+.app-deep-link #public-fallback, #public-fallback[hidden] { display: none; }
+.static-public-page .public-feature-track { height: auto; padding: 3rem 0; }
+.static-public-page .public-feature-layout { position: static; height: auto; overflow: visible; }
+.static-public-page .public-feature-layout > div:first-child { width: 100%; height: auto; pointer-events: auto; }
+.static-public-page .public-feature-stack { height: auto; max-width: 60rem; }
+.static-public-page .public-feature-block { position: relative; opacity: 1 !important; transform: none !important; filter: none !important; margin-bottom: 3rem; }
+.static-public-page [data-static-event] { position: static; opacity: 1; pointer-events: auto; background: transparent; padding: 0; }
+.static-public-page [data-static-event] > div { width: 100%; }
+.static-public-page [data-static-event] > div > div:first-child { max-width: none; max-height: none; overflow: visible; opacity: 1; transform: none; }
+.static-public-page [data-static-event] button,
+.static-public-page [data-static-event] > div > div:last-child { display: none; }
+.static-public-page video { display: none; }
