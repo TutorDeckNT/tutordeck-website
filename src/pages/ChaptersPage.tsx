@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { useStaticPage } from '../seo/StaticPageContext';
 import Reveal from '../components/Reveal';
 
 const chapterData = [
@@ -62,11 +64,12 @@ const NewChapterCard = () => (
         <i className="fas fa-plus-circle text-5xl mb-4"></i>
         <h3 className="text-2xl font-extrabold">Your School Here</h3>
         <p className="font-semibold mb-4">Bring TutorDeck to your community.</p>
-        <a href="#/get-involved" className="bg-dark-bg text-primary font-bold px-6 py-2 rounded-lg hover:opacity-90">Learn How</a>
+        <Link to="/get-involved" className="bg-dark-bg text-primary font-bold px-6 py-2 rounded-lg hover:opacity-90">Learn How</Link>
     </div>
 );
 
 const ChaptersPage = () => {
+    const staticPage = useStaticPage();
     const [searchTerm, setSearchTerm] = useState('');
     const filteredChapters = useMemo(() => 
         chapterData.filter(chapter => 
@@ -82,7 +85,7 @@ const ChaptersPage = () => {
                 <p className="text-lg mt-4 max-w-3xl mx-auto">Find a TutorDeck chapter near you, or learn how to start a new one.</p>
             </Reveal>
 
-            <Reveal className="mb-12 max-w-2xl mx-auto">
+            {staticPage ? <p className="text-center mb-12"><a href="/#/chapters" className="text-primary underline">Search chapters in the interactive version</a></p> : <Reveal className="mb-12 max-w-2xl mx-auto">
                 <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3"><i className="fas fa-search text-gray-500"></i></span>
                     <input 
@@ -93,7 +96,7 @@ const ChaptersPage = () => {
                         className="w-full bg-dark-card border border-gray-600 rounded-lg py-3 pl-10 pr-4 text-dark-text focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                 </div>
-            </Reveal>
+            </Reveal>}
 
             <Reveal className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredChapters.map(chapter => <ChapterCard key={chapter.name} chapter={chapter} />)}
@@ -104,7 +107,7 @@ const ChaptersPage = () => {
                 <Reveal className="text-center col-span-full mt-12 bg-dark-card p-8 rounded-lg">
                     <h3 className="text-2xl font-bold text-dark-heading">No Chapters Found</h3>
                     <p className="text-dark-text mt-2">We couldn't find a chapter matching your search. Why not be the first to start one at your school?</p>
-                    <a href="#/get-involved" className="cta-button mt-6 inline-block bg-primary text-dark-bg font-semibold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors">Start a Chapter</a>
+                    <Link to="/get-involved" className="cta-button mt-6 inline-block bg-primary text-dark-bg font-semibold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors">Start a Chapter</Link>
                 </Reveal>
             )}
         </main>

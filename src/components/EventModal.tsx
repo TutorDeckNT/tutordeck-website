@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
+import { useStaticPage } from '../seo/StaticPageContext';
+
 interface EventModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 const EventModal = ({ isOpen, onClose }: EventModalProps) => {
+  const staticPage = useStaticPage();
   const [show, setShow] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -29,6 +32,7 @@ const EventModal = ({ isOpen, onClose }: EventModalProps) => {
 
   return (
     <div
+      data-static-event={staticPage || undefined}
       className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ease-out ${show ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       onClick={onClose}
     >

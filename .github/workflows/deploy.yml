@@ -35,6 +35,9 @@ jobs:
           # Added Dropbox Client ID
           VITE_DROPBOX_CLIENT_ID: ${{ secrets.VITE_DROPBOX_CLIENT_ID }}
 
+      - name: Validate public pages
+        run: npm run test:static
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:

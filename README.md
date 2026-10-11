@@ -163,3 +163,33 @@ The frontend is deployed automatically to GitHub Pages via the workflow defined 
     3.  **Install Dependencies:** Runs `npm install`.
     4.  **Build:** Runs `npm run build`. During this step, the GitHub Actions workflow securely injects the `VITE_` secrets into the build process.
     5.  **Deploy:** Uses a specialized action to push the final static files from the `dist/` folder to the `gh-pages` branch, making the site live.
+
+
+## Crawlable public pages
+
+The hash app keeps its existing routes and interactive behavior. `npm run build`
+now also renders public page components into static HTML at `/about/`,
+`/leadership-registrar/`, `/chapters/`, `/partnerships/`, and `/get-involved/`.
+These pages work without JavaScript and link to the corresponding root hash
+route through “Open interactive version.” They are served identically to people
+and crawlers, without bot detection or a rendering service.
+
+The public route registry in `src/seo/render.tsx` supplies page components,
+navigation, metadata, and generated sitemap entries. Add public pages there
+when extending the site. Edit the existing page components to update content;
+there is no separate static content copy. Authentication and Dropbox providers
+are excluded from the build-time renderer. Static rendering makes reveal
+content, final statistics, and homepage feature descriptions immediately visible.
+Chapter search and app-only actions link to the interactive version instead.
+
+The root HTML also contains a public homepage fallback outside the React mount.
+It remains visible until the app commits, and is suppressed before painting
+non-home hash routes or Dropbox OAuth callback fragments. Login, dashboard, and
+individual transcript verification records are not generated or listed in the
+sitemap. GitHub Pages continues to deploy `dist/`; no hosting change is needed.
+
+Run `npm run build` followed by `npm run test:static` to validate generated pages,
+metadata, links, the homepage fallback, and sitemap. The deployment workflow runs
+these checks before publishing. After deployment, submit
+`https://www.tutordeck.org/sitemap.xml` in Google Search Console and inspect the
+public pages with URL Inspection.

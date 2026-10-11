@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import LeadershipRegistrarPage from './pages/LeadershipRegistrarPage';
@@ -39,6 +39,12 @@ const ReferralCapture = () => {
 };
 
 function App() {
+  // Remove the crawlable homepage only when authenticated initialization lets
+  // the app actually commit content. Keep it available if initialization fails.
+  useLayoutEffect(() => {
+    const fallback = document.getElementById('public-fallback');
+    if (fallback) fallback.hidden = true;
+  }, []);
   return (
     <DropboxProvider>
       <ReferralCapture />

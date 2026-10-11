@@ -8,7 +8,10 @@ import BentoGrid from '../components/home/BentoGrid';
 import LeaderCard from '../components/LeaderCard';
 import { featuredLeaders } from '../data/leaders';
 
+import { useStaticPage } from '../seo/StaticPageContext';
+
 const HomePage = () => {
+  const staticPage = useStaticPage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // --- SCROLL ANIMATION LOGIC ---
@@ -45,7 +48,7 @@ const HomePage = () => {
 
   return (
     <>
-      <EventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      {!staticPage && <EventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
       
       <main className="bg-dark-bg">
         
@@ -60,7 +63,8 @@ const HomePage = () => {
           </div>
 
           <div className="relative z-10 container mx-auto px-6 text-center">
-            <Reveal variant="fade-up" className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 mb-8 cursor-pointer hover:bg-white/20 transition-colors" onClick={() => setIsModalOpen(true)}>
+            <Reveal variant="fade-up" className="relative inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 mb-8 cursor-pointer hover:bg-white/20 transition-colors" onClick={() => setIsModalOpen(true)}>
+              {staticPage && <a href="/#/" aria-label="Open event in interactive version" className="absolute inset-0" />}
               <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
               <span className="text-xs font-bold text-white uppercase tracking-wider">Upcoming: Student Outreach Program</span>
               <i className="fas fa-chevron-right text-xs text-gray-400"></i>
@@ -85,9 +89,9 @@ const HomePage = () => {
                 <span className="relative z-10 group-hover:text-white transition-colors">Join the Movement</span>
                 <div className="absolute inset-0 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out"></div>
               </Link>
-              <button onClick={() => document.getElementById('mission')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 text-white font-semibold hover:text-primary transition-colors">
+              {staticPage ? <a href="/about/" className="px-8 py-4 text-white font-semibold hover:text-primary">Learn More</a> : <button onClick={() => document.getElementById('mission')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 text-white font-semibold hover:text-primary transition-colors">
                 Learn More
-              </button>
+              </button>}
             </Reveal>
           </div>
 
@@ -114,16 +118,16 @@ const HomePage = () => {
             This container is 400vh tall to create the scroll track.
             The content inside is sticky.
         */}
-        <div ref={scrollRef} className="relative h-[400vh] bg-dark-bg">
-          <div className="sticky top-0 h-screen overflow-hidden flex flex-col lg:flex-row items-center justify-center container mx-auto px-6">
+        <div ref={scrollRef} className="public-feature-track relative h-[400vh] bg-dark-bg">
+          <div className="public-feature-layout sticky top-0 h-screen overflow-hidden flex flex-col lg:flex-row items-center justify-center container mx-auto px-6">
             
             {/* LEFT COLUMN: Text Stack */}
             <div className="w-full lg:w-1/2 flex items-center justify-center lg:justify-start relative z-20 h-full pointer-events-none">
-              <div className="relative w-full max-w-lg h-64">
+              <div className="public-feature-stack relative w-full max-w-lg h-64">
                 
                 {/* Text Block 1: Log */}
                 <motion.div 
-                  className="absolute inset-0 flex flex-col justify-center"
+                  className="public-feature-block absolute inset-0 flex flex-col justify-center"
                   style={{ opacity: text1Opacity, y: text1Y, filter: useTransform(text1Blur, v => `blur(${v})`) }}
                 >
                   <div className="inline-block px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary font-mono text-xs border border-primary/20 w-fit">01. LOG</div>
@@ -135,7 +139,7 @@ const HomePage = () => {
 
                 {/* Text Block 2: Track */}
                 <motion.div 
-                  className="absolute inset-0 flex flex-col justify-center"
+                  className="public-feature-block absolute inset-0 flex flex-col justify-center"
                   style={{ opacity: text2Opacity, y: text2Y, filter: useTransform(text2Blur, v => `blur(${v})`) }}
                 >
                   <div className="inline-block px-3 py-1 mb-4 rounded-full bg-secondary/10 text-secondary font-mono text-xs border border-secondary/20 w-fit">02. TRACK</div>
@@ -147,7 +151,7 @@ const HomePage = () => {
 
                 {/* Text Block 3: Verify */}
                 <motion.div 
-                  className="absolute inset-0 flex flex-col justify-center"
+                  className="public-feature-block absolute inset-0 flex flex-col justify-center"
                   style={{ opacity: text3Opacity, y: text3Y, filter: useTransform(text3Blur, v => `blur(${v})`) }}
                 >
                   <div className="inline-block px-3 py-1 mb-4 rounded-full bg-green-500/10 text-green-400 font-mono text-xs border border-green-500/20 w-fit">03. VERIFY</div>
@@ -161,9 +165,9 @@ const HomePage = () => {
             </div>
 
             {/* RIGHT COLUMN: Reactive Mockup */}
-            <div className="w-full lg:w-1/2 h-full flex items-center justify-center relative z-10">
+            <div className={`${staticPage ? 'hidden' : ''} w-full lg:w-1/2 h-full flex items-center justify-center relative z-10`}>
                {/* We pass the smoothProgress down so the mockup can sync perfectly */}
-               <DashboardMockup smoothProgress={smoothProgress} />
+               {!staticPage && <DashboardMockup smoothProgress={smoothProgress} />}
             </div>
 
           </div>
@@ -209,6 +213,7 @@ const HomePage = () => {
           </Reveal>
         </section>
 
+        {staticPage && <section id="referral-program" className="container mx-auto px-6 py-12"><EventModal isOpen={false} onClose={() => {}} /></section>}
       </main>
     </>
   );

@@ -1,5 +1,7 @@
 import { useEffect, useRef, ReactNode, ElementType, ComponentPropsWithoutRef } from 'react';
 
+import { useStaticPage } from '../seo/StaticPageContext';
+
 type RevealVariant = 'fade-up' | 'fade-in' | 'slide-left' | 'zoom-in' | 'blur-in';
 
 // Define props specific to Reveal
@@ -27,11 +29,13 @@ const Reveal = <C extends ElementType = 'div'>({
   ...props
 }: RevealProps<C>) => {
   const Component = as || 'div';
+  const staticPage = useStaticPage();
   
   // Use 'any' for ref to avoid complex polymorphic type conflicts with IntersectionObserver
   const ref = useRef<any>(null);
 
   useEffect(() => {
+    if (staticPage) return;
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -54,12 +58,12 @@ const Reveal = <C extends ElementType = 'div'>({
         observer.unobserve(currentRef);
       }
     };
-  }, [delay, threshold]);
+  }, [delay, threshold, staticPage]);
 
   return (
     <Component 
       ref={ref} 
-      className={`reveal ${variant} ${className}`} 
+      className={`reveal ${variant} ${staticPage ? 'visible' : ''} ${className}`}
       style={style}
       {...props as any}
     >
