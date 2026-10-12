@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 
 const origin = 'https://www.tutordeck.org';
 const pages = [
@@ -61,5 +61,27 @@ test('fallback fragment guard hides app routes and OAuth, but keeps ordinary anc
     let hidden = false;
     runInNewContext(guard, { location: { hash }, document: { documentElement: { classList: { add: () => { hidden = true; } } } } });
     assert.equal(hidden, expected, hash);
+  }
+});
+
+
+test('public pages avoid CDN assets and include a local preloaded font', async () => {
+  for (const [path] of pages) {
+    const html = await readFile(path === '/' ? 'dist/index.html' : `dist${path}index.html`, 'utf8');
+    assert.doesNotMatch(html, /cdnjs.cloudflare.com|cdn.jsdelivr.net|fonts.googleapis.com|fonts.gstatic|dropins.js|grainy-gradients|assets.mixkit|<video\b|<i\b/);
+    assert.match(html, /rel="preload" href="\/fonts\/inter-latin.woff2" as="font"/);
+    if (path !== '/') assert.doesNotMatch(html, /datePicker[^" ]*\.css/);
+  }
+});
+
+test('the initial module does not eagerly preload private tools and source maps omit source content', async () => {
+  const html = await readFile('dist/index.html', 'utf8');
+  assert.doesNotMatch(html, /rel="modulepreload"[^>]*(DashboardPage|ActivityChart|LoginPage|VerificationPage|LogActivityModal|DirectUploader|TutorDeckStudioModal|auth-)/);
+  const assets = await readdir('dist/assets');
+  for (const file of assets.filter(file => file.endsWith('.js'))) {
+    const code = await readFile(`dist/assets/${file}`, 'utf8');
+    assert.match(code, /sourceMappingURL=/, file);
+    const map = JSON.parse(await readFile(`dist/assets/${file}.map`, 'utf8'));
+    assert.ok(!map.sourcesContent || map.sourcesContent.every(source => source === null), file);
   }
 });

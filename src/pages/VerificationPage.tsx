@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Reveal from '../components/Reveal';
@@ -54,26 +55,26 @@ const VerificationPage = () => {
 
     const Content = () => {
         if (status === 'loading') return <>
-            <i className="fas fa-spinner fa-spin text-5xl text-secondary mb-6"></i>
+            <Icon className="fas fa-spinner fa-spin text-5xl text-secondary mb-6" />
             <h1 className="text-4xl font-extrabold">Verifying...</h1>
         </>;
         
         // --- CHANGE #3: Update the invalid/expired message ---
         if (status === 'invalid') return <>
-            <i className="fas fa-exclamation-circle text-6xl text-yellow-400 mb-6"></i>
+            <Icon className="fas fa-exclamation-circle text-6xl text-yellow-400 mb-6" />
             <h1 className="text-4xl font-extrabold">Document Not Found</h1>
             <p className="mt-2 text-dark-text max-w-md mx-auto">This verification link may be invalid, or the document may have expired and been removed from our system.</p>
         </>;
         
         return <>
-            <i className="fas fa-check-circle text-6xl text-primary mb-6"></i>
+            <Icon className="fas fa-check-circle text-6xl text-primary mb-6" />
             <h1 className="text-4xl font-extrabold">Transcript Verified</h1>
             <div className="text-left bg-dark-bg p-6 rounded-lg mt-8 w-full max-w-lg mx-auto border border-gray-700">
                 <p className="text-lg"><strong>Volunteer:</strong> <span>{data?.userName}</span></p>
                 <p className="text-lg mt-2"><strong>Date Issued:</strong> <span>{new Date(data?.createdAt || '').toLocaleDateString()}</span></p>
             </div>
             <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="cta-button mt-8 inline-block bg-secondary text-white font-bold text-lg px-10 py-4 rounded-lg">
-                Download Official Document <i className="fas fa-download ml-2"></i>
+                Download Official Document <Icon className="fas fa-download ml-2" />
             </a>
         </>;
     };

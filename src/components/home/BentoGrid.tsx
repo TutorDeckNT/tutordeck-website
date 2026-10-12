@@ -1,3 +1,4 @@
+import Icon from '../Icon';
 import { Link } from 'react-router-dom';
 import Reveal from '../Reveal';
 import AnimatedStat from '../AnimatedStat';
@@ -26,7 +27,7 @@ const BentoGrid = () => {
             className="md:col-span-2 bg-dark-card/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col justify-between min-h-[300px] relative overflow-hidden group"
           >
             <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
-              <i className="fas fa-users text-9xl" />
+              <Icon className="fas fa-users text-9xl"  />
             </div>
 
             <div>
@@ -135,7 +136,7 @@ const BentoGrid = () => {
             delay={0.3}
             className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-3xl p-8 flex flex-col justify-center relative"
           >
-            <i className="fas fa-quote-left text-4xl text-primary/20 absolute top-6 left-6" />
+            <Icon className="fas fa-quote-left text-4xl text-primary/20 absolute top-6 left-6"  />
 
             <p className="text-lg text-gray-300 italic relative z-10 pt-6">
               &quot;TutorDeck didn&apos;t just improve my grades, it gave me the
@@ -149,7 +150,7 @@ const BentoGrid = () => {
 
               <div>
                 <p className="font-bold text-white text-sm">Ricky B.</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-400">
                   11th Grade Student
                 </p>
               </div>

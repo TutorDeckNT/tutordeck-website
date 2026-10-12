@@ -1,3 +1,4 @@
+import Icon from './Icon';
 import { useState } from 'react';
 import Reveal from './Reveal';
 
@@ -50,7 +51,7 @@ const VolunteerCarousel = ({ volunteers }: VolunteerCarouselProps) => {
                     
                     {/* Volunteer details */}
                     <div className="mt-auto">
-                      <i className={`fas ${volunteer.icon} text-2xl mb-2`}></i>
+                      <Icon className={`fas ${volunteer.icon} text-2xl mb-2`} />
                       <h3 className="text-xl font-bold text-dark-heading">{volunteer.name}</h3>
                       <p className="text-primary font-semibold">{volunteer.award} Award</p>
                     </div>
@@ -62,11 +63,11 @@ const VolunteerCarousel = ({ volunteers }: VolunteerCarouselProps) => {
 
           {/* Left Arrow */}
           <button onClick={prevSlide} aria-label="Previous slide" className="absolute top-1/2 -left-4 md:-left-16 transform -translate-y-1/2 bg-gray-700/50 hover:bg-gray-600/80 rounded-full w-12 h-12 flex items-center justify-center transition-colors z-10">
-            <i className="fas fa-chevron-left text-white"></i>
+            <Icon className="fas fa-chevron-left text-white" />
           </button>
           {/* Right Arrow */}
           <button onClick={nextSlide} aria-label="Next slide" className="absolute top-1/2 -right-4 md:-right-16 transform -translate-y-1/2 bg-gray-700/50 hover:bg-gray-600/80 rounded-full w-12 h-12 flex items-center justify-center transition-colors z-10">
-            <i className="fas fa-chevron-right text-white"></i>
+            <Icon className="fas fa-chevron-right text-white" />
           </button>
 
           {/* Dots Navigation */}

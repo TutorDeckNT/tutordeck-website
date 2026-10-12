@@ -1,3 +1,4 @@
+import Icon from './Icon';
 import { useState, useEffect, FormEvent } from 'react';
 
 interface EmailModalProps { isOpen: boolean; onClose: () => void; onSubmit: (email: string) => void; isLoading: boolean; defaultEmail: string; }
@@ -21,7 +22,7 @@ const EmailModal = ({ isOpen, onClose, onSubmit, isLoading, defaultEmail }: Emai
                     <div className="flex justify-end gap-4 mt-8">
                         <button type="button" onClick={onClose} className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">Cancel</button>
                         <button type="submit" disabled={isLoading} className="px-6 py-2 rounded-lg bg-secondary hover:bg-secondary-dark transition-colors disabled:bg-gray-500 disabled:cursor-wait flex items-center gap-2">
-                            {isLoading ? <><i className="fas fa-spinner fa-spin"></i> Sending...</> : 'Confirm & Send'}
+                            {isLoading ? <><Icon className="fas fa-spinner fa-spin" /> Sending...</> : 'Confirm & Send'}
                         </button>
                     </div>
                 </form>

@@ -1,3 +1,4 @@
+import Icon from '../Icon';
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -20,7 +21,7 @@ const navLinks = [
 ];
 
 const DesktopNavbar = () => {
-  const { user, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const { scrollY, scrollYProgress } = useScroll();
   const location = useLocation();
   const navigate = useNavigate();
@@ -40,7 +41,6 @@ const DesktopNavbar = () => {
   // Dynamic Dimensions based on Scroll
   const width = useTransform(scrollY, [0, 100], ['48rem', '42rem']);
   const bgOpacity = useTransform(scrollY, [0, 100], [0.5, 0.75]);
-  const backdropBlur = useTransform(scrollY, [0, 100], ['12px', '24px']);
   
   // Logo Collapse Physics
   const logoTextOpacity = useTransform(scrollY, [0, 50], [1, 0]);
@@ -115,7 +115,7 @@ const DesktopNavbar = () => {
             className="absolute inset-0 rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden"
             style={{
                 backgroundColor: useTransform(bgOpacity, o => `rgba(17, 24, 39, ${o})`),
-                backdropFilter: useTransform(backdropBlur, b => `blur(${b})`),
+                backdropFilter: 'blur(16px)',
             }}
         >
             {/* Spotlight */}
@@ -132,7 +132,7 @@ const DesktopNavbar = () => {
               }}
             />
             {/* Noise */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('/noise.svg')]"></div>
             {/* Progress Bar */}
             <motion.div 
               className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent"
@@ -186,7 +186,7 @@ const DesktopNavbar = () => {
 
         {/* RIGHT: Auth HUD */}
         <div className="ml-4 relative z-10 flex items-center gap-3">
-          {user ? (
+          {loading ? <div className="w-28 h-10" role="status" aria-label="Loading account" /> : user ? (
             <div className="flex items-center gap-3 pl-3 border-l border-white/10">
               
               {/* Volunteer HUD: Ticker */}
@@ -201,14 +201,14 @@ const DesktopNavbar = () => {
               <button 
                 onClick={handleQuickLog}
                 className="w-8 h-8 rounded-full bg-primary/20 text-primary hover:bg-primary hover:text-dark-bg flex items-center justify-center transition-all duration-300 border border-primary/30"
-                title="Quick Log Activity"
+                aria-label="Quick log activity" title="Quick Log Activity"
               >
-                <i className="fas fa-plus text-xs"></i>
+                <Icon className="fas fa-plus text-xs" />
               </button>
 
               {/* Profile Dropdown */}
               <div className="relative" onMouseEnter={() => setIsProfileOpen(true)} onMouseLeave={() => setIsProfileOpen(false)}>
-                <button className="relative block">
+                <button className="relative block" aria-label="User menu" aria-expanded={isProfileOpen} onClick={() => setIsProfileOpen(value => !value)} onKeyDown={event => { if (event.key === 'Escape') setIsProfileOpen(false); }}>
                   <img 
                     src={user.photoURL || '/mascot.svg'} 
                     alt="User" 
@@ -232,12 +232,12 @@ const DesktopNavbar = () => {
                       </div>
                       <div className="p-2">
                         <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors">
-                          <i className="fas fa-columns w-4 text-center"></i> Dashboard
+                          <Icon className="fas fa-columns w-4 text-center" /> Dashboard
                         </Link>
                       </div>
                       <div className="border-t border-white/5 p-2">
                         <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10 transition-colors text-left">
-                          <i className="fas fa-sign-out-alt w-4 text-center"></i> Sign Out
+                          <Icon className="fas fa-sign-out-alt w-4 text-center" /> Sign Out
                         </button>
                       </div>
                     </motion.div>
@@ -251,7 +251,7 @@ const DesktopNavbar = () => {
               className="flex items-center gap-2 bg-white text-black px-5 py-2 rounded-full font-bold text-sm hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all"
             >
               <span>Sign In</span>
-              <i className="fas fa-arrow-right text-xs"></i>
+              <Icon className="fas fa-arrow-right text-xs" />
             </Link>
           )}
         </div>

@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-12",
+  "lighthouse": "13.5.0",
+  "environment": "Local production Vite preview, HeadlessChrome 153, fresh browser profiles, simulated mobile throttling / desktop preset. Local build has no production authentication credentials.",
+  "runs": [
+    {
+      "run": "desktop-1",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "lcp_ms": 448,
+      "cls": 8.931386958861322e-06,
+      "tbt_ms": 0
+    },
+    {
+      "run": "desktop-2",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "lcp_ms": 432,
+      "cls": 8.931386958861322e-06,
+      "tbt_ms": 0
+    },
+    {
+      "run": "desktop-3",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "lcp_ms": 448,
+      "cls": 8.931386958861322e-06,
+      "tbt_ms": 0
+    },
+    {
+      "run": "mobile-1",
+      "scores": {
+        "performance": 99,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "lcp_ms": 1956,
+      "cls": 0,
+      "tbt_ms": 0
+    },
+    {
+      "run": "mobile-2",
+      "scores": {
+        "performance": 99,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "lcp_ms": 2047,
+      "cls": 0,
+      "tbt_ms": 0
+    },
+    {
+      "run": "mobile-3",
+      "scores": {
+        "performance": 99,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "lcp_ms": 2048,
+      "cls": 0,
+      "tbt_ms": 0
+    }
+  ]
+}

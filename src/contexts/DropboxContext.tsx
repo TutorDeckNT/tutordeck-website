@@ -1,7 +1,7 @@
 // src/contexts/DropboxContext.tsx
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Dropbox, DropboxAuth } from 'dropbox';
+import type { Dropbox } from 'dropbox';
 
 interface DropboxContextType {
   isAuthenticated: boolean;
@@ -57,45 +57,38 @@ export const DropboxProvider = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  // Initialize Dropbox Client when token exists
+  // Load the SDK only for a restored or newly connected Dropbox session.
   useEffect(() => {
+    let cancelled = false;
+    setDbx(null);
     if (accessToken) {
-      const dropbox = new Dropbox({ accessToken });
-      setDbx(dropbox);
-    } else {
-      setDbx(null);
+      import('dropbox').then(({ Dropbox }) => {
+        if (!cancelled) setDbx(new Dropbox({ accessToken }));
+      }).catch(error => console.error('Could not load Dropbox', error));
     }
+    return () => { cancelled = true; };
   }, [accessToken]);
 
   const login = () => {
     if (!CLIENT_ID) {
-      console.error("Dropbox Client ID is missing in .env");
+      console.error('Dropbox Client ID is missing in .env');
       return;
     }
-    
-    const dbxAuth = new DropboxAuth({ clientId: CLIENT_ID });
-    
-    // Redirect URI matches the current page
-    const redirectUri = window.location.origin + window.location.pathname;
-    
-    dbxAuth.getAuthenticationUrl(redirectUri)
-      .then((authUrl: any) => {
-        // Calculate center position for the popup
-        const width = 600;
-        const height = 700;
-        const left = window.screen.width / 2 - width / 2;
-        const top = window.screen.height / 2 - height / 2;
-
-        // Open the auth URL in a popup
-        window.open(
-            authUrl, 
-            'Dropbox Authentication', 
-            `toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no, copyhistory=no, width=${width}, height=${height}, top=${top}, left=${left}`
-        );
-      })
-      .catch((error: any) => {
-        console.error("Error getting Dropbox auth URL:", error);
-      });
+    // Open during the click, before an asynchronous SDK import can trigger a popup blocker.
+    const width = 600;
+    const height = 700;
+    const popup = window.open('about:blank', 'Dropbox Authentication',
+      `width=${width},height=${height},left=${window.screen.width / 2 - width / 2},top=${window.screen.height / 2 - height / 2}`);
+    if (!popup) return;
+    import('dropbox').then(async ({ DropboxAuth }) => {
+      const dbxAuth = new DropboxAuth({ clientId: CLIENT_ID });
+      const redirectUri = window.location.origin + window.location.pathname;
+      const authUrl = await dbxAuth.getAuthenticationUrl(redirectUri);
+      if (!popup.closed) popup.location.href = String(authUrl);
+    }).catch(error => {
+      popup.close();
+      console.error('Error getting Dropbox auth URL:', error);
+    });
   };
 
   const logout = () => {

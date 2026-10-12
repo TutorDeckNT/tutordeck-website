@@ -193,3 +193,11 @@ metadata, links, the homepage fallback, and sitemap. The deployment workflow run
 these checks before publishing. After deployment, submit
 `https://www.tutordeck.org/sitemap.xml` in Google Search Console and inspect the
 public pages with URL Inspection.
+
+### Performance and accessibility
+
+Public rendering does not wait for Firebase session restoration. Account controls reserve space while loading; protected routes still wait for authentication. Heavy pages/tools and the Dropbox SDK load on demand. Flatpickr and its styles load only for the date step, with cancellation and cleanup when it unmounts.
+
+Icons use individually imported SVGs through `Icon`; legacy icon names remain only as internal lookup keys. Inter is served from `public/fonts/` with its OFL license and a metric-adjusted fallback. Keep the preload URL and font-face URL aligned. Production maps omit source contents. `npm test` checks app behavior and semantic accessibility; run it after `npm run build` because public-markup tests read generated pages.
+
+See [PageSpeed results and hosting follow-ups](docs/pagespeed-validation.md). Vite's MPA mode keeps missing file requests as 404, matching GitHub Pages while the application continues to use HashRouter.

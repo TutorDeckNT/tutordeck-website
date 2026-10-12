@@ -20,7 +20,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build
         run: npm run build
@@ -34,6 +34,9 @@ jobs:
           VITE_RENDER_API_URL: ${{ secrets.VITE_RENDER_API_URL }}
           # Added Dropbox Client ID
           VITE_DROPBOX_CLIENT_ID: ${{ secrets.VITE_DROPBOX_CLIENT_ID }}
+
+      - name: Test app behavior and accessibility
+        run: npm test
 
       - name: Validate public pages
         run: npm run test:static

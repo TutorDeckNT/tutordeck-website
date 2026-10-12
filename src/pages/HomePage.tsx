@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
@@ -34,17 +35,14 @@ const HomePage = () => {
   // Act 1: Log (0.00 - 0.33)
   const text1Opacity = useTransform(smoothProgress, [0, 0.1, 0.25, 0.33], [0, 1, 1, 0]);
   const text1Y = useTransform(smoothProgress, [0, 0.1, 0.25, 0.33], [20, 0, 0, -20]);
-  const text1Blur = useTransform(smoothProgress, [0.25, 0.33], ["0px", "10px"]);
 
   // Act 2: Track (0.33 - 0.66)
   const text2Opacity = useTransform(smoothProgress, [0.33, 0.43, 0.58, 0.66], [0, 1, 1, 0]);
   const text2Y = useTransform(smoothProgress, [0.33, 0.43, 0.58, 0.66], [20, 0, 0, -20]);
-  const text2Blur = useTransform(smoothProgress, [0.58, 0.66], ["0px", "10px"]);
 
   // Act 3: Verify (0.66 - 1.00)
   const text3Opacity = useTransform(smoothProgress, [0.66, 0.76, 0.9, 1.0], [0, 1, 1, 0]);
   const text3Y = useTransform(smoothProgress, [0.66, 0.76, 0.9, 1.0], [20, 0, 0, -20]);
-  const text3Blur = useTransform(smoothProgress, [0.9, 1.0], ["0px", "10px"]);
 
   return (
     <>
@@ -55,22 +53,19 @@ const HomePage = () => {
         {/* --- 1. HERO SECTION --- */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
-            <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-40">
-              <source src="https://assets.mixkit.co/videos/preview/mixkit-students-in-a-classroom-2322-large.mp4" type="video/mp4" />
-            </video>
             <div className="absolute inset-0 bg-gradient-to-b from-dark-bg/80 via-dark-bg/50 to-dark-bg"></div>
             <div className="absolute inset-0 bg-radial-gradient from-transparent to-dark-bg"></div>
           </div>
 
           <div className="relative z-10 container mx-auto px-6 text-center">
-            <Reveal variant="fade-up" className="relative inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 mb-8 cursor-pointer hover:bg-white/20 transition-colors" onClick={() => setIsModalOpen(true)}>
+            <Reveal eager as={staticPage ? 'div' : 'button'} variant="fade-up" className="relative inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 mb-8 cursor-pointer hover:bg-white/20 transition-colors" onClick={staticPage ? undefined : () => setIsModalOpen(true)}>
               {staticPage && <a href="/#/" aria-label="Open event in interactive version" className="absolute inset-0" />}
               <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
               <span className="text-xs font-bold text-white uppercase tracking-wider">Upcoming: Student Outreach Program</span>
-              <i className="fas fa-chevron-right text-xs text-gray-400"></i>
+              <Icon className="fas fa-chevron-right text-xs text-gray-400" />
             </Reveal>
 
-            <Reveal variant="blur-in" delay={0.2}>
+            <Reveal eager variant="fade-in">
               <h1 className="text-6xl md:text-8xl font-extrabold text-white tracking-tight mb-6 leading-tight">
                 Your Academic <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-primary">Legacy Starts Here.</span>
@@ -89,14 +84,14 @@ const HomePage = () => {
                 <span className="relative z-10 group-hover:text-white transition-colors">Join the Movement</span>
                 <div className="absolute inset-0 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out"></div>
               </Link>
-              {staticPage ? <a href="/about/" className="px-8 py-4 text-white font-semibold hover:text-primary">Learn More</a> : <button onClick={() => document.getElementById('mission')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 text-white font-semibold hover:text-primary transition-colors">
-                Learn More
+              {staticPage ? <a href="/about/" className="px-8 py-4 text-white font-semibold hover:text-primary">Learn about TutorDeck</a> : <button onClick={() => document.getElementById('mission')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 text-white font-semibold hover:text-primary transition-colors">
+                Learn about TutorDeck
               </button>}
             </Reveal>
           </div>
 
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-gray-500">
-            <i className="fas fa-chevron-down"></i>
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-gray-400">
+            <Icon className="fas fa-chevron-down" />
           </div>
         </section>
 
@@ -128,7 +123,7 @@ const HomePage = () => {
                 {/* Text Block 1: Log */}
                 <motion.div 
                   className="public-feature-block absolute inset-0 flex flex-col justify-center"
-                  style={{ opacity: text1Opacity, y: text1Y, filter: useTransform(text1Blur, v => `blur(${v})`) }}
+                  style={{ opacity: text1Opacity, y: text1Y }}
                 >
                   <div className="inline-block px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary font-mono text-xs border border-primary/20 w-fit">01. LOG</div>
                   <h3 className="text-5xl font-bold text-white mb-6">Log with Ease.</h3>
@@ -140,7 +135,7 @@ const HomePage = () => {
                 {/* Text Block 2: Track */}
                 <motion.div 
                   className="public-feature-block absolute inset-0 flex flex-col justify-center"
-                  style={{ opacity: text2Opacity, y: text2Y, filter: useTransform(text2Blur, v => `blur(${v})`) }}
+                  style={{ opacity: text2Opacity, y: text2Y }}
                 >
                   <div className="inline-block px-3 py-1 mb-4 rounded-full bg-secondary/10 text-secondary font-mono text-xs border border-secondary/20 w-fit">02. TRACK</div>
                   <h3 className="text-5xl font-bold text-white mb-6">Gamified Impact.</h3>
@@ -152,7 +147,7 @@ const HomePage = () => {
                 {/* Text Block 3: Verify */}
                 <motion.div 
                   className="public-feature-block absolute inset-0 flex flex-col justify-center"
-                  style={{ opacity: text3Opacity, y: text3Y, filter: useTransform(text3Blur, v => `blur(${v})`) }}
+                  style={{ opacity: text3Opacity, y: text3Y }}
                 >
                   <div className="inline-block px-3 py-1 mb-4 rounded-full bg-green-500/10 text-green-400 font-mono text-xs border border-green-500/20 w-fit">03. VERIFY</div>
                   <h3 className="text-5xl font-bold text-white mb-6">Official Transcripts.</h3>
@@ -194,10 +189,10 @@ const HomePage = () => {
             
             <div className="snap-center flex-shrink-0 w-80 h-96 border-2 border-dashed border-gray-700 rounded-2xl flex flex-col items-center justify-center text-center p-6 hover:border-primary transition-colors cursor-pointer group">
               <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-black transition-colors">
-                <i className="fas fa-plus text-2xl"></i>
+                <Icon className="fas fa-plus text-2xl" />
               </div>
               <h3 className="text-xl font-bold text-white">You?</h3>
-              <p className="text-gray-500 mt-2">Join our leadership team.</p>
+              <p className="text-gray-400 mt-2">Join our leadership team.</p>
             </div>
           </div>
         </section>

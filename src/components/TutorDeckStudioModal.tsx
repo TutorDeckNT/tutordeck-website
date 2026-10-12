@@ -1,3 +1,4 @@
+import Icon from './Icon';
 // src/components/TutorDeckStudioModal.tsx
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
@@ -177,7 +178,7 @@ const TutorDeckStudioModal = ({ isOpen, onClose, onSuccess }: TutorDeckStudioMod
                     {successLink ? (
                         <div className="w-full pt-4 space-y-4 text-center">
                             <div className="bg-green-500/20 border border-green-500/50 rounded-xl p-4">
-                                <i className="fas fa-check-circle text-4xl text-green-400 mb-2"></i>
+                                <Icon className="fas fa-check-circle text-4xl text-green-400 mb-2" />
                                 <h3 className="font-bold text-green-200">Upload Complete!</h3>
                                 <p className="text-sm text-green-100">Link copied to clipboard.</p>
                             </div>
@@ -191,11 +192,11 @@ const TutorDeckStudioModal = ({ isOpen, onClose, onSuccess }: TutorDeckStudioMod
                                 <>
                                     {!isAuthenticated ? (
                                         <button onClick={login} className="w-full flex items-center justify-center bg-[#0061FE] text-white font-semibold py-3 px-4 rounded-xl hover:bg-[#0061FE]/90 transition-colors">
-                                            <i className="fab fa-dropbox mr-2"></i> Connect Dropbox to Save
+                                            <Icon className="fab fa-dropbox mr-2" /> Connect Dropbox to Save
                                         </button>
                                     ) : (
                                         <button onClick={handleUpload} disabled={isUploading} className="w-full flex items-center justify-center bg-secondary hover:bg-secondary-dark text-white font-semibold py-3 px-4 rounded-xl transition-colors disabled:opacity-50">
-                                            {isUploading ? <><i className="fas fa-spinner fa-spin mr-2"></i> Uploading...</> : <><CloudArrowUpIcon className="w-5 h-5 mr-2" /> Save to Dropbox</>}
+                                            {isUploading ? <><Icon className="fas fa-spinner fa-spin mr-2" /> Uploading...</> : <><CloudArrowUpIcon className="w-5 h-5 mr-2" /> Save to Dropbox</>}
                                         </button>
                                     )}
                                     <button onClick={resetRecording} disabled={isUploading} className="w-full text-center bg-white/10 hover:bg-white/20 text-dark-heading font-semibold py-3 px-4 rounded-xl transition-colors">Record Again</button>
@@ -207,7 +208,7 @@ const TutorDeckStudioModal = ({ isOpen, onClose, onSuccess }: TutorDeckStudioMod
                             )}
                         </div>
                     )}
-                    <button onClick={onClose} className="absolute top-4 right-4 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-dark-text hover:bg-white/20 transition-colors z-10"><i className="fas fa-times"></i></button>
+                    <button aria-label="Close dialog" onClick={onClose} className="absolute top-4 right-4 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-dark-text hover:bg-white/20 transition-colors z-10"><Icon className="fas fa-times" /></button>
                 </div>
             </div>
         </Portal>
