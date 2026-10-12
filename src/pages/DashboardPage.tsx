@@ -1,14 +1,15 @@
+import Icon from '../components/Icon';
 // src/pages/DashboardPage.tsx
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Reveal from '../components/Reveal';
 import EmailModal from '../components/EmailModal';
-import LogActivityModal from '../components/LogActivityModal';
+const LogActivityModal = lazy(() => import('../components/LogActivityModal'));
 
 import ImpactCard from '../components/dashboard/ImpactCard';
 import ProgressTracker from '../components/dashboard/ProgressTracker';
-import ActivityChart from '../components/dashboard/ActivityChart';
+const ActivityChart = lazy(() => import('../components/dashboard/ActivityChart'));
 import AchievementsList from '../components/dashboard/AchievementsList';
 
 interface VolunteerActivity {
@@ -242,8 +243,8 @@ const DashboardPage = () => {
     };
 
     const SortIcon = ({ column }: { column: 'date' | 'hours' }) => {
-        if (sort.key !== column) return <i className="fas fa-sort text-gray-400 ml-2"></i>;
-        return sort.order === 'desc' ? <i className="fas fa-sort-down text-white ml-2"></i> : <i className="fas fa-sort-up text-white ml-2"></i>;
+        if (sort.key !== column) return <Icon className="fas fa-sort text-gray-400 ml-2" />;
+        return sort.order === 'desc' ? <Icon className="fas fa-sort-down text-white ml-2" /> : <Icon className="fas fa-sort-up text-white ml-2" />;
     };
 
     const SkeletonLoader = () => (
@@ -256,7 +257,7 @@ const DashboardPage = () => {
     return (
         <>
             <EmailModal isOpen={isEmailModalOpen} onClose={() => setIsEmailModalOpen(false)} onSubmit={handleGenerateTranscript} isLoading={isGenerating} defaultEmail={user?.email || ''} />
-            <LogActivityModal isOpen={isLogModalOpen} onClose={() => setIsLogModalOpen(false)} onActivityAdded={handleActivityAdded} />
+            {isLogModalOpen && <Suspense fallback={<p role="status">Loading activity form…</p>}><LogActivityModal isOpen onClose={() => setIsLogModalOpen(false)} onActivityAdded={handleActivityAdded} /></Suspense>}
 
             <main className="container mx-auto px-6 py-20 mt-16">
                 <Reveal className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
@@ -267,12 +268,12 @@ const DashboardPage = () => {
                     <div className="flex gap-4 mt-6 md:mt-0">
                         {showRefreshButton && (
                             <button onClick={handleRefreshClick} disabled={isRefreshing} className="bg-white/10 backdrop-blur-md border border-white/20 text-dark-heading font-semibold px-5 py-2.5 rounded-xl hover:bg-white/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait">
-                                <i className={`fas fa-sync ${isRefreshing ? 'fa-spin' : ''}`}></i>
+                                <Icon className={`fas fa-sync ${isRefreshing ? 'fa-spin' : ''}`} />
                                 <span>{isRefreshing ? 'Syncing...' : 'Refresh'}</span>
                             </button>
                         )}
                         <button onClick={() => setIsLogModalOpen(true)} className="bg-primary/80 backdrop-blur-md border border-primary text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-primary transition-colors flex items-center justify-center gap-2 cta-button">
-                            <i className="fas fa-plus-circle"></i><span>Log Activity</span>
+                            <Icon className="fas fa-plus-circle" /><span>Log Activity</span>
                         </button>
                     </div>
                 </Reveal>
@@ -290,7 +291,7 @@ const DashboardPage = () => {
                                 <Reveal className="bg-gradient-to-br from-purple-900/40 to-blue-900/40 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-lg">
                                     <div className="flex items-center gap-3 mb-3">
                                         <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
-                                            <i className="fas fa-user-plus"></i>
+                                            <Icon className="fas fa-user-plus" />
                                         </div>
                                         <h3 className="font-bold text-dark-heading">Refer & Earn</h3>
                                     </div>
@@ -302,9 +303,9 @@ const DashboardPage = () => {
                                         className="w-full bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg py-2 px-3 text-sm font-semibold text-white transition-all flex items-center justify-center gap-2"
                                     >
                                         {copySuccess ? (
-                                            <><i className="fas fa-check text-green-400"></i> Copied!</>
+                                            <><Icon className="fas fa-check text-green-400" /> Copied!</>
                                         ) : (
-                                            <><i className="fas fa-link"></i> Copy Link</>
+                                            <><Icon className="fas fa-link" /> Copy Link</>
                                         )}
                                     </button>
                                 </Reveal>
@@ -312,7 +313,7 @@ const DashboardPage = () => {
                                 <ProgressTracker totalHours={totalHours} />
                             </div>
                             <div className="lg:col-span-2 space-y-8">
-                                <ActivityChart activities={activities} />
+                                <Suspense fallback={<div className="h-64" role="status">Loading activity chart…</div>}><ActivityChart activities={activities} /></Suspense>
                                 <Reveal>
                                     <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                                         <h2 className="text-2xl font-bold text-dark-heading">Volunteer Transcript</h2>
@@ -321,7 +322,7 @@ const DashboardPage = () => {
                                                 <option>All</option><option>Peer Tutoring</option><option>Mentorship</option><option>Referral Bonus</option><option>Sign-up Bonus</option>
                                             </select>
                                             <button onClick={() => { setServerMessage(null); setIsEmailModalOpen(true); }} disabled={activities.length === 0} className="bg-secondary/80 backdrop-blur-md text-white font-semibold px-4 py-2 rounded-xl hover:bg-secondary transition-colors disabled:bg-gray-500/20 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm border border-secondary">
-                                                <i className="fas fa-envelope"></i><span>Email</span>
+                                                <Icon className="fas fa-envelope" /><span>Email</span>
                                             </button>
                                         </div>
                                     </div>
@@ -343,7 +344,7 @@ const DashboardPage = () => {
                                                                 <td className="p-4">
                                                                     {activity.activityType}
                                                                     {/* Show description if available (e.g. for referrals) */}
-                                                                    {(activity as any).description && <span className="block text-xs text-gray-500">{(activity as any).description}</span>}
+                                                                    {(activity as any).description && <span className="block text-xs text-gray-400">{(activity as any).description}</span>}
                                                                 </td>
                                                                 <td className="p-4 font-bold text-right">{activity.hours.toFixed(1)}</td>
                                                             </tr>
@@ -351,7 +352,7 @@ const DashboardPage = () => {
                                                     ) : (
                                                         <tr><td colSpan={3} className="text-center p-8 text-gray-400">
                                                             <div className="flex flex-col items-center gap-4">
-                                                                <i className="fas fa-folder-open text-4xl text-gray-500"></i>
+                                                                <Icon className="fas fa-folder-open text-4xl text-gray-400" />
                                                                 <span className="font-semibold">No Activities Found</span>
                                                                 <p className="text-sm max-w-xs">Log your first volunteer session to see your transcript and start tracking your impact!</p>
                                                             </div>

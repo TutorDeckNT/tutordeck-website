@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged, User, signInWithPopup, signOut } from 'firebase/auth';
-import { auth, googleProvider } from '../firebaseConfig';
+import type { User } from 'firebase/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -10,49 +9,61 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+let runtime: Promise<typeof import('../lib/auth')> | undefined;
+const loadAuth = () => runtime ??= import('../lib/auth').catch(error => {
+  runtime = undefined;
+  throw error;
+});
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+    const initialize = () => {
+      loadAuth().then(({ observeAuth }) => {
+        if (cancelled) return;
+        unsubscribe = observeAuth(currentUser => {
+          setUser(currentUser);
+          setLoading(false);
+        }, () => {
+          setUser(null);
+          setLoading(false);
+        });
+      }).catch(() => {
+        // Public content remains usable if authentication cannot initialize.
+        if (!cancelled) setLoading(false);
+      });
+    };
+    // Let public content paint before downloading authentication code.
+    const timer = window.setTimeout(initialize, 1000);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      unsubscribe?.();
+    };
   }, []);
 
   const signInWithGoogle = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
-    }
+    const { signIn } = await loadAuth();
+    const currentUser = await signIn();
+    setUser(currentUser);
+    setLoading(false);
   };
 
   const logout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Error signing out", error);
-    }
+    const { logOut } = await loadAuth();
+    await logOut();
+    setUser(null);
   };
 
-  const value = {
-    user,
-    loading,
-    signInWithGoogle,
-    logout,
-  };
-
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (context === undefined) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

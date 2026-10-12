@@ -10,6 +10,7 @@ const LeadershipRegistrarPage = () => (
       <p className="text-lg text-gray-300 mt-4 max-w-2xl mx-auto">Meet the leaders serving TutorDeck chapters across our school communities.</p>
       <Link to="/" className="inline-block mt-6 text-primary font-semibold hover:underline">Back to Our Leaders</Link>
     </Reveal>
+    <h2 className="sr-only">Chapter leadership</h2>
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {registrarLeaders.map(leader => (
         <LeaderCard key={leader.name} leader={leader} />

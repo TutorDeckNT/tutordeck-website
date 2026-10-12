@@ -1,14 +1,16 @@
+import Icon from './Icon';
 // src/components/LogActivityModal.tsx
 
-import { useState, FormEvent, useEffect, useRef } from 'react';
+import { useState, FormEvent, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useProofLinkHistory } from '../hooks/useProofLinkHistory';
-import TutorDeckStudioModal from './TutorDeckStudioModal';
-import DirectUploader from './DirectUploader';
+const TutorDeckStudioModal = lazy(() => import('./TutorDeckStudioModal'));
+const DirectUploader = lazy(() => import('./DirectUploader'));
 import Portal from './Portal';
 
-declare const flatpickr: any;
+import type { Instance as FlatpickrInstance } from 'flatpickr/dist/types/instance';
+import { loadDatePicker } from '../lib/datePicker';
 
 interface VolunteerActivity {
     id: string;
@@ -71,10 +73,15 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     const { isDuplicate, addLinkToHistory } = useProofLinkHistory();
 
     // Refs
-    const dateInputRef = useRef<HTMLInputElement>(null);
+    const dateInputRef = useRef<HTMLInputElement | null>(null);
+    const [dateInput, setDateInput] = useState<HTMLInputElement | null>(null);
+    const attachDateInput = useCallback((element: HTMLInputElement | null) => {
+        dateInputRef.current = element;
+        setDateInput(element);
+    }, []);
     const hoursInputRef = useRef<HTMLInputElement>(null);
     const justificationRef = useRef<HTMLTextAreaElement>(null);
-    const flatpickrInstance = useRef<any>(null);
+    const flatpickrInstance = useRef<FlatpickrInstance | null>(null);
 
     // --- Steps Configuration ---
     // We determine total steps dynamically based on if justification is needed
@@ -240,17 +247,25 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
         }, 500); // Wait for animation
     }, [currentStep, needsJustification]);
 
-    // Flatpickr
+    // Load the date picker and its styles only for the date step.
     useEffect(() => {
-        if (isOpen && currentStep === 1 && dateInputRef.current) {
-            flatpickrInstance.current = flatpickr(dateInputRef.current, {
-                dateFormat: "Y-m-d", defaultDate: activityDate, maxDate: new Date(),
-                onChange: (selectedDates: Date[]) => { if (selectedDates[0]) setActivityDate(selectedDates[0].toISOString().split('T')[0]); },
-            });
+        let cancelled = false;
+        if (isOpen && currentStep === 1 && dateInput) {
+            loadDatePicker().then(flatpickr => {
+                if (cancelled || !dateInputRef.current) return;
+                flatpickrInstance.current = flatpickr(dateInputRef.current, {
+                    dateFormat: 'Y-m-d', defaultDate: activityDate, maxDate: new Date(),
+                    // The formatted date is local calendar time, not UTC.
+                    onChange: (_dates, dateString) => setActivityDate(dateString),
+                });
+            }).catch(() => { if (!cancelled) setErrorMsg('The calendar could not load. Please close the form and try again.'); });
         }
-        return () => { if (flatpickrInstance.current) flatpickrInstance.current.destroy(); };
-    }, [isOpen, currentStep]);
-
+        return () => {
+            cancelled = true;
+            flatpickrInstance.current?.destroy();
+            flatpickrInstance.current = null;
+        };
+    }, [isOpen, currentStep, dateInput]);
 
     // --- Submission ---
     const handleSubmit = async (e: FormEvent) => {
@@ -315,7 +330,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                     className={`flex-1 group relative p-8 md:p-12 rounded-2xl border-2 text-left transition-all duration-300 hover:scale-[1.02] ${activityType === type ? 'bg-primary text-dark-bg border-primary' : 'bg-white/5 border-white/10 hover:border-primary/50'}`}
                 >
                     <div className="text-sm font-bold opacity-60 mb-4 uppercase tracking-wider">Option {idx + 1}</div>
-                    <i className={`fas ${type === 'Peer Tutoring' ? 'fa-book-reader' : 'fa-user-friends'} text-5xl mb-6 ${activityType === type ? 'text-dark-bg' : 'text-primary'}`}></i>
+                    <Icon className={`fas ${type === 'Peer Tutoring' ? 'fa-book-reader' : 'fa-user-friends'} text-5xl mb-6 ${activityType === type ? 'text-dark-bg' : 'text-primary'}`} />
                     <h3 className="text-3xl md:text-4xl font-bold">{type}</h3>
                     <div className={`mt-4 text-sm ${activityType === type ? 'text-dark-bg/80' : 'text-gray-400'}`}>
                         {type === 'Peer Tutoring' ? 'Helping students with academic coursework.' : 'Guiding peers in personal or leadership growth.'}
@@ -331,14 +346,15 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-12">When did you volunteer?</h2>
             <div className="relative inline-block w-full">
                 <input
-                    ref={dateInputRef}
+                    aria-label="Volunteer date"
+                    ref={attachDateInput}
                     type="text"
                     value={activityDate}
                     onChange={(e) => setActivityDate(e.target.value)}
                     className="w-full bg-transparent text-center text-5xl md:text-7xl font-bold text-primary placeholder-gray-700 focus:outline-none border-b-2 border-white/20 focus:border-primary pb-4 transition-colors font-mono"
                     placeholder="YYYY-MM-DD"
                 />
-                <i className="fas fa-calendar-alt absolute right-4 bottom-8 text-2xl text-gray-500 pointer-events-none"></i>
+                <Icon className="fas fa-calendar-alt absolute right-4 bottom-8 text-2xl text-gray-400 pointer-events-none" />
             </div>
             <div className="flex justify-center gap-3 mt-8">
                 <button onClick={() => setActivityDate(new Date().toISOString().split('T')[0])} className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full text-sm font-semibold transition-colors">Today</button>
@@ -356,7 +372,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                 {proofLink ? (
                     <div className="flex flex-col items-center animate-in zoom-in duration-300">
                         <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-green-500/30">
-                            <i className="fas fa-check text-3xl text-dark-bg"></i>
+                            <Icon className="fas fa-check text-3xl text-dark-bg" />
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-1">Evidence Secured</h3>
                         <p className="text-green-400 font-mono text-sm break-all max-w-md">{proofLink}</p>
@@ -372,18 +388,18 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                     <div className="space-y-6">
                         <div className="flex justify-center">
                             <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary animate-pulse">
-                                <i className="fas fa-cloud-upload-alt text-4xl"></i>
+                                <Icon className="fas fa-cloud-upload-alt text-4xl" />
                             </div>
                         </div>
                         <div>
-                            <DirectUploader onUploadSuccess={handleProofSuccess} />
+                            <Suspense fallback={<p role="status">Loading upload tools…</p>}><DirectUploader onUploadSuccess={handleProofSuccess} /></Suspense>
                         </div>
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
-                            <div className="relative flex justify-center text-sm"><span className="px-2 bg-dark-bg text-gray-500">OR</span></div>
+                            <div className="relative flex justify-center text-sm"><span className="px-2 bg-dark-bg text-gray-400">OR</span></div>
                         </div>
                         <button onClick={() => setIsStudioOpen(true)} className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white font-bold flex items-center justify-center gap-3 transition-all hover:scale-[1.02]">
-                            <i className="fas fa-microphone text-red-500"></i> Record Audio Directly
+                            <Icon className="fas fa-microphone text-red-500" /> Record Audio Directly
                         </button>
                     </div>
                 )}
@@ -407,7 +423,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                         className="w-48 bg-transparent text-center text-7xl md:text-8xl font-bold text-primary placeholder-gray-700 focus:outline-none border-b-4 border-white/20 focus:border-primary pb-2 transition-colors font-mono"
                         placeholder="0.0"
                     />
-                    <span className="text-2xl md:text-4xl text-gray-500 ml-4 font-normal">hours</span>
+                    <span className="text-2xl md:text-4xl text-gray-400 ml-4 font-normal">hours</span>
                 </span>
              </h2>
              <p className="text-gray-400 text-lg">Enter the total duration of your session.</p>
@@ -421,7 +437,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
         return (
             <div className="w-full max-w-2xl">
                 <div className="flex items-center gap-4 mb-8 text-yellow-500 bg-yellow-500/10 p-4 rounded-xl border border-yellow-500/20">
-                    <i className="fas fa-exclamation-triangle text-2xl"></i>
+                    <Icon className="fas fa-exclamation-triangle text-2xl" />
                     <div>
                         <h3 className="font-bold text-lg">Time Discrepancy Detected</h3>
                         <p className="text-sm opacity-90">You logged <strong>{hours} hours</strong>, but the evidence is only <strong>{formatDuration(detectedDuration || 0)}</strong>.</p>
@@ -440,7 +456,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                 ></textarea>
                 
                 <div className="flex justify-end mt-2">
-                    <span className={`text-sm font-bold transition-colors ${isValid ? 'text-green-400' : 'text-gray-500'}`}>
+                    <span className={`text-sm font-bold transition-colors ${isValid ? 'text-green-400' : 'text-gray-400'}`}>
                         {sentences} / 2 Sentences
                     </span>
                 </div>
@@ -456,25 +472,25 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                 
                 <div className="text-center border-b-2 border-dashed border-gray-300 pb-6 mb-6">
                     <h2 className="text-2xl font-black uppercase tracking-widest">Receipt</h2>
-                    <p className="text-xs text-gray-500 font-mono mt-1">{new Date().toLocaleTimeString()}</p>
+                    <p className="text-xs text-gray-400 font-mono mt-1">{new Date().toLocaleTimeString()}</p>
                 </div>
 
                 <div className="space-y-4 font-mono text-sm">
                     <div className="flex justify-between">
-                        <span className="text-gray-500">Activity</span>
+                        <span className="text-gray-400">Activity</span>
                         <span className="font-bold">{activityType}</span>
                     </div>
                     <div className="flex justify-between">
-                        <span className="text-gray-500">Date</span>
+                        <span className="text-gray-400">Date</span>
                         <span className="font-bold">{activityDate}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                        <span className="text-gray-500">Evidence</span>
+                        <span className="text-gray-400">Evidence</span>
                         <span className="text-xs bg-gray-200 px-2 py-1 rounded truncate max-w-[150px]">{proofLink ? 'Uploaded' : 'Missing'}</span>
                     </div>
                     {needsJustification && (
                         <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
-                            <span className="text-gray-500">Note</span>
+                            <span className="text-gray-400">Note</span>
                             <span className="text-xs text-right max-w-[60%] italic">"{justification.substring(0, 30)}..."</span>
                         </div>
                     )}
@@ -491,7 +507,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                 disabled={submitting}
                 className="w-full mt-8 bg-primary hover:bg-primary-dark text-dark-bg font-black text-xl py-4 rounded-xl shadow-lg shadow-primary/20 transform hover:scale-105 transition-all flex items-center justify-center gap-3"
             >
-                {submitting ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-paper-plane"></i>}
+                {submitting ? <Icon className="fas fa-spinner fa-spin" /> : <Icon className="fas fa-paper-plane" />}
                 <span>Submit Activity</span>
             </button>
         </div>
@@ -500,11 +516,11 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
     const renderSuccessStep = () => (
         <div className="text-center">
             <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center text-4xl text-white mb-6 mx-auto animate-bounce">
-                <i className="fas fa-check"></i>
+                <Icon className="fas fa-check" />
             </div>
             <h2 className="text-4xl font-bold text-white mb-4">Logged Successfully!</h2>
             <p className="text-gray-400 mb-8">Your hours have been recorded and are pending verification.</p>
-            <button onClick={onClose} className="px-8 py-3 bg-white/10 hover:bg-white/20 rounded-full text-white font-bold transition-colors">
+            <button aria-label="Close dialog" onClick={onClose} className="px-8 py-3 bg-white/10 hover:bg-white/20 rounded-full text-white font-bold transition-colors">
                 Close
             </button>
         </div>
@@ -514,7 +530,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
 
     return (
         <>
-            <TutorDeckStudioModal isOpen={isStudioOpen} onClose={() => setIsStudioOpen(false)} onSuccess={handleProofSuccess} />
+            {isStudioOpen && <Suspense fallback={<p role="status">Loading recorder…</p>}><TutorDeckStudioModal isOpen onClose={() => setIsStudioOpen(false)} onSuccess={handleProofSuccess} /></Suspense>}
             
             <Portal>
                 <div className="fixed inset-0 z-50 flex flex-col bg-dark-bg/95 backdrop-blur-xl">
@@ -531,13 +547,13 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
 
                     {/* Controls Header */}
                     <div className="absolute top-6 right-6 z-50">
-                        <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
-                            <i className="fas fa-times"></i>
+                        <button aria-label="Close dialog" onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
+                            <Icon className="fas fa-times" />
                         </button>
                     </div>
 
                     {/* Step Counter */}
-                    <div className="absolute top-6 left-6 z-40 font-mono text-xs text-gray-500 uppercase tracking-widest">
+                    <div className="absolute top-6 left-6 z-40 font-mono text-xs text-gray-400 uppercase tracking-widest">
                         {isSuccess ? 'Complete' : `Step ${currentStep + 1} of ${totalSteps}`}
                     </div>
 
@@ -579,7 +595,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                                     exit={{ opacity: 0, y: 20 }}
                                     className="absolute bottom-24 bg-red-500 text-white px-6 py-3 rounded-xl shadow-xl flex items-center gap-3 font-semibold"
                                 >
-                                    <i className="fas fa-exclamation-circle"></i>
+                                    <Icon className="fas fa-exclamation-circle" />
                                     {errorMsg}
                                 </motion.div>
                             )}
@@ -594,11 +610,11 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                                 disabled={currentStep === 0}
                                 className={`text-lg font-bold flex items-center gap-2 transition-colors ${currentStep === 0 ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-white'}`}
                             >
-                                <i className="fas fa-arrow-left"></i> Back
+                                <Icon className="fas fa-arrow-left" /> Back
                             </button>
                             
                             <div className="flex items-center gap-4">
-                                <span className="hidden md:inline-block text-xs text-gray-500 uppercase font-bold tracking-wider mr-4">
+                                <span className="hidden md:inline-block text-xs text-gray-400 uppercase font-bold tracking-wider mr-4">
                                     Press <span className="bg-white/10 px-1.5 py-0.5 rounded text-gray-300">Enter ↵</span>
                                 </span>
                                 {((currentStep === 5) || (currentStep === 4 && !needsJustification)) ? (
@@ -609,7 +625,7 @@ const LogActivityModal = ({ isOpen, onClose, onActivityAdded }: LogActivityModal
                                         onClick={handleNext}
                                         className="bg-primary hover:bg-primary-dark text-dark-bg px-8 py-3 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 transition-all transform hover:scale-105 flex items-center gap-2"
                                     >
-                                        Next <i className="fas fa-arrow-right"></i>
+                                        Next <Icon className="fas fa-arrow-right" />
                                     </button>
                                 )}
                             </div>

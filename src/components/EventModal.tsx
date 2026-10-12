@@ -1,5 +1,7 @@
+import Icon from './Icon';
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 import { useStaticPage } from '../seo/StaticPageContext';
 
@@ -10,12 +12,39 @@ interface EventModalProps {
 
 const EventModal = ({ isOpen, onClose }: EventModalProps) => {
   const staticPage = useStaticPage();
+  const showScrollControls = useMediaQuery('(min-width: 1024px)');
   const [show, setShow] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setShow(isOpen);
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || staticPage) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialogRef.current?.querySelector<HTMLButtonElement>('button[aria-label="Close referral program"]')?.focus();
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      previousFocus?.focus();
+    };
+  }, [isOpen, staticPage]);
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (staticPage) return;
+    if (event.key === 'Escape') { event.preventDefault(); onClose(); }
+    if (event.key !== 'Tab') return;
+    const controls = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex="0"]') || []);
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+  };
+
+  if (!staticPage && !isOpen) return null;
 
   const handleScroll = (direction: 'up' | 'down') => {
     const amount = 200;
@@ -36,7 +65,7 @@ const EventModal = ({ isOpen, onClose }: EventModalProps) => {
       className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ease-out ${show ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       onClick={onClose}
     >
-      <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <div ref={dialogRef} role={staticPage ? undefined : 'dialog'} aria-modal={staticPage ? undefined : true} aria-labelledby="referral-program-title" onKeyDown={handleKeyDown} className="relative w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
         <div
           ref={scrollRef}
           style={scrollbarHideCss}
@@ -44,15 +73,15 @@ const EventModal = ({ isOpen, onClose }: EventModalProps) => {
         >
           {/* Header Graphic - Replaces Image with Gradient */}
           <div className="w-full h-48 bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 flex-shrink-0 relative overflow-hidden flex items-center justify-center">
-             <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+             <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-20"></div>
              <div className="absolute top-0 left-0 w-full h-full bg-white/5 backdrop-blur-sm"></div>
              
              {/* Floating Icons Animation */}
              <div className="relative z-10 text-center">
                 <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 border border-white/20 backdrop-blur-md mb-4 shadow-[0_0_30px_rgba(167,139,250,0.3)]">
-                    <i className="fas fa-gift text-4xl text-purple-300"></i>
+                    <Icon className="fas fa-gift text-4xl text-purple-300" />
                 </div>
-                <h2 className="text-3xl font-bold text-white tracking-tight">Refer & Earn</h2>
+                <h2 id="referral-program-title" className="text-3xl font-bold text-white tracking-tight">Refer & Earn</h2>
              </div>
           </div>
 
@@ -60,10 +89,10 @@ const EventModal = ({ isOpen, onClose }: EventModalProps) => {
             {/* Tags */}
             <div className="flex flex-wrap gap-3 mb-6">
               <div className="bg-purple-500/20 text-purple-200 border border-purple-500/30 rounded-full px-4 py-1 text-sm font-semibold">
-                <i className="fas fa-clock mr-2"></i>Bonus Hours
+                <Icon className="fas fa-clock mr-2" />Bonus Hours
               </div>
               <div className="bg-blue-500/20 text-blue-200 border border-blue-500/30 rounded-full px-4 py-1 text-sm font-semibold">
-                <i className="fas fa-users mr-2"></i>Community Growth
+                <Icon className="fas fa-users mr-2" />Community Growth
               </div>
               <div className="bg-green-500/20 text-green-200 border border-green-500/30 rounded-full px-4 py-1 text-sm font-semibold">
                 Active Now
@@ -79,7 +108,7 @@ const EventModal = ({ isOpen, onClose }: EventModalProps) => {
             {/* How It Works Box */}
             <div className="bg-black/40 border border-white/10 rounded-xl p-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-5">
-                <i className="fas fa-bullhorn text-9xl text-white"></i>
+                <Icon className="fas fa-bullhorn text-9xl text-white" />
               </div>
               
               <h3 className="font-bold text-dark-heading text-lg mb-4 relative z-10">How it Works:</h3>
@@ -124,16 +153,16 @@ const EventModal = ({ isOpen, onClose }: EventModalProps) => {
             </div>
 
           </div>
-          <button onClick={onClose} className="absolute top-4 right-4 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-dark-text hover:bg-white/20 transition-colors z-10">
-            <i className="fas fa-times"></i>
-          </button>
+          {!staticPage && <button aria-label="Close referral program" onClick={onClose} className="absolute top-4 right-4 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-dark-text hover:bg-white/20 transition-colors z-10">
+            <Icon className="fas fa-times" />
+          </button>}
         </div>
         
         {/* Scroll Controls (Only visible if content overflows significantly on small screens) */}
-        <div className={`absolute top-1/2 -translate-y-1/2 right-0 translate-x-full ml-6 flex-col gap-3 transition-opacity duration-300 ${show ? 'flex' : 'hidden'}`}>
-          <button onClick={() => handleScroll('up')} className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-dark-text hover:bg-white/20 transition-colors"><i className="fas fa-arrow-up"></i></button>
-          <button onClick={() => handleScroll('down')} className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-dark-text hover:bg-white/20 transition-colors"><i className="fas fa-arrow-down"></i></button>
-        </div>
+        {!staticPage && showScrollControls && <div className={`hidden lg:flex absolute top-1/2 -translate-y-1/2 right-0 translate-x-full ml-6 flex-col gap-3 transition-opacity duration-300 ${show ? 'flex' : 'hidden'}`}>
+          <button aria-label="Scroll referral program up" onClick={() => handleScroll('up')} className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-dark-text hover:bg-white/20 transition-colors"><Icon className="fas fa-arrow-up" /></button>
+          <button aria-label="Scroll referral program down" onClick={() => handleScroll('down')} className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-dark-text hover:bg-white/20 transition-colors"><Icon className="fas fa-arrow-down" /></button>
+        </div>}
       </div>
     </div>
   );

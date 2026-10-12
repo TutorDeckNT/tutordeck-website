@@ -1,18 +1,20 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { useEffect, useLayoutEffect } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect } from 'react';
 import HomePage from './pages/HomePage';
-import AboutPage from './pages/AboutPage';
-import LeadershipRegistrarPage from './pages/LeadershipRegistrarPage';
-import ChaptersPage from './pages/ChaptersPage';
-import PartnershipsPage from './pages/PartnershipsPage';
-import GetInvolvedPage from './pages/GetInvolvedPage';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import VerificationPage from './pages/VerificationPage';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useVisibleMotion } from './hooks/useVisibleMotion';
 import { DropboxProvider } from './contexts/DropboxContext';
+
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const LeadershipRegistrarPage = lazy(() => import('./pages/LeadershipRegistrarPage'));
+const ChaptersPage = lazy(() => import('./pages/ChaptersPage'));
+const PartnershipsPage = lazy(() => import('./pages/PartnershipsPage'));
+const GetInvolvedPage = lazy(() => import('./pages/GetInvolvedPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const VerificationPage = lazy(() => import('./pages/VerificationPage'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -39,17 +41,18 @@ const ReferralCapture = () => {
 };
 
 function App() {
-  // Remove the crawlable homepage only when authenticated initialization lets
-  // the app actually commit content. Keep it available if initialization fails.
+  useVisibleMotion();
+  // Remove the crawlable homepage only when the app actually commits content. Keep it available if initialization fails.
   useLayoutEffect(() => {
     const fallback = document.getElementById('public-fallback');
-    if (fallback) fallback.hidden = true;
+    fallback?.remove();
   }, []);
   return (
     <DropboxProvider>
       <ReferralCapture />
       <ScrollToTop />
       <Header />
+      <Suspense fallback={<main className="min-h-screen flex items-center justify-center" role="status">Loading page…</main>}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
@@ -63,6 +66,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
         </Route>
       </Routes>
+      </Suspense>
       <Footer />
     </DropboxProvider>
   );

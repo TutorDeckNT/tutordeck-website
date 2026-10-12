@@ -1,3 +1,4 @@
+import Icon from '../Icon';
 // TypeScript
 import Reveal from '../Reveal';
 
@@ -24,7 +25,7 @@ const ProgressTracker = ({ totalHours }: ProgressTrackerProps) => {
                 <h3 className="font-bold text-dark-heading">Service Award Progress</h3>
                 {currentTier && (
                     <div className="flex items-center gap-2 text-sm font-semibold bg-black/30 px-3 py-1 rounded-full">
-                        <i className={`fas ${currentTier.icon}`}></i>
+                        <Icon className={`fas ${currentTier.icon}`} />
                         <span>{currentTier.name} Tier</span>
                     </div>
                 )}
@@ -45,7 +46,7 @@ const ProgressTracker = ({ totalHours }: ProgressTrackerProps) => {
                 </>
             ) : (
                 <p className="text-sm text-primary font-semibold text-center mt-4">
-                    <i className="fas fa-star mr-2"></i>
+                    <Icon className="fas fa-star mr-2" />
                     Incredible! You've achieved the highest award tier!
                 </p>
             )}

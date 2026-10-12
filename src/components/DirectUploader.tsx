@@ -1,3 +1,4 @@
+import Icon from './Icon';
 // src/components/DirectUploader.tsx
 
 import React, { useState, useRef } from 'react';
@@ -116,7 +117,7 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
                 onClick={login}
                 className="w-full p-3 bg-[#0061FE] hover:bg-[#0061FE]/90 text-white rounded-xl text-center transition-colors font-semibold"
             >
-                <i className="fab fa-dropbox mr-2"></i>
+                <Icon className="fab fa-dropbox mr-2" />
                 Connect Dropbox to Upload
             </button>
         );
@@ -134,11 +135,11 @@ const DirectUploader = ({ onUploadSuccess }: DirectUploaderProps) => {
             <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={status === 'uploading'}
+                disabled={status === 'uploading' || !dbx}
                 className="w-full p-3 bg-white/5 border border-white/10 hover:border-blue-400 rounded-xl text-center transition-colors disabled:opacity-50 disabled:cursor-wait"
             >
-                <i className="fas fa-upload mr-2 text-blue-400"></i>
-                {status === 'uploading' ? 'Uploading...' : 'Upload Audio Proof'}
+                <Icon className="fas fa-upload mr-2 text-blue-400" />
+                {!dbx ? 'Connecting to Dropbox…' : status === 'uploading' ? 'Uploading...' : 'Upload Audio Proof'}
             </button>
             <div className="h-6 flex items-center justify-center px-2 text-center">
                 {getStatusContent()}

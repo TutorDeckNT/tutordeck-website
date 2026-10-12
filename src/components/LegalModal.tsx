@@ -1,3 +1,4 @@
+import Icon from './Icon';
 // src/components/LegalModal.tsx
 
 import { useEffect, useState, useRef } from 'react';
@@ -97,7 +98,7 @@ const LegalModal = ({ isOpen, onClose, data }: LegalModalProps) => {
                                     <div className="h-6 w-px bg-white/10 mx-2"></div>
                                     <div>
                                         <h1 className="text-sm font-bold text-white tracking-wide uppercase">{data.title}</h1>
-                                        <div className="flex items-center gap-2 text-[10px] text-gray-500 font-mono">
+                                        <div className="flex items-center gap-2 text-[10px] text-gray-400 font-mono">
                                             <span>{data.version}</span>
                                             <span>•</span>
                                             <span>Last Upd: {data.lastUpdated}</span>
@@ -106,18 +107,18 @@ const LegalModal = ({ isOpen, onClose, data }: LegalModalProps) => {
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <button 
-                                        onClick={() => window.print()}
+                                        aria-label="Print document" onClick={() => window.print()}
                                         className="hidden md:flex items-center justify-center w-8 h-8 rounded hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
                                         title="Print"
                                     >
-                                        <i className="fas fa-print"></i>
+                                        <Icon className="fas fa-print" />
                                     </button>
                                     <button 
                                         onClick={onClose}
                                         className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md text-xs font-mono text-gray-300 transition-colors"
                                     >
                                         <span>ESC</span>
-                                        <i className="fas fa-times"></i>
+                                        <Icon className="fas fa-times" />
                                     </button>
                                 </div>
                             </div>
@@ -127,7 +128,7 @@ const LegalModal = ({ isOpen, onClose, data }: LegalModalProps) => {
                                 
                                 {/* Sidebar (Desktop Only) */}
                                 <aside className="hidden md:block w-72 bg-[#020617]/50 border-r border-white/5 p-6 overflow-y-auto custom-scrollbar">
-                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Table of Contents</h3>
+                                    <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Table of Contents</h2>
                                     <nav className="space-y-1">
                                         {data.sections.map((section) => (
                                             <button
@@ -146,10 +147,10 @@ const LegalModal = ({ isOpen, onClose, data }: LegalModalProps) => {
                                     
                                     <div className="mt-12 p-4 rounded-lg bg-blue-500/5 border border-blue-500/10">
                                         <div className="flex items-center gap-2 mb-2 text-blue-400">
-                                            <i className="fas fa-shield-alt"></i>
+                                            <Icon className="fas fa-shield-alt" />
                                             <span className="text-xs font-bold uppercase">Secure Docs</span>
                                         </div>
-                                        <p className="text-[10px] text-gray-500 leading-tight">
+                                        <p className="text-[10px] text-gray-400 leading-tight">
                                             This document represents a binding agreement within the TutorDeck ecosystem.
                                         </p>
                                     </div>
@@ -212,7 +213,7 @@ const LegalModal = ({ isOpen, onClose, data }: LegalModalProps) => {
                                     onClick={onClose}
                                     className="px-8 py-3 bg-primary text-[#020617] font-bold rounded-lg hover:bg-primary-dark hover:scale-[1.02] transition-all shadow-[0_0_20px_rgba(52,211,153,0.2)] flex items-center gap-2"
                                 >
-                                    <i className="fas fa-check-circle"></i>
+                                    <Icon className="fas fa-check-circle" />
                                     I Understand
                                 </button>
                             </div>

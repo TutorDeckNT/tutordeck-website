@@ -15,7 +15,7 @@ export default {
         'dark-heading': '#f9fafb',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'Inter Fallback', 'Arial', 'sans-serif'],
       },
       animation: {
         marquee: 'marquee 25s linear infinite',

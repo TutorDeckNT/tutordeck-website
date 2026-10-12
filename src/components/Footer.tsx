@@ -1,10 +1,11 @@
+import Icon from './Icon';
 // src/components/Footer.tsx
 
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
-import LegalModal from './LegalModal';
+const LegalModal = lazy(() => import('./LegalModal'));
 import { termsOfServiceData, privacyPolicyData, LegalDocumentData } from '../lib/legal';
 
 // --- UTILITY COMPONENTS ---
@@ -25,7 +26,7 @@ const ShiftText = ({ text, isActive = false }: { text: string, isActive?: boolea
             
             {/* Layer 2: The Active Text (Slides In from Bottom) */}
             <span 
-                className="absolute top-0 left-0 block transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] translate-y-full group-hover:translate-y-0 text-primary font-bold tracking-wide"
+                aria-hidden="true" className="absolute top-0 left-0 block transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] translate-y-full group-hover:translate-y-0 text-primary font-bold tracking-wide"
             >
                 {text}
             </span>
@@ -86,11 +87,11 @@ const Footer = () => {
 
     return (
         <>
-            <LegalModal 
+            {currentDoc && <Suspense fallback={<p role="status">Loading document…</p>}><LegalModal
                 isOpen={!!currentDoc} 
                 onClose={() => setCurrentDoc(null)} 
                 data={currentDoc} 
-            />
+            /></Suspense>}
 
             <footer className="relative bg-[#020617] text-white pt-20 pb-10 overflow-hidden">
                 
@@ -112,11 +113,11 @@ const Footer = () => {
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-2xl font-black tracking-tight text-white group-hover:text-primary transition-colors duration-500">TUTORDECK</span>
-                                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest group-hover:text-gray-400 transition-colors">Est. 2022 • Texas</span>
+                                        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest group-hover:text-gray-400 transition-colors">Est. 2022 • Texas</span>
                                     </div>
                                 </Link>
                                 <p className="text-gray-400 max-w-sm leading-relaxed text-lg">
-                                    Redefining peer education through a student-led, tech-forward initiative. <span className="text-gray-500">We build leaders, not just scholars.</span>
+                                    Redefining peer education through a student-led, tech-forward initiative. <span className="text-gray-400">We build leaders, not just scholars.</span>
                                 </p>
                             </div>
                             
@@ -131,10 +132,10 @@ const Footer = () => {
                         </div>
 
                         {/* MODULE B: NAVIGATION STACK (Center - 4 Cols) */}
-                        <div className="lg:col-span-4">
-                            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <i className="fas fa-layer-group"></i> Navigation
-                            </h4>
+                        <nav aria-label="Footer navigation" className="lg:col-span-4">
+                            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                <Icon className="fas fa-layer-group" /> Navigation
+                            </h2>
                             <div className="flex flex-wrap gap-3">
                                 {[
                                     { name: 'Home', path: '/' },
@@ -157,7 +158,7 @@ const Footer = () => {
                                     </Link>
                                 ))}
                             </div>
-                        </div>
+                        </nav>
 
                         {/* MODULE C: ACTION SECTOR (Right - 3 Cols) */}
                         <div className="lg:col-span-3 flex flex-col gap-4">
@@ -166,35 +167,34 @@ const Footer = () => {
                                 <SpotlightCard className="rounded-2xl p-6 h-full flex flex-col justify-between min-h-[180px] bg-gradient-to-b from-white/5 to-transparent">
                                     <div>
                                         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform duration-500">
-                                            <i className="fas fa-rocket"></i>
+                                            <Icon className="fas fa-rocket" />
                                         </div>
-                                        <h3 className="text-xl font-bold text-white leading-tight mb-1">Start a Chapter</h3>
+                                        <p className="text-xl font-bold text-white leading-tight mb-1">Start a Chapter</p>
                                         <p className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">Launch TutorDeck at your school.</p>
                                     </div>
                                     <div className="flex justify-end mt-4">
                                         <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-primary group-hover:text-black group-hover:border-primary transition-all duration-300">
-                                            <i className="fas fa-arrow-right text-xs -rotate-45 group-hover:rotate-0 transition-transform duration-300"></i>
+                                            <Icon className="fas fa-arrow-right text-xs -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
                                         </div>
                                     </div>
                                 </SpotlightCard>
                             </Link>
                             
                             {/* Social Magnetic Strip */}
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-1 gap-2">
                                 {[
-                                    { icon: 'twitter', url: '#' },
-                                    { icon: 'instagram', url: 'https://www.instagram.com/tutordeck___/' },
-                                    { icon: 'linkedin', url: '#' }
+                                    { icon: 'instagram', url: 'https://www.instagram.com/tutordeck___/' }
                                 ].map((social, idx) => (
                                     <a 
                                         key={idx} 
+                                        aria-label="TutorDeck on Instagram"
                                         href={social.url} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
                                         className="group bg-white/5 border border-white/10 rounded-lg h-12 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all duration-300 overflow-hidden relative"
                                     >
                                         <div className="relative z-10 text-gray-400 group-hover:text-primary transition-colors">
-                                             <i className={`fab fa-${social.icon} text-lg group-hover:-translate-y-1 transition-transform duration-300`}></i>
+                                             <Icon className={`fab fa-${social.icon} text-lg group-hover:-translate-y-1 transition-transform duration-300`} />
                                         </div>
                                         {/* Subtle glow behind icon on hover */}
                                         <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -205,7 +205,7 @@ const Footer = () => {
                     </div>
 
                     {/* 3. THE SYSTEM BAR (Bottom) */}
-                    <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 font-mono">
+                    <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400 font-mono">
                         
                         <div className="flex items-center gap-2">
                             <span>© 2025 TutorDeck Initiative.</span>
@@ -223,7 +223,7 @@ const Footer = () => {
                 </div>
 
                 {/* Background Noise Texture */}
-                <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+                <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[url('/noise.svg')]"></div>
             </footer>
         </>
     );

@@ -1,3 +1,4 @@
+import Icon from '../Icon';
 import { useState, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -5,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useClickOutside } from '../../hooks/useClickOutside';
 
 const MobileDock = () => {
-  const { user, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const dockRef = useRef<HTMLDivElement>(null);
@@ -56,6 +57,7 @@ const MobileDock = () => {
           className="bg-dark-card/80 backdrop-blur-2xl border border-white/10 shadow-2xl pointer-events-auto overflow-hidden flex flex-col justify-end"
         >
           {/* Expanded Menu Content (Only visible when open) */}
+          {isMenuOpen && loading && <p className="p-6" role="status">Loading account…</p>}
           <AnimatePresence>
             {isMenuOpen && user && (
               <motion.div
@@ -76,14 +78,14 @@ const MobileDock = () => {
                     onClick={() => { navigate('/dashboard'); setIsMenuOpen(false); }}
                     className="bg-primary/20 text-primary hover:bg-primary/30 py-3 rounded-xl font-semibold flex flex-col items-center gap-1 transition-colors"
                   >
-                    <i className="fas fa-columns"></i>
+                    <Icon className="fas fa-columns" />
                     <span className="text-xs">Dashboard</span>
                   </button>
                   <button 
                     onClick={handleLogout}
                     className="bg-red-500/20 text-red-400 hover:bg-red-500/30 py-3 rounded-xl font-semibold flex flex-col items-center gap-1 transition-colors"
                   >
-                    <i className="fas fa-sign-out-alt"></i>
+                    <Icon className="fas fa-sign-out-alt" />
                     <span className="text-xs">Sign Out</span>
                   </button>
                 </div>
@@ -91,7 +93,7 @@ const MobileDock = () => {
               </motion.div>
             )}
             
-            {isMenuOpen && !user && (
+            {isMenuOpen && !user && !loading && (
                <motion.div
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
@@ -124,11 +126,12 @@ const MobileDock = () => {
               onClick={toggleMenu}
               className={`relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${isMenuOpen ? 'bg-white/20' : 'hover:bg-white/10'}`}
               aria-label="User Menu"
+              aria-expanded={isMenuOpen}
             >
               {user ? (
                 <img src={user.photoURL || '/mascot.svg'} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
               ) : (
-                <i className="fas fa-user text-gray-400"></i>
+                <Icon className="fas fa-user text-gray-400" />
               )}
               {/* Active Indicator Dot */}
               {user && !isMenuOpen && (
@@ -150,7 +153,7 @@ const DockIcon = ({ to, icon, label }: { to: string, icon: string, label: string
   >
     {({ isActive }) => (
       <>
-        <i className={`fas ${icon} text-xl mb-0.5 ${isActive ? 'drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]' : ''}`}></i>
+        <Icon className={`fas ${icon} text-xl mb-0.5 ${isActive ? 'drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]' : ''}`} />
         {isActive && <span className="w-1 h-1 bg-primary rounded-full absolute -bottom-1"></span>}
       </>
     )}

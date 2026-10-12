@@ -1,3 +1,4 @@
+import Icon from '../Icon';
 import { 
   motion, 
   useTransform, 
@@ -49,7 +50,6 @@ const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
   const modalOpacity = useTransform(smoothProgress, [0.05, 0.15, 0.28, 0.33], [0, 1, 1, 0]);
   const modalY = useTransform(smoothProgress, [0.05, 0.33], ["-40%", "-60%"]);
   const modalScale = useTransform(smoothProgress, [0.05, 0.15], [0.8, 1]);
-  const modalBlur = useTransform(smoothProgress, [0.28, 0.33], ["0px", "10px"]);
   const modalPointerEvents = useTransform(smoothProgress, (v: number) => (v > 0.05 && v < 0.33) ? 'auto' : 'none');
 
   // --- 3. Scene 2: Charts (Act 2) ---
@@ -75,8 +75,7 @@ const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
   const docOpacity = useTransform(smoothProgress, [0.66, 0.70], [0, 1]);
   
   // Dashboard blurs out as Document enters
-  const dashboardBlur = useTransform(smoothProgress, [0.66, 0.75], ["0px", "4px"]);
-  const dashboardOpacity = useTransform(smoothProgress, [0.66, 0.75], [1, 0.4]);
+  const dashboardOpacity = useTransform(smoothProgress, [0.66, 0.75], [1, 1]);
 
   return (
     <div className="w-full h-full flex items-center justify-center perspective-1000" aria-hidden="true">
@@ -104,8 +103,8 @@ const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
             <div className="w-3 h-3 rounded-full bg-green-500/80 shadow-inner"></div>
           </div>
           <div className="ml-4 h-6 w-64 bg-black/20 rounded-md flex items-center px-3 border border-white/5">
-             <span className="text-[10px] text-gray-500 font-mono flex items-center gap-2">
-               <i className="fas fa-lock text-[8px]"></i> tutordeck.org/dashboard
+             <span className="text-[10px] text-gray-400 font-mono flex items-center gap-2">
+               <Icon className="fas fa-lock text-[8px]" /> tutordeck.org/dashboard
              </span>
           </div>
         </div>
@@ -117,7 +116,7 @@ const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
             <div className="flex-1 w-full flex flex-col items-center gap-4 mt-4">
                {[1,2,3,4].map((i) => (
                  <div key={i} className={`w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:bg-white/10 hover:text-white transition-all duration-300 ${i===1 ? 'bg-white/10 text-white shadow-inner' : ''}`}>
-                   <i className={`fas fa-${['home','chart-pie','calendar','cog'][i-1]}`}></i>
+                   <Icon className={`fas fa-${['home','chart-pie','calendar','cog'][i-1]}`} />
                  </div>
                ))}
             </div>
@@ -127,7 +126,7 @@ const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
           {/* Main Dashboard Content */}
           <motion.div 
             className="flex-1 bg-dark-bg/40 p-8 relative overflow-hidden"
-            style={{ filter: useTransform(dashboardBlur, (v: string) => `blur(${v})`), opacity: dashboardOpacity }}
+            style={{ opacity: dashboardOpacity }}
           >
             <div className="flex justify-between items-end mb-8">
               <div>
@@ -136,13 +135,8 @@ const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
               </div>
               <motion.div 
                 className="px-4 py-2 bg-primary text-dark-bg font-bold rounded-lg text-sm flex items-center gap-2 shadow-lg"
-                animate={{ 
-                  scale: [1, 1.05, 1],
-                  boxShadow: ["0 0 0px rgba(52,211,153,0)", "0 0 20px rgba(52,211,153,0.5)", "0 0 0px rgba(52,211,153,0)"]
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
               >
-                <i className="fas fa-plus-circle"></i> Log Hours
+                <Icon className="fas fa-plus-circle" /> Log Hours
               </motion.div>
             </div>
 
@@ -158,10 +152,10 @@ const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
                   className="bg-dark-card/60 border border-white/10 p-4 rounded-xl backdrop-blur-md flex flex-col justify-between h-28"
                   style={{ y: useTransform(smoothProgress, [0, 1], [0, (idx + 1) * -10]) }}
                 >
-                   <div className={`text-xl ${stat.c} mb-auto`}><i className={`fas fa-${stat.i}`}></i></div>
+                   <div className={`text-xl ${stat.c} mb-auto`}><Icon className={`fas fa-${stat.i}`} /></div>
                    <div>
                      <div className="text-2xl font-bold text-white tracking-tight">{stat.v}</div>
-                     <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">{stat.l}</div>
+                     <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">{stat.l}</div>
                    </div>
                 </motion.div>
               ))}
@@ -172,7 +166,7 @@ const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
                <div className="flex justify-between mb-6 relative z-10">
                   <div>
                     <h3 className="font-bold text-white text-sm">Activity Trends</h3>
-                    <p className="text-xs text-gray-500">Last 6 Months</p>
+                    <p className="text-xs text-gray-400">Last 6 Months</p>
                   </div>
                </div>
                
@@ -202,13 +196,12 @@ const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
             y: modalY, 
             x: "-50%",
             scale: modalScale,
-            filter: useTransform(modalBlur, (v: string) => `blur(${v})`),
             pointerEvents: modalPointerEvents
           }}
         >
            <div className="flex items-center gap-4 mb-6 border-b border-white/10 pb-4">
               <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xl ring-2 ring-primary/30">
-                <i className="fas fa-stopwatch"></i>
+                <Icon className="fas fa-stopwatch" />
               </div>
               <div>
                 <div className="font-bold text-white text-lg">Log Session</div>
@@ -217,9 +210,9 @@ const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
            </div>
            <div className="space-y-4">
               <div className="space-y-1">
-                <div className="text-xs text-gray-500 uppercase font-bold">Proof of Work</div>
+                <div className="text-xs text-gray-400 uppercase font-bold">Proof of Work</div>
                 <div className="h-10 bg-black/40 rounded-lg border border-white/10 flex items-center px-3 gap-2">
-                   <i className="fas fa-file-audio text-primary"></i>
+                   <Icon className="fas fa-file-audio text-primary" />
                    <span className="text-xs text-gray-300">recording-session.mp3</span>
                 </div>
               </div>
@@ -246,9 +239,9 @@ const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
               <div className="flex justify-between items-start mb-8 relative z-10">
                  <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-black text-white flex items-center justify-center rounded-sm">
-                      <i className="fas fa-graduation-cap text-sm"></i>
+                      <Icon className="fas fa-graduation-cap text-sm" />
                     </div>
-                    <div className="font-bold text-lg leading-tight">TutorDeck<br/><span className="text-[10px] font-normal text-gray-500 uppercase tracking-widest">Official Record</span></div>
+                    <div className="font-bold text-lg leading-tight">TutorDeck<br/><span className="text-[10px] font-normal text-gray-400 uppercase tracking-widest">Official Record</span></div>
                  </div>
                  <div className="w-12 h-12 bg-black p-0.5">
                     <div className="w-full h-full bg-white grid grid-cols-3 gap-0.5 p-0.5">
@@ -275,7 +268,7 @@ const DashboardMockup = ({ smoothProgress }: DashboardMockupProps) => {
               <div className="flex justify-between items-end relative z-10">
                  <div className="w-16 h-16 bg-gradient-to-br from-yellow-300 via-yellow-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg relative overflow-hidden">
                     <div className="absolute inset-1 border border-white/40 rounded-full border-dashed animate-[spin_10s_linear_infinite]"></div>
-                    <i className="fas fa-check text-white text-2xl drop-shadow-sm relative z-10"></i>
+                    <Icon className="fas fa-check text-white text-2xl drop-shadow-sm relative z-10" />
                     <motion.div 
                       className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/60 to-transparent"
                       style={{ x: useTransform(smoothProgress, [0.8, 1.0], ["-100%", "100%"]) }}

@@ -1,3 +1,4 @@
+import Icon from '../Icon';
 // TypeScript
 import Reveal from '../Reveal';
 import { achievements, Achievement } from '../../lib/achievements';
@@ -17,7 +18,7 @@ interface AchievementsListProps {
 const AchievementItem = ({ ach, earned }: { ach: Achievement, earned: boolean }) => (
     <div className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-300 transform ${earned ? 'bg-white/5 hover:scale-105 hover:bg-white/10' : 'opacity-40'}`}>
         <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl flex-shrink-0 ${earned ? 'bg-primary text-dark-bg' : 'bg-gray-700 text-gray-400'}`}>
-            <i className={`fas ${ach.icon}`}></i>
+            <Icon className={`fas ${ach.icon}`} />
         </div>
         <div>
             <h4 className={`font-bold ${earned ? 'text-dark-heading' : 'text-gray-400'}`}>{ach.title}</h4>

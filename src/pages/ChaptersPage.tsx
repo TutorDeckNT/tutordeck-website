@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useStaticPage } from '../seo/StaticPageContext';
@@ -50,7 +51,7 @@ const ChapterCard = ({ chapter }: { chapter: typeof chapterData[0] }) => (
     <div className="bg-dark-card rounded-lg border border-gray-700 overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
         <img src={chapter.img} className="w-full h-48 object-cover" alt={chapter.name} />
         <div className="p-6">
-            <h3 className="text-2xl font-bold text-dark-heading">{chapter.name}</h3>
+            <h2 className="text-2xl font-bold text-dark-heading">{chapter.name}</h2>
             <p className="text-primary font-semibold">{chapter.location}</p>
             <div className="mt-4 text-sm">
                 <p><strong className="text-dark-text">Student Lead:</strong> {chapter.lead}</p>
@@ -61,8 +62,8 @@ const ChapterCard = ({ chapter }: { chapter: typeof chapterData[0] }) => (
 
 const NewChapterCard = () => (
     <div className="bg-gradient-to-br from-primary to-secondary rounded-lg border border-primary/50 flex flex-col items-center justify-center p-6 text-center text-dark-bg transform hover:-translate-y-2 transition-transform duration-300">
-        <i className="fas fa-plus-circle text-5xl mb-4"></i>
-        <h3 className="text-2xl font-extrabold">Your School Here</h3>
+        <Icon className="fas fa-plus-circle text-5xl mb-4" />
+        <h2 className="text-2xl font-extrabold">Your School Here</h2>
         <p className="font-semibold mb-4">Bring TutorDeck to your community.</p>
         <Link to="/get-involved" className="bg-dark-bg text-primary font-bold px-6 py-2 rounded-lg hover:opacity-90">Learn How</Link>
     </div>
@@ -87,8 +88,9 @@ const ChaptersPage = () => {
 
             {staticPage ? <p className="text-center mb-12"><a href="/#/chapters" className="text-primary underline">Search chapters in the interactive version</a></p> : <Reveal className="mb-12 max-w-2xl mx-auto">
                 <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3"><i className="fas fa-search text-gray-500"></i></span>
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3"><Icon className="fas fa-search text-gray-400" /></span>
                     <input 
+                        aria-label="Search chapters by school or location"
                         type="text"
                         placeholder="Search by school name or location..."
                         value={searchTerm}
@@ -105,7 +107,7 @@ const ChaptersPage = () => {
             
             {filteredChapters.length === 0 && searchTerm && (
                 <Reveal className="text-center col-span-full mt-12 bg-dark-card p-8 rounded-lg">
-                    <h3 className="text-2xl font-bold text-dark-heading">No Chapters Found</h3>
+                    <h2 className="text-2xl font-bold text-dark-heading">No Chapters Found</h2>
                     <p className="text-dark-text mt-2">We couldn't find a chapter matching your search. Why not be the first to start one at your school?</p>
                     <Link to="/get-involved" className="cta-button mt-6 inline-block bg-primary text-dark-bg font-semibold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors">Start a Chapter</Link>
                 </Reveal>
