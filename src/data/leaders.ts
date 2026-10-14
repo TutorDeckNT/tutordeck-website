@@ -21,6 +21,6 @@ export const registrarLeaders: Leader[] = [
   { name: "Arnav Chugh", role: "President · Ranchview High School", quote: "Learning grows through community.", color: "bg-purple-500" },
   { name: "Sreedatta Gudapudi", role: "President · V.R. Eaton High School", quote: "Helping students thrive.", color: "bg-green-500" },
   { name: "Jeet Bhandhari", role: "President · Mansfield High School", quote: "Making support accessible.", color: "bg-orange-500" },
-  { name: "Austin Hodge", role: "President · Bridgeland High School", color: "bg-blue-500" },
+  { name: "Austin Hodge", role: "Student Lead · Bridgeland High School", color: "bg-blue-500" },
   { name: "Rishit Shinkar", role: "Treasurer · Bridgeland High School", quote: "Building a stronger school community.", color: "bg-blue-500" },
 ];

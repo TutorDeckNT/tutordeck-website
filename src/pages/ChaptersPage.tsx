@@ -42,7 +42,7 @@ const chapterData = [
     {
         name: 'Bridgeland High School',
         location: 'Cypress, TX',
-        lead: 'Austin Hodge (President), Rishit Shinkar (Treasurer)',
+        lead: 'Austin Hodge (Student Lead), Rishit Shinkar (Treasurer)',
         img: 'https://www.bridgeland.com/wp-content/uploads/2025/04/schools-grid-bridgeland-high.webp'
     },
 ];
