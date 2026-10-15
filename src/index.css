@@ -215,3 +215,23 @@
   .leader-card--row { grid-template-columns: minmax(0, 1fr); gap: .5rem; }
   .leader-card--row .leader-card__role, .leader-card--row .leader-card__chapter { padding-left: 3rem; }
 }
+
+/* Geographic chapter directory. Keep Leaflet's panes inside the page's stacking context. */
+.chapter-map-panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); overflow: hidden; border: 1px solid #294237; border-radius: 1.5rem; background: #14241d; }
+.chapter-map-intro { padding: 2rem; }
+.chapter-map-eyebrow { margin-bottom: 1rem; color: #a3cbb3; font-size: .75rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.chapter-map-select { width: 100%; padding: .75rem; border: 1px solid #526b5d; border-radius: .5rem; color: #f0f5f2; background: #1b3025; font-size: .875rem; }
+.chapter-map-select:focus-visible, .chapter-map-canvas :focus-visible { outline: 3px solid #65b991; outline-offset: 3px; }
+.chapter-map-frame { position: relative; min-width: 0; background: #e5e9df; color: #20372a; }
+.chapter-map-canvas { height: 100%; min-height: 25rem; isolation: isolate; z-index: 0; }
+.chapter-map-status { position: absolute; bottom: 2rem; left: 1rem; right: 1rem; z-index: 1; padding: .65rem 1rem; border-radius: .5rem; background: #f5f8f1; font-size: .8rem; box-shadow: 0 2px 12px #20372a26; pointer-events: none; }
+.chapter-map-pin span { display: block; width: 1.125rem; height: 1.125rem; margin: .1875rem; border: 3px solid #fff; border-radius: 50%; background: #236d49; box-shadow: 0 1px 8px #183c3480; }
+.chapter-map-canvas .leaflet-popup-content { color: #20372a; line-height: 1.5; }
+.chapter-map-canvas .leaflet-popup-content p { margin: .5rem 0 0; }
+.chapter-map-canvas .leaflet-control-attribution { color: #33483a; background: #fffffff2; }
+.chapter-map-canvas .leaflet-control-attribution a { color: #21573c; }
+@media (max-width: 767px) {
+  .chapter-map-panel { grid-template-columns: minmax(0, 1fr); }
+  .chapter-map-intro { padding: 1.5rem; }
+  .chapter-map-canvas { min-height: 21rem; }
+}
