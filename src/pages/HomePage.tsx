@@ -85,6 +85,12 @@ const HomePage = () => {
               </p>
             </Reveal>
 
+            <p className="mb-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-base font-medium text-gray-300">
+              <span><strong className="text-primary tabular-nums">8</strong> schools</span>
+              <span aria-hidden="true" className="text-gray-500">·</span>
+              <span><strong className="text-primary tabular-nums">12</strong> more incoming</span>
+            </p>
+
             <Reveal variant="zoom-in" delay={0.8} className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/get-involved" className="group relative px-8 py-4 bg-primary text-dark-bg font-bold rounded-full overflow-hidden">
                 <span className="relative z-10 group-hover:text-white transition-colors">Join the Movement</span>

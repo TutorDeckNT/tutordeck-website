@@ -75,7 +75,7 @@ export default function ChapterMap() {
     <section className="chapter-map-panel" aria-labelledby="chapter-map-heading">
       <div className="chapter-map-intro">
         <p className="chapter-map-eyebrow">Our chapter network</p>
-        <h3 id="chapter-map-heading" className="text-3xl font-bold text-white">{chapterLocations.length} schools.<br />A growing community.</h3>
+        <h3 id="chapter-map-heading" className="text-3xl font-bold text-white">{chapterLocations.length} schools.<br />12 more incoming.</h3>
         <p className="text-gray-400 mt-4">Explore our active chapters across Texas and California. Select a school to see its campus and membership.</p>
         <label htmlFor="chapter-map-school" className="block mt-6 mb-2 text-sm text-gray-300">Find a chapter</label>
         <select id="chapter-map-school" className="chapter-map-select" disabled={status === 'loading'} onChange={event => focusChapter(Number(event.target.value))}>
