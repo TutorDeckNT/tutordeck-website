@@ -13,6 +13,12 @@ import { useStaticPage } from '../seo/StaticPageContext';
 
 const HomePage = () => {
   const staticPage = useStaticPage();
+  const leaderTrack = useRef<HTMLDivElement>(null);
+  const scrollLeaders = (direction: number) => {
+    const track = leaderTrack.current;
+    if (!track) return;
+    track.scrollBy({ left: direction * track.clientWidth * 0.8, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  };
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // --- SCROLL ANIMATION LOGIC ---
@@ -182,18 +188,22 @@ const HomePage = () => {
             </Reveal>
           </div>
           
-          <div className="flex gap-8 overflow-x-auto pb-12 px-6 snap-x snap-mandatory no-scrollbar">
+          {!staticPage && <div className="container mx-auto px-6 mb-5 flex justify-end gap-2">
+            <button type="button" aria-label="Previous leaders" aria-controls="leader-carousel" onClick={() => scrollLeaders(-1)} className="leader-carousel-control">←</button>
+            <button type="button" aria-label="Next leaders" aria-controls="leader-carousel" onClick={() => scrollLeaders(1)} className="leader-carousel-control">→</button>
+          </div>}
+          <div id="leader-carousel" ref={leaderTrack} role="region" aria-label="Our leaders carousel" tabIndex={staticPage ? undefined : 0} className="leader-carousel container mx-auto px-6">
             {featuredLeaders.map(leader => (
-              <LeaderCard key={leader.name} leader={leader} className="snap-center flex-shrink-0 w-80" />
+              <LeaderCard key={leader.name} leader={leader}  />
             ))}
             
-            <div className="snap-center flex-shrink-0 w-80 h-96 border-2 border-dashed border-gray-700 rounded-2xl flex flex-col items-center justify-center text-center p-6 hover:border-primary transition-colors cursor-pointer group">
+            <Link to="/get-involved" className="leader-join group">
               <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-black transition-colors">
                 <Icon className="fas fa-plus text-2xl" />
               </div>
-              <h3 className="text-xl font-bold text-white">You?</h3>
-              <p className="text-gray-400 mt-2">Join our leadership team.</p>
-            </div>
+              <h3 className="text-xl font-semibold text-white">Help lead your community</h3>
+              <p className="text-gray-300 mt-2">Join our leadership team <span aria-hidden="true">↗</span></p>
+            </Link>
           </div>
         </section>
 
