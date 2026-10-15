@@ -32,6 +32,9 @@ for (const page of publicPages) {
     html = html.replace('<div id="root"></div>', content);
     await mkdir(`dist${page.path}`, { recursive: true });
   }
+  if (page.path === '/' || page.path === '/leadership-registrar/') {
+    html = html.replace('</body>', '<script src="/public-directory.js" defer></script></body>');
+  }
   await writeFile(page.path === '/' ? 'dist/index.html' : `dist${page.path}index.html`, html);
 }
 
