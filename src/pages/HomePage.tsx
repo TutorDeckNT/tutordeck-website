@@ -188,10 +188,10 @@ const HomePage = () => {
             </Reveal>
           </div>
           
-          {!staticPage && <div className="container mx-auto px-6 mb-5 flex justify-end gap-2">
-            <button type="button" aria-label="Previous leaders" aria-controls="leader-carousel" onClick={() => scrollLeaders(-1)} className="leader-carousel-control">←</button>
-            <button type="button" aria-label="Next leaders" aria-controls="leader-carousel" onClick={() => scrollLeaders(1)} className="leader-carousel-control">→</button>
-          </div>}
+          <div data-leader-controls className="container mx-auto px-6 mb-5 flex justify-end gap-2">
+            <button type="button" data-leader-direction="-1" aria-label="Previous leaders" aria-controls="leader-carousel" onClick={() => scrollLeaders(-1)} className="leader-carousel-control">←</button>
+            <button type="button" data-leader-direction="1" aria-label="Next leaders" aria-controls="leader-carousel" onClick={() => scrollLeaders(1)} className="leader-carousel-control">→</button>
+          </div>
           <div id="leader-carousel" ref={leaderTrack} role="region" aria-label="Our leaders carousel" tabIndex={staticPage ? undefined : 0} className="leader-carousel container mx-auto px-6">
             {featuredLeaders.map(leader => (
               <LeaderCard key={leader.name} leader={leader}  />

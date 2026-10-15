@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { JSDOM } from 'jsdom';
 import { runInNewContext } from 'node:vm';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
@@ -29,9 +30,11 @@ test('every sitemap entry has full public HTML and matching metadata', async () 
     assert.ok(html.includes('mailto:join@tutordeck.org'));
     for (const [target] of pages) assert.ok(html.includes(`href="${target}"`), `${path} links to ${target}`);
     if (path !== '/') {
-      assert.doesNotMatch(html, /<script\b/);
+      if (path === '/leadership-registrar/') {
+        assert.deepEqual([...html.matchAll(/<script\b[^>]*>/g)].map(match => match[0]), ['<script src="/public-directory.js" defer>']);
+      } else assert.doesNotMatch(html, /<script\b/);
       assert.doesNotMatch(html, /href="#\//);
-      assert.doesNotMatch(html, /<input\b/);
+      if (path !== '/leadership-registrar/') assert.doesNotMatch(html, /<input\b/);
       assert.ok(html.includes(`href="/#${path.slice(0, -1)}"`));
     }
   }
@@ -84,4 +87,50 @@ test('the initial module does not eagerly preload private tools and source maps 
     const map = JSON.parse(await readFile(`dist/assets/${file}.map`, 'utf8'));
     assert.ok(!map.sourcesContent || map.sourcesContent.every(source => source === null), file);
   }
+});
+
+
+test('non-hash registrar filters leaders and clears an empty search', async () => {
+  const html = await readFile('dist/leadership-registrar/index.html', 'utf8');
+  const script = await readFile('dist/public-directory.js', 'utf8');
+  const dom = new JSDOM(html, { runScripts: 'outside-only' });
+  try {
+    dom.window.eval(script);
+    const document = dom.window.document;
+    const search = document.querySelector('#leader-search');
+    const visible = () => [...document.querySelectorAll('[data-leader-entry]')].filter(entry => !entry.hidden);
+    for (const query of ['Yohaan', 'analytics', 'Bridgeland']) {
+      search.value = query;
+      search.dispatchEvent(new dom.window.Event('input'));
+      assert.ok(visible().length > 0);
+      assert.ok(visible().every(entry => entry.dataset.search.toLowerCase().includes(query.toLowerCase())));
+    }
+    search.value = 'no matching leader';
+    search.dispatchEvent(new dom.window.Event('input'));
+    assert.equal(visible().length, 0);
+    assert.equal(document.querySelector('[data-leader-empty]').hidden, false);
+    document.querySelector('[data-leader-clear]').click();
+    assert.equal(visible().length, 8);
+    assert.equal(document.querySelector('[data-leader-empty]').hidden, true);
+    assert.equal(document.activeElement, search);
+  } finally { dom.window.close(); }
+});
+
+test('non-hash homepage carousel controls scroll in both directions', async () => {
+  const html = await readFile('dist/index.html', 'utf8');
+  const script = await readFile('dist/public-directory.js', 'utf8');
+  const dom = new JSDOM(html, { runScripts: 'outside-only' });
+  try {
+    dom.window.matchMedia = () => ({ matches: true });
+    const carousel = dom.window.document.querySelector('#leader-carousel');
+    Object.defineProperty(carousel, 'clientWidth', { value: 800 });
+    const calls = [];
+    carousel.scrollBy = options => calls.push(options);
+    dom.window.eval(script);
+    dom.window.document.querySelector('[data-leader-direction="1"]').click();
+    dom.window.document.querySelector('[data-leader-direction="-1"]').click();
+    assert.deepEqual(calls.map(call => call.left), [640, -640]);
+    assert.ok(calls.every(call => call.behavior === 'auto'));
+    assert.equal(carousel.tabIndex, 0);
+  } finally { dom.window.close(); }
 });
