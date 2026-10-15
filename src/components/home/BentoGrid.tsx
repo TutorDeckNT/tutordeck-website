@@ -2,6 +2,7 @@ import Icon from '../Icon';
 import { Link } from 'react-router-dom';
 import Reveal from '../Reveal';
 import AnimatedStat from '../AnimatedStat';
+import ChapterMap from './ChapterMap';
 
 const BentoGrid = () => {
   return (
@@ -60,76 +61,6 @@ const BentoGrid = () => {
             </div>
           </Reveal>
 
-          {/* Medium Cell: Chapters */}
-          <Reveal
-            variant="fade-up"
-            delay={0.2}
-            className="bg-dark-card/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col relative overflow-hidden"
-          >
-            <div className="flex items-baseline justify-between gap-3 mb-4 z-10 relative">
-              <h3 className="text-xl font-bold text-white">
-                Active Chapters
-              </h3>
-              <span className="text-3xl font-extrabold text-primary">6</span>
-            </div>
-
-            <div className="flex-1 relative min-h-[200px] bg-gray-900/50 rounded-xl border border-white/5">
-              <div className="absolute inset-0">
-                {/* Prosper */}
-                <div className="absolute top-[30%] left-[45%] group cursor-pointer">
-                  <div className="w-3 h-3 bg-primary rounded-full animate-radar" />
-                  <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/80 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    Prosper High
-                  </div>
-                </div>
-
-                {/* Richland */}
-                <div className="absolute top-[45%] left-[55%] group cursor-pointer">
-                  <div
-                    className="w-3 h-3 bg-secondary rounded-full animate-radar"
-                    style={{ animationDelay: '1s' }}
-                  />
-                  <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/80 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    Richland High
-                  </div>
-                </div>
-
-                {/* Three additional active chapters */}
-                <div className="absolute top-[55%] left-[35%]">
-                  <div
-                    className="w-3 h-3 bg-primary rounded-full animate-radar"
-                    style={{ animationDelay: '2s' }}
-                  />
-                </div>
-
-                <div className="absolute top-[65%] left-[65%]">
-                  <div
-                    className="w-3 h-3 bg-secondary rounded-full animate-radar"
-                    style={{ animationDelay: '3s' }}
-                  />
-                </div>
-
-                <div className="absolute top-[25%] left-[68%]">
-                  <div
-                    className="w-3 h-3 bg-primary rounded-full animate-radar"
-                    style={{ animationDelay: '4s' }}
-                  />
-                </div>
-
-                <div className="absolute top-[38%] left-[25%]">
-                  <div
-                    className="w-3 h-3 bg-secondary rounded-full animate-radar"
-                    style={{ animationDelay: '5s' }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <p className="text-sm text-gray-400 mt-4">
-              Six chapters expanding access to peer-led academic support.
-            </p>
-          </Reveal>
-
           {/* Testimonial */}
           <Reveal
             variant="fade-up"
@@ -155,6 +86,10 @@ const BentoGrid = () => {
                 </p>
               </div>
             </div>
+          </Reveal>
+
+          <Reveal variant="fade-up" delay={0.2} className="md:col-span-3">
+            <ChapterMap />
           </Reveal>
 
           {/* Call to Action */}
