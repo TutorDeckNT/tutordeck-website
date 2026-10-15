@@ -4,58 +4,169 @@ import { Link } from 'react-router-dom';
 import { useStaticPage } from '../seo/StaticPageContext';
 import Reveal from '../components/Reveal';
 
-const chapterData = [
+type Chapter = {
+    name: string;
+    location: string;
+    lead?: string;
+    peakMembers?: string;
+    img: string;
+    logo?: boolean;
+    photoCredit?: boolean;
+};
+
+const chapterData: Chapter[] = [
     { 
-        name: 'Prosper High School', 
+        name: 'Prosper High School',
+        peakMembers: '312',
         location: 'Prosper, TX', 
         lead: 'Manav A, Shaurya J, Aakanksh R, and Arnav Shah',
         img: '/Prosper_High_School.avif' 
     },
     // --------------------------
     { 
-        name: 'Richland High School', 
+        name: 'Richland High School',
+        peakMembers: '218',
         location: 'Prosper, TX', 
         lead: 'Alwin John SV', 
         img: '/richlandhs.avif' 
     },
     // --------------------------
     { 
-        name: 'Ranchview High School', 
+        name: 'Ranchview High School',
+        peakMembers: '127',
         location: 'Irving, TX', 
         lead: 'Arnav Chugh', 
         img: 'https://imagescdn.homes.com/i2/EnJzfV7ZPfxmCX6g8_jX6CtM8KfZ8yB0I_yrLw6EGIQ/113/ranchview-high-school-irving-tx-primaryphoto.jpg?p=1'
     },
     // --------------------------
     { 
-        name: 'V.R. Eaton High School', 
-        location: 'Fort Worth, TX', 
-        lead: 'Sreedatta Gudapudi', 
-        img: 'https://imagescdn.homes.com/i2/svWi2HQReSEV1TrYc4mcQHqkfWsGvsYIvAUV4g8iXZk/116/v-r-eaton-high-school-fort-worth-tx-4-schoolphoto.jpg?p=1'
-    },
-    // --------------------------
-    { 
-        name: 'Mansfield High School', 
+        name: 'Mansfield High School',
+        peakMembers: '97',
         location: 'Mansfield, TX', 
         lead: 'Jeet Bhandhari', 
         img: 'https://www.mansfieldtexas.gov/ImageRepository/Document?documentId=4695'
     },
     {
         name: 'Bridgeland High School',
+        peakMembers: '132',
         location: 'Cypress, TX',
         lead: 'Austin Hodge (Student Lead), Rishit Shinkar (Treasurer)',
         img: 'https://www.bridgeland.com/wp-content/uploads/2025/04/schools-grid-bridgeland-high.webp'
     },
+    {
+        name: "Cypress High School",
+        peakMembers: '71',
+        location: "Cypress, CA",
+        lead: "Rohan Mehta",
+        img: "https://upload.wikimedia.org/wikipedia/commons/4/44/Cypress_High_School_Billboard.jpeg",
+        photoCredit: true,
+    },
+    {
+        name: "Cypress Lakes High School",
+        peakMembers: '151',
+        location: "Katy, TX",
+        lead: "Nathaniel Brooks",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto,t_image_size_3/v1716420247/cfisdnet/fs6lvktoniignukaskao/CyLakesHS.jpg",
+    },
+    {
+        name: "Langham Creek High School",
+        peakMembers: '~91',
+        location: "Houston, TX",
+        lead: "Adrian Park",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto,t_image_size_3/v1709923916/cfisdnet/pgubxrcgses31tfujuzq/Langham_Creek_HS_02_Logo.png",
+        logo: true,
+    },
 ];
 
-const ChapterCard = ({ chapter }: { chapter: typeof chapterData[0] }) => (
+const launchingChapterData: Chapter[] = [
+    {
+        name: 'V.R. Eaton High School',
+        location: 'Fort Worth, TX',
+        img: 'https://resources.finalsite.net/images/f_auto,q_auto,t_image_size_3/v1639761643/nisdtxorg/aqy12panyz6ochexozzu/EatonDedicationProgram.jpg'
+    },
+    {
+        name: "Jersey Village High School",
+        location: "Houston, TX",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto/v1713170611/cfisdnet/gjfybc8uyasu2isxweqa/JerseyVillageHighSchoolPrimaryLogoImage.png",
+        logo: true,
+    },
+    {
+        name: "Cy-Fair High School",
+        location: "Cypress, TX",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto/v1713170509/cfisdnet/d8onv3p4c1bg2c5my0jq/Cy-FairHighSchoolPrimaryThumbnailImage.png",
+        logo: true,
+    },
+    {
+        name: "Cypress Creek High School",
+        location: "Houston, TX",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto/v1713170513/cfisdnet/pljg1lp6czmvtzs7ddbj/CypressCreekHighSchoolPrimaryLogoImage.png",
+        logo: true,
+    },
+    {
+        name: "Cypress Falls High School",
+        location: "Houston, TX",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto/v1713170516/cfisdnet/t0qqntbng6mvufkkfod7/CypressFallsHighSchoolPrimaryLogoImage.png",
+        logo: true,
+    },
+    {
+        name: "Cypress Park High School",
+        location: "Cypress, TX",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto/v1713170523/cfisdnet/pujnibszw15c0h4vdgrw/CypressParkHighSchoolPrimaryLogoImage.png",
+        logo: true,
+    },
+    {
+        name: "Cypress Ranch High School",
+        location: "Cypress, TX",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto/v1713170527/cfisdnet/iwtyl66w2vnnoljutg2n/CypressRanchHighSchoolPrimaryLogoImage.png",
+        logo: true,
+    },
+    {
+        name: "Cypress Ridge High School",
+        location: "Houston, TX",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto/v1713170529/cfisdnet/mbyz1kgylxknhf6y0hix/CypressRidgeHighSchoolPrimaryLogoImage.png",
+        logo: true,
+    },
+    {
+        name: "Cypress Springs High School",
+        location: "Cypress, TX",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto/v1713170532/cfisdnet/dzdfuva7h7ven4vpaxhn/CypressSpringsHighSchoolPrimaryLogoImage.png",
+        logo: true,
+    },
+    {
+        name: "Cypress Woods High School",
+        location: "Cypress, TX",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto,t_image_size_3/v1759150858/cfisdnet/rcfojg1iqtbc5jaft5h5/CypressWoodsHighSchoolPrimaryLogoImage.png",
+        logo: true,
+    },
+    {
+        name: "Seven Lakes High School",
+        location: "Katy, TX",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto/v1744117965/katyisdorg/kaaoxjvxr2atj8bccehg/slhs.png",
+        logo: true,
+    },
+    {
+        name: "Tomball High School",
+        location: "Tomball, TX",
+        img: "https://resources.finalsite.net/images/f_auto,q_auto/v1667387635/tomballisdnet/v1ofjnshawdatnwordzp/TomballHigh.png",
+        logo: true,
+    },
+];
+
+const ChapterCard = ({ chapter, launching = false }: { chapter: Chapter; launching?: boolean }) => (
     <div className="bg-dark-card rounded-lg border border-gray-700 overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
-        <img src={chapter.img} className="w-full h-48 object-cover" alt={chapter.name} />
+        <img src={chapter.img} loading="lazy" width={800} height={384} className={`w-full h-48 ${chapter.logo ? 'object-contain p-6 bg-white' : 'object-cover'}`} alt={chapter.logo ? `${chapter.name} logo` : chapter.name} />
         <div className="p-6">
-            <h2 className="text-2xl font-bold text-dark-heading">{chapter.name}</h2>
+            {launching && <p className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary">Currently Launching</p>}
+            <h3 className="text-2xl font-bold text-dark-heading">{chapter.name}</h3>
             <p className="text-primary font-semibold">{chapter.location}</p>
-            <div className="mt-4 text-sm">
+            {chapter.lead && <div className="mt-4 text-sm">
                 <p><strong className="text-dark-text">Student Lead:</strong> {chapter.lead}</p>
-            </div>
+            </div>}
+            <p className="mt-4 text-sm"><strong className="text-dark-text">{launching ? 'Members:' : 'Peak Member Count:'}</strong> {launching ? 'Less than 50' : chapter.peakMembers}</p>
+            {launching && <p className="mt-2 text-sm text-dark-text">Leaders and a small group of initial members are joining this chapter.</p>}
+            {chapter.photoCredit && <p className="mt-4 text-xs">
+                Photo: <a className="underline" href="https://commons.wikimedia.org/wiki/File:Cypress_High_School_Billboard.jpeg">Nathan Jones</a> / <a className="underline" href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>
+            </p>}
         </div>
     </div>
 );
@@ -63,7 +174,7 @@ const ChapterCard = ({ chapter }: { chapter: typeof chapterData[0] }) => (
 const NewChapterCard = () => (
     <div className="bg-gradient-to-br from-primary to-secondary rounded-lg border border-primary/50 flex flex-col items-center justify-center p-6 text-center text-dark-bg transform hover:-translate-y-2 transition-transform duration-300">
         <Icon className="fas fa-plus-circle text-5xl mb-4" />
-        <h2 className="text-2xl font-extrabold">Your School Here</h2>
+        <h3 className="text-2xl font-extrabold">Your School Here</h3>
         <p className="font-semibold mb-4">Bring TutorDeck to your community.</p>
         <Link to="/get-involved" className="bg-dark-bg text-primary font-bold px-6 py-2 rounded-lg hover:opacity-90">Learn How</Link>
     </div>
@@ -72,12 +183,16 @@ const NewChapterCard = () => (
 const ChaptersPage = () => {
     const staticPage = useStaticPage();
     const [searchTerm, setSearchTerm] = useState('');
-    const filteredChapters = useMemo(() => 
-        chapterData.filter(chapter => 
-            chapter.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            chapter.location.toLowerCase().includes(searchTerm.toLowerCase())
-        ), 
-    [searchTerm]);
+    const { filteredChapters, filteredLaunchingChapters } = useMemo(() => {
+        const query = searchTerm.trim().toLowerCase();
+        const matchesSearch = (chapter: Chapter) =>
+            chapter.name.toLowerCase().includes(query) ||
+            chapter.location.toLowerCase().includes(query);
+        return {
+            filteredChapters: chapterData.filter(matchesSearch),
+            filteredLaunchingChapters: launchingChapterData.filter(matchesSearch),
+        };
+    }, [searchTerm]);
 
     return (
         <main className="container mx-auto px-6 py-20 mt-16">
@@ -100,12 +215,27 @@ const ChaptersPage = () => {
                 </div>
             </Reveal>}
 
-            <Reveal className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredChapters.map(chapter => <ChapterCard key={chapter.name} chapter={chapter} />)}
-                <NewChapterCard />
-            </Reveal>
+            <section aria-labelledby="main-chapters-heading">
+                <Reveal className="mb-8">
+                    <h2 id="main-chapters-heading" className="text-3xl font-bold text-dark-heading">Main Chapters</h2>
+                </Reveal>
+                <Reveal className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filteredChapters.map(chapter => <ChapterCard key={chapter.name} chapter={chapter} />)}
+                    <NewChapterCard />
+                </Reveal>
+            </section>
+
+            {filteredLaunchingChapters.length > 0 && <section className="mt-16" aria-labelledby="launching-chapters-heading">
+                <Reveal className="mb-8">
+                    <h2 id="launching-chapters-heading" className="text-3xl font-bold text-dark-heading">Currently Launching</h2>
+                    <p className="mt-3 text-dark-text">TutorDeck chapters are getting started at these high schools, with leaders and a small group of initial members joining each chapter.</p>
+                </Reveal>
+                <Reveal className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filteredLaunchingChapters.map(chapter => <ChapterCard key={chapter.name} chapter={chapter} launching />)}
+                </Reveal>
+            </section>}
             
-            {filteredChapters.length === 0 && searchTerm && (
+            {filteredChapters.length === 0 && filteredLaunchingChapters.length === 0 && searchTerm.trim() && (
                 <Reveal className="text-center col-span-full mt-12 bg-dark-card p-8 rounded-lg">
                     <h2 className="text-2xl font-bold text-dark-heading">No Chapters Found</h2>
                     <p className="text-dark-text mt-2">We couldn't find a chapter matching your search. Why not be the first to start one at your school?</p>
