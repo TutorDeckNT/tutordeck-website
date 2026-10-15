@@ -33,7 +33,7 @@ const GetInvolvedPage = () => {
             <Reveal className="text-center bg-dark-card p-10 rounded-2xl border border-gray-700">
                 <h2 className="text-4xl font-bold text-dark-heading mb-4">Ready to Take the Next Step?</h2>
                 <p className="max-w-2xl mx-auto mb-8">Fill out our interest form, and we'll get in touch with you with the next steps for joining or starting a chapter. We're excited to have you!</p>
-                <a href="https://docs.google.com/forms/d/e/1FAIpQLSe8ObVCbg5vGRzYW4f54Kc3AOk1oVwf2YVawBNqkFfw2eJauA/viewform?usp=sf_link" target="_blank" rel="noopener noreferrer" className="cta-button bg-gradient-to-r from-primary to-secondary text-dark-bg font-bold text-lg px-10 py-4 rounded-lg inline-block">
+                <a href="https://css63lodely.typeform.com/to/NHpMjOb1" target="_blank" rel="noopener noreferrer" className="cta-button bg-gradient-to-r from-primary to-secondary text-dark-bg font-bold text-lg px-10 py-4 rounded-lg inline-block">
                     Open Interest Form <Icon className="fas fa-external-link-alt ml-2" />
                 </a>
             </Reveal>
