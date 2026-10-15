@@ -153,31 +153,30 @@ const launchingChapterData: Chapter[] = [
 ];
 
 const ChapterCard = ({ chapter, launching = false }: { chapter: Chapter; launching?: boolean }) => (
-    <div className="bg-dark-card rounded-lg border border-gray-700 overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
-        <img src={chapter.img} loading="lazy" width={800} height={384} className={`w-full h-48 ${chapter.logo ? 'object-contain p-6 bg-white' : 'object-cover'}`} alt={chapter.logo ? `${chapter.name} logo` : chapter.name} />
-        <div className="p-6">
-            {launching && <p className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary">Currently Launching</p>}
-            <h3 className="text-2xl font-bold text-dark-heading">{chapter.name}</h3>
-            <p className="text-primary font-semibold">{chapter.location}</p>
+    <article className={`chapter-card ${launching ? 'chapter-card--launching' : ''}`}>
+        <img src={chapter.img} loading="lazy" width={800} height={384} className={`chapter-image ${chapter.logo ? 'object-contain p-6 bg-white' : 'object-cover'}`} alt={chapter.logo ? `${chapter.name} logo` : chapter.name} />
+        <div className="chapter-details">
+            <h3 className="chapter-name text-dark-heading">{chapter.name}</h3>
+            <p className="mt-2 text-sm text-gray-400">{chapter.location}</p>
             {chapter.lead && <div className="mt-4 text-sm">
                 <p><strong className="text-dark-text">Student Lead:</strong> {chapter.lead}</p>
             </div>}
-            <p className="mt-4 text-sm"><strong className="text-dark-text">{launching ? 'Members:' : 'Peak Member Count:'}</strong> {launching ? 'Less than 50' : chapter.peakMembers}</p>
+            <p className="chapter-members"><strong className="text-dark-text">{launching ? 'Members:' : 'Peak Member Count:'}</strong> <span>{launching ? 'Less than 50' : chapter.peakMembers}</span></p>
             {launching && <p className="mt-2 text-sm text-dark-text">Leaders and a small group of initial members are joining this chapter.</p>}
             {chapter.photoCredit && <p className="mt-4 text-xs">
                 Photo: <a className="underline" href="https://commons.wikimedia.org/wiki/File:Cypress_High_School_Billboard.jpeg">Nathan Jones</a> / <a className="underline" href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>
             </p>}
         </div>
-    </div>
+    </article>
 );
 
 const NewChapterCard = () => (
-    <div className="bg-gradient-to-br from-primary to-secondary rounded-lg border border-primary/50 flex flex-col items-center justify-center p-6 text-center text-dark-bg transform hover:-translate-y-2 transition-transform duration-300">
-        <Icon className="fas fa-plus-circle text-5xl mb-4" />
-        <h3 className="text-2xl font-extrabold">Your School Here</h3>
-        <p className="font-semibold mb-4">Bring TutorDeck to your community.</p>
-        <Link to="/get-involved" className="bg-dark-bg text-primary font-bold px-6 py-2 rounded-lg hover:opacity-90">Learn How</Link>
-    </div>
+    <article className="chapter-invitation">
+        <p className="text-primary text-sm font-semibold">A chapter starts with you</p>
+        <h3>Bring TutorDeck<br />to your school.</h3>
+        <p className="max-w-sm text-dark-text">Build a local community of students who help each other learn.</p>
+        <Link to="/get-involved" className="chapter-link">Start a chapter <span aria-hidden="true">↗</span></Link>
+    </article>
 );
 
 const ChaptersPage = () => {
@@ -195,13 +194,13 @@ const ChaptersPage = () => {
     }, [searchTerm]);
 
     return (
-        <main className="container mx-auto px-6 py-20 mt-16">
-            <Reveal className="text-center mb-12">
-                <h1 className="text-5xl font-extrabold text-dark-heading">Our Chapters</h1>
-                <p className="text-lg mt-4 max-w-3xl mx-auto">Find a TutorDeck chapter near you, or learn how to start a new one.</p>
+        <main className="chapter-directory mx-auto px-6 pt-32 pb-24">
+            <Reveal className="chapter-intro mb-12">
+                <h1>Our Chapters</h1>
+                <p className="text-lg mt-6 max-w-xl leading-relaxed">Find a TutorDeck chapter near you, or learn how to start a new one.</p>
             </Reveal>
 
-            {staticPage ? <p className="text-center mb-12"><a href="/#/chapters" className="text-primary underline">Search chapters in the interactive version</a></p> : <Reveal className="mb-12 max-w-2xl mx-auto">
+            {staticPage ? <p className="chapter-intro mb-12"><a href="/#/chapters" className="text-primary underline">Search chapters in the interactive version</a></p> : <Reveal className="mb-14 max-w-xl">
                 <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3"><Icon className="fas fa-search text-gray-400" /></span>
                     <input 
@@ -217,9 +216,9 @@ const ChaptersPage = () => {
 
             <section aria-labelledby="main-chapters-heading">
                 <Reveal className="mb-8">
-                    <h2 id="main-chapters-heading" className="text-3xl font-bold text-dark-heading">Main Chapters</h2>
+                    <h2 id="main-chapters-heading" className="text-3xl font-bold text-dark-heading">Main chapters</h2>
                 </Reveal>
-                <Reveal className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <Reveal className="grid md:grid-cols-2 gap-x-10 gap-y-12">
                     {filteredChapters.map(chapter => <ChapterCard key={chapter.name} chapter={chapter} />)}
                     <NewChapterCard />
                 </Reveal>
@@ -227,17 +226,17 @@ const ChaptersPage = () => {
 
             {filteredLaunchingChapters.length > 0 && <section className="mt-16" aria-labelledby="launching-chapters-heading">
                 <Reveal className="mb-8">
-                    <h2 id="launching-chapters-heading" className="text-3xl font-bold text-dark-heading">Currently Launching</h2>
+                    <h2 id="launching-chapters-heading" className="text-3xl font-bold text-dark-heading">Currently launching</h2>
                     <p className="mt-3 text-dark-text">TutorDeck chapters are getting started at these high schools, with leaders and a small group of initial members joining each chapter.</p>
                 </Reveal>
-                <Reveal className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <Reveal className="grid md:grid-cols-2 gap-x-10">
                     {filteredLaunchingChapters.map(chapter => <ChapterCard key={chapter.name} chapter={chapter} launching />)}
                 </Reveal>
             </section>}
             
             {filteredChapters.length === 0 && filteredLaunchingChapters.length === 0 && searchTerm.trim() && (
                 <Reveal className="text-center col-span-full mt-12 bg-dark-card p-8 rounded-lg">
-                    <h2 className="text-2xl font-bold text-dark-heading">No Chapters Found</h2>
+                    <h2 className="text-2xl font-bold text-dark-heading">No chapters found</h2>
                     <p className="text-dark-text mt-2">We couldn't find a chapter matching your search. Why not be the first to start one at your school?</p>
                     <Link to="/get-involved" className="cta-button mt-6 inline-block bg-primary text-dark-bg font-semibold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors">Start a Chapter</Link>
                 </Reveal>
