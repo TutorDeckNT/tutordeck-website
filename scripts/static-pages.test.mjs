@@ -99,7 +99,12 @@ test('non-hash registrar filters leaders and clears an empty search', async () =
     const document = dom.window.document;
     const search = document.querySelector('#leader-search');
     const visible = () => [...document.querySelectorAll('[data-leader-entry]')].filter(entry => !entry.hidden);
-    for (const query of ['Yohaan', 'analytics', 'Bridgeland']) {
+    const initialEntries = visible();
+    for (const name of ['Manav A.', 'Shaurya J.', 'Aakanksh R.', 'Arnav Shah', 'Alwin John SV', 'Rohan Mehta', 'Nathaniel Brooks', 'Adrian Park']) {
+      assert.ok(initialEntries.some(entry => entry.textContent.includes(name)), name);
+    }
+    assert.ok(initialEntries.every(entry => !entry.textContent.includes('Sreedatta Gudapudi')));
+    for (const query of ['Yohaan', 'analytics', 'Bridgeland', 'Rohan Mehta']) {
       search.value = query;
       search.dispatchEvent(new dom.window.Event('input'));
       assert.ok(visible().length > 0);
@@ -110,7 +115,7 @@ test('non-hash registrar filters leaders and clears an empty search', async () =
     assert.equal(visible().length, 0);
     assert.equal(document.querySelector('[data-leader-empty]').hidden, false);
     document.querySelector('[data-leader-clear]').click();
-    assert.equal(visible().length, 8);
+    assert.equal(visible().length, initialEntries.length);
     assert.equal(document.querySelector('[data-leader-empty]').hidden, true);
     assert.equal(document.activeElement, search);
   } finally { dom.window.close(); }
