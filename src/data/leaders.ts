@@ -15,12 +15,15 @@ export const featuredLeaders: Leader[] = [
 ];
 
 export const registrarLeaders: Leader[] = [
+  ...featuredLeaders,
   { name: "Aumik Mehra", role: "VP of Next Generation Leaders", chapter: "Prosper High School", quote: "Empowering the next generation.", color: "bg-purple-500" },
   { name: "Yohaan M.", role: "Vice President of Chapter Analytics", chapter: "Prosper High School", quote: "Unity is Key", color: "bg-purple-500" },
   { name: "Amulya Singh", role: "Multi-campus Attendance Analyst & Engineer", chapter: "Prosper High School", color: "bg-green-500" },
   { name: "Arnav Chugh", role: "President · Ranchview High School", quote: "Learning grows through community.", color: "bg-purple-500" },
-  { name: "Sreedatta Gudapudi", role: "President · V.R. Eaton High School", quote: "Helping students thrive.", color: "bg-green-500" },
   { name: "Jeet Bhandhari", role: "President · Mansfield High School", quote: "Making support accessible.", color: "bg-orange-500" },
   { name: "Austin Hodge", role: "Student Lead · Bridgeland High School", color: "bg-blue-500" },
   { name: "Rishit Shinkar", role: "Treasurer · Bridgeland High School", quote: "Building a stronger school community.", color: "bg-blue-500" },
+  { name: "Rohan Mehta", role: "Student Lead · Cypress High School", color: "bg-green-500" },
+  { name: "Nathaniel Brooks", role: "Student Lead · Cypress Lakes High School", color: "bg-blue-500" },
+  { name: "Adrian Park", role: "Student Lead · Langham Creek High School", color: "bg-orange-500" },
 ];
